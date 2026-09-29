@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="refresh" content="0; url=/index/index.html">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>115校慶園遊會 - 自動跳轉中</title>
+  <script>
+    // 雙重保險立即跳轉至前台商城主頁
+    window.location.replace("/index/index.html");
+  </script>
+  <style>
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #f8fafc;
+      color: #334155;
+    }
+    .redirect-card {
+      background: white;
+      padding: 2.5rem 3rem;
+      border-radius: 20px;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08);
+      text-align: center;
+    }
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid #e2e8f0;
+      border-top-color: #6366f1;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 1.5rem;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    a {
+      color: #6366f1;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="redirect-card">
+    <div class="spinner"></div>
+    <h2 style="margin: 0 0 0.5rem 0; font-size: 1.25rem; color: #0f172a;">115校慶園遊會客製商城</h2>
+    <p style="margin: 0 0 1rem 0; font-size: 0.9rem; color: #64748b;">正在為您跳轉至前台商城主頁...</p>
+    <p style="margin: 0; font-size: 0.8rem;">
+      若未自動跳轉，請 <a href="/index/index.html">點擊此處直接進入</a>
+    </p>
+  </div>
+</body>
+</html>

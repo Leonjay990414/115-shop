@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>115校慶園遊會 - 生產調度管理工作站 (Admin Station)</title>
+
+  <!-- 後台深色擬態樣式表 -->
+  <link rel="stylesheet" href="css/admin.css">
+
+  <!-- 引入 SheetJS (xlsx) CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+  <!-- 引入 Firebase 9 Compat SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+  <!-- 引入底層共用核心服務層 (保持運作，唯一真理來源) -->
+  <script src="../src/services/rbac.service.js"></script>
+  <script src="../src/services/orderFsm.service.js"></script>
+  <script src="../src/services/printTemplate.service.js"></script>
+  <script src="../src/services/excelExport.service.js"></script>
+</head>
+<body>
+
+  <!-- 17 人雙軌登入驗證覆蓋層 -->
+  <div id="authOverlay" class="auth-overlay">
+    <div class="auth-card">
+      <div class="auth-header">
+        <h2>🛠️ 幹部生產調度站登入</h2>
+        <p>請依據總召與指導老師指派之身分憑證登入</p>
+      </div>
+
+      <div class="auth-tabs">
+        <button id="tabBtnPassword" class="auth-tab-btn active">帳號密碼登入 (軌道1)</button>
+        <button id="tabBtnCode" class="auth-tab-btn">學號驗證碼 (軌道2)</button>
+      </div>
+
+      <!-- 軌道 1：帳號密碼登入 (純系統帳號 + 密碼輸入) -->
+      <div id="passwordLoginForm">
+        <div class="auth-input-group">
+          <label class="auth-label">系統帳號 (staffId)</label>
+          <input type="text" id="loginStaffIdInput" class="auth-input" placeholder="輸入成員帳號 (例：admin_director)">
+        </div>
+        <div class="auth-input-group">
+          <label class="auth-label">登入密碼</label>
+          <input type="password" id="loginPasswordInput" class="auth-input" placeholder="輸入專屬密碼 (例：ZgShop@2026_01)">
+        </div>
+        <button id="btnSubmitPasswordLogin" class="btn-auth-submit">
+          🚀 帳號密碼登入 (軌道 1)
+        </button>
+      </div>
+
+      <!-- 軌道 2：學號身分驗證碼登入 (純系統帳號 + 學號驗證碼) -->
+      <div id="codeLoginForm" style="display: none;">
+        <div class="auth-input-group">
+          <label class="auth-label">系統帳號 (staffId)</label>
+          <input type="text" id="codeStaffIdInput" class="auth-input" placeholder="輸入成員帳號 (例：admin_director)">
+        </div>
+        <div class="auth-input-group">
+          <label class="auth-label">6 位身分驗證碼 (真實學號)</label>
+          <input type="text" id="loginAuthCodeInput" class="auth-input" maxlength="6" placeholder="輸入 6 碼學號驗證碼">
+        </div>
+        <button id="btnSubmitCodeLogin" class="btn-auth-submit">
+          🔓 身分驗證碼登入 (軌道 2)
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 頂部工作站導覽列 -->
+  <header class="admin-navbar">
+    <div class="admin-brand">
+      <div class="admin-logo-badge">ADMIN</div>
+      <div class="admin-title-group">
+        <h1>115校慶園遊會・生產調度管理工作站</h1>
+        <p>智光商工客製化商品專案 17 人協同平台</p>
+      </div>
+    </div>
+
+    <div class="admin-nav-actions">
+      <div class="stream-status-tag">
+        <span class="stream-dot"></span>
+        <span>雲端即時連線中 (0.3s)</span>
+      </div>
+
+      <div class="staff-session-box">
+        <span id="sessionStaffRole" class="role-pill">SUPER_ADMIN</span>
+        <strong id="sessionStaffName" style="font-size: 0.85rem;">總召</strong>
+        <button id="btnLogout" class="btn-logout" title="登出系統">🚪 登出</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- 工作區主容器 (Viewport-Locked Layout) -->
+  <main class="admin-workspace">
+    
+    <!-- 頂部 HUD 狀態卡片 (快速過濾) -->
+    <section class="hud-grid">
+      <div id="hudCardQc" class="hud-card qc" title="點擊過濾待審核工單">
+        <div class="hud-label">
+          <span>待美術圖審</span>
+          <span>🎨</span>
+        </div>
+        <div id="hudValQc" class="hud-val">0</div>
+      </div>
+
+      <div id="hudCardProd" class="hud-card prod" title="點擊過濾產線製作中工單">
+        <div class="hud-label">
+          <span>產線製作中</span>
+          <span>⚡</span>
+        </div>
+        <div id="hudValProd" class="hud-val">0</div>
+      </div>
+
+      <div id="hudCardLogistics" class="hud-card logistics" title="點擊過濾待外送派件工單">
+        <div class="hud-label">
+          <span>待派送出件</span>
+          <span>📦</span>
+        </div>
+        <div id="hudValLogistics" class="hud-val">0</div>
+      </div>
+
+      <div id="hudCardFinance" class="hud-card finance" title="點擊過濾待收款核銷工單">
+        <div class="hud-label">
+          <span>待財務收款</span>
+          <span>💰</span>
+        </div>
+        <div id="hudValFinance" class="hud-val">0</div>
+      </div>
+    </section>
+
+    <!-- 工具列 (搜尋、勾選列印、匯出) -->
+    <div class="toolbar-bar">
+      <div class="toolbar-left">
+        <input type="text" id="searchInput" class="search-input" placeholder="🔍 搜尋工單號、學生、班級...">
+      </div>
+
+      <div class="toolbar-right">
+        <button id="btnOpenPimModal" class="btn-tool" style="background: rgba(129, 140, 248, 0.2); border-color: rgba(129, 140, 248, 0.4);">
+          📦 PIM 商品庫存管理
+        </button>
+        <button id="btnBatchPrint" class="btn-tool btn-tool-primary">
+          🖨️ 批次列印所選三聯單 (A4不跨頁)
+        </button>
+        <button id="btnExportExcel" class="btn-tool btn-tool-success">
+          📊 匯出 Excel 總表 (含原圖連結)
+        </button>
+      </div>
+    </div>
+
+    <!-- 固定表頭表格視窗 (Sticky Header Table) -->
+    <div class="table-viewport-card">
+      <div class="table-scroll-container">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th style="width: 40px;">
+                <input type="checkbox" id="selectAllCheckbox" title="全選可視工單">
+              </th>
+              <th>工單號 (Order ID)</th>
+              <th>班級 / 座號</th>
+              <th>學生姓名</th>
+              <th>商品品項與數量</th>
+              <th>應收金額</th>
+              <th>美術圖審</th>
+              <th>財務狀態</th>
+              <th>動作</th>
+            </tr>
+          </thead>
+          <tbody id="ordersTableBody">
+            <tr><td colspan="9" style="text-align: center; color: var(--text-muted); padding: 2rem;">連線資料庫中...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- 側邊抽屜式工單檢視面板 (Side Drawer) -->
+  <div id="orderDrawerBackdrop" class="order-drawer-backdrop"></div>
+  <aside id="orderDrawer" class="order-drawer">
+    <div class="drawer-top-bar">
+      <div>
+        <span style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase;">Work Order Detail</span>
+        <div id="drawerOrderId" class="drawer-order-id">ORD-XXXX</div>
+      </div>
+      <button id="btnCloseDrawer" class="btn-close-drawer">✕</button>
+    </div>
+
+    <div id="drawerContentScroll" class="drawer-content-scroll">
+      <!-- 由 js/admin.js 動態渲染 -->
+    </div>
+
+    <div id="drawerActionFooter" class="drawer-action-footer">
+      <!-- 依角色注入操作按鈕 -->
+    </div>
+  </aside>
+
+  <!-- PIM 商品資產與庫存動態管理抽屜 (Side Drawer) -->
+  <div id="pimDrawerBackdrop" class="order-drawer-backdrop"></div>
+  <aside id="pimDrawer" class="order-drawer" style="max-width: 720px;">
+    <div class="drawer-top-bar">
+      <div>
+        <span style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase;">Product Information Management</span>
+        <div class="drawer-order-id" style="color: #818cf8;">📦 商品資產與庫存管理</div>
+      </div>
+      <button id="btnClosePimDrawer" class="btn-close-drawer">✕</button>
+    </div>
+
+    <div class="drawer-content-scroll">
+      <p style="font-size: 0.8rem; color: var(--text-muted);">
+        在此編輯 Firestore products 集合中各商品之標題、售價、說明、圖片 URL 與即時庫存狀態。
+      </p>
+      <div id="pimProductsContainer" style="display: flex; flex-direction: column; gap: 1rem;">
+        <!-- 由 js/productAdmin.js 動態渲染 -->
+      </div>
+    </div>
+  </aside>
+
+  <!-- Firebase 初始化設定 -->
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyAYunSi8yFHoXxBQD1cabe-uKIA6DUKP_Q",
+      authDomain: "project-8372949785937083434.firebaseapp.com",
+      projectId: "project-8372949785937083434",
+      storageBucket: "project-8372949785937083434.firebasestorage.app",
+      messagingSenderId: "353265416024",
+      appId: "1:353265416024:web:1a333c4bd6d9ac8220572d"
+    };
+
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+    }
+  </script>
+
+  <!-- 引入後台管理邏輯與 PIM 模組 -->
+  <script src="js/productAdmin.js"></script>
+  <script src="js/admin.js"></script>
+
+</body>
+</html>

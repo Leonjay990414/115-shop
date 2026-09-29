@@ -1,0 +1,166 @@
+{
+  "symbols": {
+    "firestore.rules": {
+      "ipo_ts": 1790677752920,
+      "edit_count": 4,
+      "last_lines": 80,
+      "last_ts": 1790689441716,
+      "delisted": false,
+      "last_source": "onEdit",
+      "last_content_hash": "470784ba"
+    },
+    "ARCHITECTURE_SPEC.md": {
+      "ipo_ts": 1790680042112,
+      "edit_count": 2,
+      "last_lines": 336,
+      "last_ts": 1790682681422,
+      "delisted": false,
+      "last_source": "onEdit",
+      "last_content_hash": "71216e15"
+    },
+    "💻 AI 網站系統開發總規格書 (Master System Requirement Spec).docx": {
+      "ipo_ts": 1790682334487,
+      "edit_count": 1,
+      "last_lines": 134,
+      "last_ts": 1790682334487,
+      "delisted": false,
+      "last_source": "onEdit",
+      "last_content_hash": "c7a5928e"
+    },
+    "初步調查.xlsx": {
+      "ipo_ts": 1790682335170,
+      "edit_count": 1,
+      "last_lines": 30,
+      "last_ts": 1790682335170,
+      "delisted": false,
+      "last_source": "onEdit",
+      "last_content_hash": "8c3204cf"
+    },
+    "💻 AI 網站系統開發總規格書 (Master System Requirement Spec).pdf": {
+      "ipo_ts": 1790682335493,
+      "edit_count": 1,
+      "last_lines": 16035,
+      "last_ts": 1790682335493,
+      "delisted": false,
+      "last_source": "onEdit",
+      "last_content_hash": "8b4201ab"
+    },
+    "智光商工 115學年度 第62屆校慶園遊會.docx": {
+      "ipo_ts": 1790682335839,
+      "edit_count": 1,
+      "last_lines": 80,
+      "last_ts": 1790682335839,
+      "delisted": false,
+      "last_source": "onEdit",
+      "last_content_hash": "6bc73f67"
+    },
+    "校慶客製商品專案規劃.docx": {
+      "ipo_ts": 1790682336180,
+      "edit_count": 1,
+      "last_lines": 15624,
+      "last_ts": 1790682336180,
+      "delisted": false,
+      "last_source": "onEdit",
+      "last_content_hash": "5cd249c4"
+    },
+    "資料處理科 客製化商品專案」團隊夥伴招募實施計畫及報名表.docx": {
+      "ipo_ts": 1790682336253,
+      "edit_count": 1,
+      "last_lines": 72,
+      "last_ts": 1790682336253,
+      "delisted": false,
+      "last_source": "onEdit",
+      "last_content_hash": "f1731558"
+    },
+    "資料處理科 客製化商品專案」團隊夥伴招募實施計畫及報名表.pdf": {
+      "ipo_ts": 1790682336372,
+      "edit_count": 1,
+      "last_lines": 1302,
+      "last_ts": 1790682336372,
+      "delisted": false,
+      "last_source": "onEdit",
+      "last_content_hash": "90abf9f5"
+    },
+    "系統開發總規格書.md": {
+      "ipo_ts": 1790682605917,
+      "edit_count": 1,
+      "last_lines": 189,
+      "last_ts": 1790682605917,
+      "delisted": false,
+      "last_source": "onEdit",
+      "last_content_hash": "fd32eca4"
+    },
+    "src/services/rbac.service.js": {
+      "ipo_ts": 1790682968700,
+      "edit_count": 2,
+      "last_lines": 357,
+      "last_ts": 1790686580542,
+      "delisted": false,
+      "last_source": "onEdit",
+      "last_content_hash": "c0a4107b"
+    },
+    "src/services/orderFsm.service.js": {
+      "ipo_ts": 1790686588965,
+      "edit_count": 1,
+      "last_lines": 137,
+      "last_ts": 1790686588965,
+      "delisted": false,
+      "last_source": "onEdit",
+      "last_content_hash": "3f396993"
+    },
+    "src/services/studentAuth.service.js": {
+      "ipo_ts": 1790687483311,
+      "edit_count": 2,
+      "last_lines": 245,
+      "last_ts": 1790689336265,
+      "delisted": false,
+      "last_source": "onEdit",
+      "last_content_hash": "cb8777df"
+    },
+    "index/index.html": {
+      "ipo_ts": 1790687570015,
+      "edit_count": 1,
+      "last_lines": 404,
+      "last_ts": 1790687570015,
+      "delisted": false,
+      "last_source": "onEdit",
+      "last_content_hash": "89ce3043"
+    },
+    "admin/index.html": {
+      "ipo_ts": 1790687650786,
+      "edit_count": 1,
+      "last_lines": 242,
+      "last_ts": 1790687650786,
+      "delisted": false,
+      "last_source": "onEdit",
+      "last_content_hash": "c332be83"
+    },
+    "src/config/system.config.js": {
+      "ipo_ts": 1790689290172,
+      "edit_count": 1,
+      "last_lines": 56,
+      "last_ts": 1790689290172,
+      "delisted": false,
+      "last_source": "onEdit",
+      "last_content_hash": "512682b7"
+    },
+    "src/services/splitOrder.service.js": {
+      "ipo_ts": 1790689309869,
+      "edit_count": 1,
+      "last_lines": 219,
+      "last_ts": 1790689309869,
+      "delisted": false,
+      "last_source": "onEdit",
+      "last_content_hash": "c0684e95"
+    },
+    "src/services/printTemplate.service.js": {
+      "ipo_ts": 1790689604325,
+      "edit_count": 1,
+      "last_lines": 659,
+      "last_ts": 1790689604325,
+      "delisted": false,
+      "last_source": "onEdit",
+      "last_content_hash": "e08f16a9"
+    }
+  }
+}

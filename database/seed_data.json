@@ -1,0 +1,118 @@
+{
+  "products": {
+    "MUG": {
+      "code": "MUG",
+      "name": "客製陶瓷馬克杯",
+      "category": "tableware",
+      "unit_price": 150,
+      "cost_price": 60,
+      "max_qty_per_order": 5,
+      "lead_time_days": 3,
+      "spec_requirements": {
+        "min_width": 2400,
+        "min_height": 1000,
+        "recommended_dpi": 300,
+        "aspect_ratio": "24:10",
+        "accept_formats": ["image/jpeg", "image/png"]
+      },
+      "description": "高溫白瓷熱轉印，全彩不掉色，附包裝防撞紙盒。",
+      "is_active": true
+    },
+    "CST": {
+      "code": "CST",
+      "name": "客製吸水陶瓷杯墊",
+      "category": "tableware",
+      "unit_price": 60,
+      "cost_price": 25,
+      "max_qty_per_order": 10,
+      "lead_time_days": 2,
+      "spec_requirements": {
+        "min_width": 1200,
+        "min_height": 1200,
+        "recommended_dpi": 300,
+        "aspect_ratio": "1:1",
+        "accept_formats": ["image/jpeg", "image/png"]
+      },
+      "description": "天然鶯歌陶瓷吸水材質，底部EVA防滑止滑墊。",
+      "is_active": true
+    },
+    "BDG": {
+      "code": "BDG",
+      "name": "磨砂圓形金屬胸章 (58mm)",
+      "category": "accessories",
+      "unit_price": 40,
+      "cost_price": 12,
+      "max_qty_per_order": 20,
+      "lead_time_days": 2,
+      "spec_requirements": {
+        "min_width": 1000,
+        "min_height": 1000,
+        "recommended_dpi": 300,
+        "aspect_ratio": "1:1",
+        "accept_formats": ["image/jpeg", "image/png"]
+      },
+      "description": "58mm 經典磨砂質感金屬別針胸章，防刮防水。",
+      "is_active": true
+    },
+    "CRD": {
+      "code": "CRD",
+      "name": "紀念一卡通/悠遊卡貼紙套裝",
+      "category": "stationery",
+      "unit_price": 50,
+      "cost_price": 15,
+      "max_qty_per_order": 10,
+      "lead_time_days": 1,
+      "spec_requirements": {
+        "min_width": 1012,
+        "min_height": 638,
+        "recommended_dpi": 300,
+        "aspect_ratio": "86:54",
+        "accept_formats": ["image/jpeg", "image/png"]
+      },
+      "description": "標準尺寸霧面防水防刮卡貼，一組兩張。",
+      "is_active": true
+    },
+    "PSP": {
+      "code": "PSP",
+      "name": "A3 高光特厚紀念海報",
+      "category": "prints",
+      "unit_price": 80,
+      "cost_price": 30,
+      "max_qty_per_order": 5,
+      "lead_time_days": 2,
+      "spec_requirements": {
+        "min_width": 3508,
+        "min_height": 4960,
+        "recommended_dpi": 300,
+        "aspect_ratio": "1:1.414",
+        "accept_formats": ["image/jpeg", "image/png"]
+      },
+      "description": "250g 特級雪銅紙雙面高光覆膜，色彩鮮明飽和。",
+      "is_active": true
+    }
+  },
+  "system_config": {
+    "event_name": "115校慶園遊會",
+    "academic_year": "115",
+    "event_date": "2026-11-15",
+    "order_deadline": "2026-11-10T23:59:59+08:00",
+    "payment_deadline": "2026-11-12T17:00:00+08:00",
+    "wipeout_ttl_days": 14,
+    "max_file_size_mb": 15,
+    "allowed_classes": [
+      "DP-1R", "DP-1S", "DP-2R", "DP-2S", "DP-3R", "DP-3S",
+      "IT-1R", "IT-2R", "IT-3R",
+      "AD-1R", "AD-2R", "AD-3R"
+    ]
+  },
+  "counters": {
+    "slip_serial": {
+      "prefix": "TR",
+      "current_value": 1000
+    },
+    "parent_order": {
+      "prefix": "115-2026",
+      "current_value": 1
+    }
+  }
+}

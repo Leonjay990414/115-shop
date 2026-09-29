@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>後台即時監聽端 - 115校慶園遊會真實雲端通訊驗證</title>
+  <style>
+    :root {
+      --bg: #0b1120;
+      --card-bg: #1e293b;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --primary: #38bdf8;
+      --success: #22c55e;
+      --error: #ef4444;
+      --border: #334155;
+      --accent: #6366f1;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text-main);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      min-height: 100vh;
+      padding: 1.5rem;
+    }
+
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+    }
+
+    .top-bar {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1.25rem 1.75rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .title-group h1 {
+      font-size: 1.35rem;
+      color: var(--primary);
+      margin-bottom: 0.25rem;
+    }
+
+    .title-group p {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .channel-status {
+      padding: 0.6rem 1rem;
+      border-radius: 10px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: #0f172a;
+      border: 1px solid var(--border);
+    }
+
+    .status-connecting {
+      color: #fbbf24;
+      border-color: rgba(251, 191, 36, 0.4);
+    }
+
+    .status-active {
+      color: var(--success);
+      border-color: rgba(34, 197, 94, 0.4);
+      background: rgba(34, 197, 94, 0.08);
+      box-shadow: 0 0 15px rgba(34, 197, 94, 0.2);
+    }
+
+    .status-error {
+      color: var(--error);
+      border-color: rgba(239, 68, 68, 0.4);
+      background: rgba(239, 68, 68, 0.08);
+    }
+
+    .counter-badge {
+      background: var(--accent);
+      color: #fff;
+      padding: 0.2rem 0.6rem;
+      border-radius: 9999px;
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+
+    .grid-header {
+      display: grid;
+      grid-template-columns: 2fr 1fr 2fr 1fr 1fr 1.5fr;
+      padding: 0.75rem 1.25rem;
+      background: #1e293b;
+      border: 1px solid var(--border);
+      border-radius: 10px 10px 0 0;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .order-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+    }
+
+    .order-card {
+      display: grid;
+      grid-template-columns: 2fr 1fr 2fr 1fr 1fr 1.5fr;
+      align-items: center;
+      padding: 1rem 1.25rem;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      font-size: 0.9rem;
+      transition: all 0.25s ease;
+      animation: fadeInSlide 0.3s ease-out;
+    }
+
+    .order-card:hover {
+      border-color: var(--primary);
+      background: #243247;
+      transform: translateY(-1px);
+    }
+
+    @keyframes fadeInSlide {
+      from {
+        opacity: 0;
+        transform: translateY(-8px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .order-id {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-weight: 700;
+      color: #93c5fd;
+      word-break: break-all;
+    }
+
+    .student-id {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      color: #cbd5e1;
+    }
+
+    .product-name {
+      font-weight: 600;
+      color: #f1f5f9;
+    }
+
+    .subtotal {
+      font-weight: 700;
+      color: #34d399;
+    }
+
+    .status-pill {
+      display: inline-block;
+      padding: 0.25rem 0.6rem;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-align: center;
+      background: rgba(251, 191, 36, 0.15);
+      color: #fbbf24;
+      border: 1px solid rgba(251, 191, 36, 0.3);
+    }
+
+    .time-text {
+      font-size: 0.75rem;
+      color: #64748b;
+      font-family: ui-monospace, monospace;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 4rem 2rem;
+      background: var(--card-bg);
+      border: 1px dashed var(--border);
+      border-radius: 12px;
+      color: var(--text-muted);
+    }
+
+    .empty-state h3 {
+      color: #94a3b8;
+      margin-bottom: 0.5rem;
+    }
+
+    .error-banner {
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid var(--error);
+      color: #fca5a5;
+      padding: 1.25rem;
+      border-radius: 10px;
+      margin-bottom: 1.5rem;
+      display: none;
+      font-family: ui-monospace, monospace;
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+
+    @media (max-width: 768px) {
+      .grid-header {
+        display: none;
+      }
+      .order-card {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+      }
+    }
+  </style>
+
+  <!-- Firebase 9 Compat SDK (純 CDN 全域版) -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+</head>
+<body>
+
+  <div class="container">
+    <div class="top-bar">
+      <div class="title-group">
+        <h1>後台即時監聽端 (Realtime Monitor)</h1>
+        <p>115校慶園遊會 - WebSocket 雙向多工長連線監控看板</p>
+      </div>
+      <div id="channelStatus" class="channel-status status-connecting">
+        🟡 正在建立 Google Firestore 雲端雙向通道...
+      </div>
+    </div>
+
+    <div id="errorBanner" class="error-banner"></div>
+
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+      <h2 style="font-size: 1.1rem; color: #cbd5e1;">即時接收工單列表</h2>
+      <span class="counter-badge" id="orderCount">0 筆資料</span>
+    </div>
+
+    <div class="grid-header">
+      <div>工單編號 (Order ID)</div>
+      <div>學號</div>
+      <div>品項名稱</div>
+      <div>金額</div>
+      <div>審核狀態</div>
+      <div>雲端伺服器時間</div>
+    </div>
+
+    <div id="orderList" class="order-list">
+      <div class="empty-state">
+        <h3>雲端通道就緒，等待推播中...</h3>
+        <p>請於另一分頁或手機開啟 <code>test_send.html</code> 並發送訂單。<br>無需按 F5 重新整理，新工單將於 300 毫秒內自動閃現。</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    "use strict";
+
+    // 1. 初始化 Firebase 專案配置 (全域綁定)
+    const firebaseConfig = {
+      apiKey: "AIzaSyAYunSi8yFHoXxBQD1cabe-uKIA6DUKP_Q",
+      authDomain: "project-8372949785937083434.firebaseapp.com",
+      projectId: "project-8372949785937083434",
+      storageBucket: "project-8372949785937083434.firebasestorage.app",
+      messagingSenderId: "353265416024",
+      appId: "1:353265416024:web:1a333c4bd6d9ac8220572d"
+    };
+
+    let app, db;
+    const channelStatus = document.getElementById("channelStatus");
+    const errorBanner = document.getElementById("errorBanner");
+    const orderList = document.getElementById("orderList");
+    const orderCount = document.getElementById("orderCount");
+
+    try {
+      if (!firebase.apps.length) {
+        app = firebase.initializeApp(firebaseConfig);
+      } else {
+        app = firebase.app();
+      }
+      db = firebase.firestore();
+      console.log("[Firebase Listener Init] Success. Connected to:", firebaseConfig.projectId);
+    } catch (err) {
+      console.error("[Init Error]", err);
+      showError("Firebase 初始化失敗：" + (err.message || err));
+    }
+
+    function showError(message, code = "") {
+      channelStatus.className = "channel-status status-error";
+      channelStatus.innerHTML = "🔴 雲端連線失敗 / 權限遭拒";
+      errorBanner.style.display = "block";
+      errorBanner.innerHTML = 
+        "❌ <strong>即時監聽異常中斷：</strong><br>" +
+        (code ? "<strong>錯誤代碼：</strong> " + code + "<br>" : "") +
+        "<strong>詳細原因：</strong> " + message + "<br>" +
+        "<span style='color:#fca5a5;'>可能原因：Firestore 安全性規則 (firestore.rules) 阻擋了 orders 的 read/list 操作，或網路連線受阻。</span>";
+    }
+
+    // 2. 建立 onSnapshot 長連線即時監聽 (按 createdAt 倒序)
+    if (db) {
+      // 監聽 orders 集合
+      db.collection("orders")
+        .orderBy("createdAt", "desc")
+        .onSnapshot(
+          (snapshot) => {
+            // 更新通道狀態為活躍 (綠燈)
+            channelStatus.className = "channel-status status-active";
+            channelStatus.innerHTML = "🟢 雲端雙向 WebSocket 通道暢通（即時推播中）";
+            errorBanner.style.display = "none";
+
+            const count = snapshot.size;
+            orderCount.innerText = count + " 筆資料";
+
+            if (count === 0) {
+              orderList.innerHTML = `
+                <div class="empty-state">
+                  <h3>目前 orders 集合尚無資料</h3>
+                  <p>請由 <code>test_send.html</code> 發送第一筆真實工單。</p>
+                </div>
+              `;
+              return;
+            }
+
+            // 動態構建訂單列表 (不重新整理頁面，即時響應)
+            let htmlBuffer = "";
+            snapshot.forEach((doc) => {
+              const data = doc.data();
+              const orderId = data.orderId || doc.id;
+              const studentId = data.studentId || "-";
+              const productName = data.productName || "-";
+              const subtotal = data.subtotal !== undefined ? "NT$ " + data.subtotal : "-";
+              const qcStatus = data.qcStatus || "待審核";
+
+              let timeFormatted = "--";
+              if (data.createdAt) {
+                let dateObj;
+                if (typeof data.createdAt.toDate === "function") {
+                  dateObj = data.createdAt.toDate();
+                } else {
+                  dateObj = new Date(data.createdAt);
+                }
+                if (!isNaN(dateObj.getTime())) {
+                  const y = dateObj.getFullYear();
+                  const m = String(dateObj.getMonth() + 1).padStart(2, "0");
+                  const d = String(dateObj.getDate()).padStart(2, "0");
+                  const hh = String(dateObj.getHours()).padStart(2, "0");
+                  const mm = String(dateObj.getMinutes()).padStart(2, "0");
+                  const ss = String(dateObj.getSeconds()).padStart(2, "0");
+                  const ms = String(dateObj.getMilliseconds()).padStart(3, "0");
+                  timeFormatted = `${y}/${m}/${d} ${hh}:${mm}:${ss}.${ms}`;
+                }
+              }
+
+              htmlBuffer += `
+                <div class="order-card" id="card-${orderId}">
+                  <div class="order-id">${orderId}</div>
+                  <div class="student-id">${studentId}</div>
+                  <div class="product-name">${productName}</div>
+                  <div class="subtotal">${subtotal}</div>
+                  <div><span class="status-pill">${qcStatus}</span></div>
+                  <div class="time-text">${timeFormatted}</div>
+                </div>
+              `;
+            });
+
+            orderList.innerHTML = htmlBuffer;
+          },
+          (error) => {
+            // 監聽失敗拋出錯誤 (如 permission-denied)
+            console.error("[Firestore onSnapshot Error]", error);
+            showError(error.message || String(error), error.code);
+          }
+        );
+    }
+  </script>
+</body>
+</html>

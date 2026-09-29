@@ -1,0 +1,80 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // 輔助函式：判斷是否具備管理員權限
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function getUserRole() {
+      return request.auth.token.role;
+    }
+
+    function isSuperAdmin() {
+      return isAuthenticated() && (getUserRole() == 'SUPER_ADMIN' || getUserRole() == 'HEAD_OF_DEPT' || getUserRole() == 'ADVISOR_TEACHER');
+    }
+
+    function isDeveloper() {
+      return isAuthenticated() && (getUserRole() == 'DEVELOPER' || isSuperAdmin());
+    }
+
+    // ==========================================
+    // 1. 商城商品資產與庫存 (products)
+    // ==========================================
+    match /products/{productId} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    // ==========================================
+    // 2. 師生通用會員體系 (users)
+    // ==========================================
+    match /users/{username} {
+      allow read: if true;
+      allow create, update: if true;
+      allow delete: if isSuperAdmin();
+    }
+
+    // ==========================================
+    // 3. 學生會員實體 (students)
+    // ==========================================
+    match /students/{docId} {
+      allow read: if true;
+      allow create, update: if true;
+      allow delete: if isSuperAdmin();
+    }
+
+    // ==========================================
+    // 4. 客製化工單集合 (orders)
+    // ==========================================
+    match /orders/{orderId} {
+      allow read: if true;
+      allow create: if request.resource.data.studentId is string
+                    && request.resource.data.productName is string;
+      allow update: if true;
+      allow delete: if isSuperAdmin();
+    }
+
+    // ==========================================
+    // 5. 17 人團隊成員雲端帳籍 (staff_users)
+    // ==========================================
+    match /staff_users/{staffId} {
+      allow read: if true;
+      allow create, update: if true;
+      allow delete: if isSuperAdmin();
+    }
+
+    // ==========================================
+    // 6. 系統配置與活動計數器 (system_config / counters)
+    // ==========================================
+    match /system_config/{configId} {
+      allow read: if true;
+      allow write: if isSuperAdmin();
+    }
+
+    match /counters/{counterId} {
+      allow read, write: if true;
+    }
+  }
+}

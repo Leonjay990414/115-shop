@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>前台發送測試端 - 115校慶園遊會真實雲端通訊驗證</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card-bg: #1e293b;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --primary: #3b82f6;
+      --primary-hover: #2563eb;
+      --success: #22c55e;
+      --error: #ef4444;
+      --border: #334155;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text-main);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 600px;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 2rem;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    }
+
+    .header {
+      margin-bottom: 1.5rem;
+      text-align: center;
+    }
+
+    .header h1 {
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+      color: #60a5fa;
+    }
+
+    .header p {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+
+    .badge-no-local {
+      display: inline-block;
+      background: rgba(239, 68, 68, 0.15);
+      color: #fca5a5;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      padding: 0.25rem 0.75rem;
+      border-radius: 9999px;
+      font-size: 0.8rem;
+      margin-top: 0.5rem;
+      font-weight: 600;
+    }
+
+    .action-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+
+    .btn-send {
+      background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+      color: #fff;
+      font-size: 1.1rem;
+      font-weight: 700;
+      padding: 1rem 1.5rem;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+    }
+
+    .btn-send:hover {
+      background: linear-gradient(135deg, #2563eb, #1e40af);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+    }
+
+    .btn-send:active {
+      transform: translateY(0);
+    }
+
+    .btn-send:disabled {
+      background: #475569;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .status-box {
+      margin-top: 1.5rem;
+      padding: 1.25rem;
+      border-radius: 10px;
+      background: #0f172a;
+      border: 1px solid var(--border);
+      min-height: 80px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      word-break: break-all;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 0.95rem;
+      line-height: 1.5;
+    }
+
+    .status-idle {
+      color: var(--text-muted);
+    }
+
+    .status-success {
+      color: var(--success);
+      font-weight: 600;
+    }
+
+    .status-error {
+      color: var(--error);
+      font-weight: 600;
+    }
+
+    .payload-preview {
+      margin-top: 1rem;
+      padding: 1rem;
+      background: rgba(15, 23, 42, 0.6);
+      border-radius: 8px;
+      font-size: 0.85rem;
+      color: #cbd5e1;
+      border: 1px dashed var(--border);
+    }
+
+    .payload-preview summary {
+      cursor: pointer;
+      font-weight: 600;
+      color: #93c5fd;
+      margin-bottom: 0.5rem;
+    }
+  </style>
+
+  <!-- Firebase 9 Compat SDK (純 CDN 全域版，無打包構建相依性) -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+</head>
+<body>
+
+  <div class="container">
+    <div class="header">
+      <h1>前台發送測試端</h1>
+      <p>115校慶園遊會 - 跨網路真實雲端通訊驗證</p>
+      <div class="badge-no-local">⚡ 100% 直連 Google Firestore 雲端（嚴禁本機 Storage 偽連線）</div>
+    </div>
+
+    <details class="payload-preview" open>
+      <summary>📦 本次發送工單資料結構 (Payload Preview)</summary>
+      <pre id="payloadDisplay">
+{
+  "orderId": "TEST-115-...",
+  "studentId": "112001",
+  "productCode": "MUG",
+  "productName": "經典陶瓷馬克杯",
+  "subtotal": 150,
+  "qcStatus": "待審核",
+  "createdAt": "firebase.firestore.FieldValue.serverTimestamp()"
+}</pre>
+    </details>
+
+    <div class="action-panel">
+      <button id="sendBtn" class="btn-send">
+        🚀 發送一筆真實工單至 Firebase 雲端
+      </button>
+
+      <div id="statusContainer" class="status-box status-idle">
+        等待操作：請點擊上方按鈕發送真實資料至 Google Firestore 雲端資料庫...
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 嚴格模式
+    "use strict";
+
+    // 1. 初始化 Firebase 專案配置 (全域綁定)
+    const firebaseConfig = {
+      apiKey: "AIzaSyAYunSi8yFHoXxBQD1cabe-uKIA6DUKP_Q",
+      authDomain: "project-8372949785937083434.firebaseapp.com",
+      projectId: "project-8372949785937083434",
+      storageBucket: "project-8372949785937083434.firebasestorage.app",
+      messagingSenderId: "353265416024",
+      appId: "1:353265416024:web:1a333c4bd6d9ac8220572d"
+    };
+
+    let app, db;
+    const statusContainer = document.getElementById("statusContainer");
+    const sendBtn = document.getElementById("sendBtn");
+
+    try {
+      if (!firebase.apps.length) {
+        app = firebase.initializeApp(firebaseConfig);
+      } else {
+        app = firebase.app();
+      }
+      db = firebase.firestore();
+      console.log("[Firebase Init] Initialized successfully. Project ID:", firebaseConfig.projectId);
+    } catch (initErr) {
+      console.error("[Firebase Init Error]", initErr);
+      statusContainer.className = "status-box status-error";
+      statusContainer.innerHTML = "❌ Firebase 初始化失敗：" + (initErr.message || initErr);
+    }
+
+    // 2. 綁定按鈕點擊寫入事件
+    sendBtn.addEventListener("click", async () => {
+      if (!db) {
+        statusContainer.className = "status-box status-error";
+        statusContainer.innerHTML = "❌ 雲端資料庫未正常就緒，無法發送！";
+        return;
+      }
+
+      sendBtn.disabled = true;
+      sendBtn.innerHTML = "⏳ 正在傳輸至 Google 雲端...";
+      statusContainer.className = "status-box status-idle";
+      statusContainer.innerHTML = "📡 連線中：正在向 Google Firestore 'orders' 集合發起寫入請求...";
+
+      const nowTimestamp = Date.now();
+      const generatedOrderId = "TEST-" + nowTimestamp;
+
+      // 嚴格建構訂單物件 (使用 ServerTimestamp)
+      const orderPayload = {
+        orderId: generatedOrderId,
+        studentId: "112001",
+        productCode: "MUG",
+        productName: "經典陶瓷馬克杯",
+        subtotal: 150,
+        qcStatus: "待審核",
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      };
+
+      try {
+        // 直接寫入 orders 集合，使用指定 Document ID
+        await db.collection("orders").doc(generatedOrderId).set(orderPayload);
+
+        // 成功回饋
+        statusContainer.className = "status-box status-success";
+        statusContainer.innerHTML = 
+          "✅ 成功送達 Google 雲端！<br>" +
+          "<strong>單號：</strong>" + generatedOrderId + "<br>" +
+          "<strong>集合：</strong>orders<br>" +
+          "<strong>狀態：</strong>已提交雲端資料庫，請立即查看後台即時監聽端！";
+      } catch (err) {
+        // 錯誤回饋 (精準解析 Firestore 錯誤代碼與原因)
+        console.error("[Cloud Write Failed]", err);
+        statusContainer.className = "status-box status-error";
+        statusContainer.innerHTML = 
+          "❌ 雲端寫入失敗：<br>" +
+          "<strong>代碼：</strong>" + (err.code || "UNKNOWN") + "<br>" +
+          "<strong>訊息：</strong>" + (err.message || String(err)) + "<br>" +
+          "<small style='color:#f87171;'>請確認 Firestore 安全性規則是否已開放 orders 集合寫入權限，或檢查網路通訊。</small>";
+      } finally {
+        sendBtn.disabled = false;
+        sendBtn.innerHTML = "🚀 發送一筆真實工單至 Firebase 雲端";
+      }
+    });
+  </script>
+</body>
+</html>

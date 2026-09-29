@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>第四階段：RBAC 17人幹部矩陣與精準時間戳驗證看板</title>
+  <style>
+    :root {
+      --bg: #0b1120;
+      --card: #1e293b;
+      --border: #334155;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --primary: #38bdf8;
+      --success: #22c55e;
+      --error: #ef4444;
+      --warning: #f59e0b;
+      --accent: #6366f1;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      padding: 2rem 1rem;
+      line-height: 1.5;
+    }
+
+    .container {
+      max-width: 1040px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .header {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      text-align: center;
+    }
+
+    .header h1 {
+      font-size: 1.5rem;
+      color: var(--primary);
+      margin-bottom: 0.5rem;
+    }
+
+    .test-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .test-card h2 {
+      font-size: 1.15rem;
+      color: #cbd5e1;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 0.75rem;
+    }
+
+    .input-control {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    label { font-size: 0.8rem; color: var(--muted); font-weight: 600; }
+
+    input, select {
+      background: #0f172a;
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 0.6rem 0.8rem;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      outline: none;
+    }
+
+    input:focus, select:focus { border-color: var(--primary); }
+
+    .btn-group { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+
+    .btn {
+      background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+      color: #fff;
+      border: none;
+      padding: 0.75rem 1.25rem;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .btn:hover { opacity: 0.9; transform: translateY(-1px); }
+    .btn:disabled { background: #475569; cursor: not-allowed; transform: none; }
+
+    .btn-warning { background: linear-gradient(135deg, #f59e0b, #d97706); }
+    .btn-danger { background: linear-gradient(135deg, #ef4444, #b91c1c); }
+    .btn-success { background: linear-gradient(135deg, #10b981, #047857); }
+    .btn-purple { background: linear-gradient(135deg, #8b5cf6, #6d28d9); }
+
+    .output-box {
+      background: #0f172a;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.85rem;
+      min-height: 50px;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .badge-success { background: rgba(34, 197, 94, 0.2); color: var(--success); }
+    .badge-error { background: rgba(239, 68, 68, 0.2); color: var(--error); }
+    .badge-warning { background: rgba(245, 158, 11, 0.2); color: var(--warning); }
+    .badge-manager { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239,68,68,0.3); }
+
+    .table-container { overflow-x: auto; margin-top: 0.5rem; }
+
+    table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+
+    th, td { border: 1px solid var(--border); padding: 0.5rem 0.75rem; text-align: left; }
+
+    th { background: #1e293b; color: #94a3b8; }
+
+    .info-box {
+      background: rgba(99, 102, 241, 0.08);
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      border-radius: 8px;
+      padding: 0.85rem;
+      font-size: 0.85rem;
+      color: #c7d2fe;
+      line-height: 1.5;
+    }
+
+    .time-badge {
+      color: #38bdf8;
+      font-family: ui-monospace, monospace;
+      font-weight: 700;
+    }
+  </style>
+
+  <!-- 引入 Firebase 9 Compat SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+  <!-- 引入第四階段 RBAC 與 FSM 服務層 -->
+  <script src="src/services/rbac.service.js"></script>
+  <script src="src/services/orderFsm.service.js"></script>
+</head>
+<body>
+
+  <div class="container">
+    <div class="header">
+      <h1>第四階段：RBAC 17人幹部矩陣與精準時間戳驗證看板</h1>
+      <p style="color: var(--muted); font-size: 0.9rem;">
+        全面改用「YYYY/MM/DD HH:mm:ss.SSS」標準時間格式；新增科主任與指導老師兩位最高權限師長 (共 17 人)
+      </p>
+    </div>
+
+    <!-- 模組 A：17 人架構與視角遮蔽/修改權限驗證 -->
+    <div class="test-card">
+      <h2>👥 模組 A：17 人成員架構與身分驗證碼遮蔽矩陣 (AuthCode Access Matrix)</h2>
+      
+      <div class="info-box">
+        <strong>權限隔離與版面完整性規則：</strong><br>
+        • <strong>一般工作人員 (14 人)</strong>：帳號與密碼一律唯讀鎖定！名冊保留全體欄位，其他人的驗證碼一律強制遮蔽為 <code>••••••</code>；<strong>僅「本人該列」可看見明文並允許修改自己的驗證碼</strong>。<br>
+        • <strong>管理階層 (科主任、指導老師、總召)</strong>：全體 17 人之真實學號驗證碼皆為<strong>完整明文顯示</strong>，且每一列皆解鎖編輯按鈕！
+      </div>
+
+      <!-- 切換檢視者身分 -->
+      <div style="background: rgba(15, 23, 42, 0.7); padding: 1rem; border-radius: 8px; border: 1px dashed var(--border);">
+        <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+          <div class="input-control" style="flex: 1; min-width: 280px;">
+            <label>當前模擬登入身分 (Current Logged-in Staff)：</label>
+            <select id="currentLoginStaffSelect"></select>
+          </div>
+          <button id="btnSwitchView" class="btn btn-purple" style="align-self: flex-end;">
+            👁️ 切換此視角重新渲染成員名冊
+          </button>
+        </div>
+      </div>
+
+      <div class="btn-group">
+        <button id="btnInit17" class="btn btn-purple">
+          ⚡ 雲端初始化 17 人成員帳籍 (staff_users 集合)
+        </button>
+        <button id="btnTestDeptHead" class="btn btn-danger">
+          👑 測試案例 1：科主任登入 (驗證 17 人全明文 + 每列皆可修改)
+        </button>
+        <button id="btnTestNormalStaff" class="btn btn-warning">
+          🛡️ 測試案例 2：美術組長登入 (驗證他人 •••••• 遮蔽，僅自己明文可改)
+        </button>
+        <button id="btnTest403Attack" class="btn btn-danger">
+          🚨 測試案例 3：防呆檢驗 (一般成員越權修改他人驗證碼 403 阻擋)
+        </button>
+      </div>
+
+      <div id="staffResultBox" class="output-box">點擊上方按鈕執行 17 人帳籍測試...</div>
+
+      <!-- 17 人名冊表格展示 -->
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>帳號 (staffId)</th>
+              <th>姓名</th>
+              <th>職稱角色 (Role)</th>
+              <th>首登狀態</th>
+              <th>身分驗證碼 (6碼)</th>
+              <th>操作權限</th>
+            </tr>
+          </thead>
+          <tbody id="staffTableBody">
+            <tr><td colspan="6" style="text-align: center; color: var(--muted);">載入 17 人成員名冊中...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 模組 B：FSM 精準時間戳與 3天交期/4天退件催單 -->
+    <div class="test-card">
+      <h2>⏱️ 模組 B：FSM 狀態機與精準時間戳記驗證 (去除相對時間)</h2>
+      
+      <div class="info-box">
+        <strong>精準時間戳標準：</strong><br>
+        一律輸出 <code>YYYY/MM/DD HH:mm:ss.SSS</code> 格式，確保審核、對帳與交期倒數均有法律級精準依據！
+      </div>
+
+      <div class="form-grid">
+        <div class="input-control">
+          <label>目標測試工單編號</label>
+          <input type="text" id="targetOrderId" value="TEST-ORDER-PRECISION-01">
+        </div>
+        <div class="input-control">
+          <label>退件原因 (測試用)</label>
+          <input type="text" id="rejectReasonInput" value="圖檔不符 1080P 規範，需補高解析檔案">
+        </div>
+      </div>
+
+      <div class="btn-group">
+        <button id="btnCreateMockOrder" class="btn">
+          📝 1. 建立測試工單 (寫入伺服器精準時間)
+        </button>
+        <button id="btnApproveQc" class="btn btn-success">
+          ✅ 2. 測試審核通過 (寫入 3 天交期精準截止時間)
+        </button>
+        <button id="btnRejectPast4Days" class="btn btn-danger">
+          🚨 3. 模擬退件滿 4 天未補件 (時間倒退 5 天)
+        </button>
+        <button id="btnScanOverdue" class="btn btn-warning">
+          🔍 4. 掃描逾期退件並標註實體到班催單
+        </button>
+      </div>
+
+      <div id="fsmResultBox" class="output-box">點擊上方按鈕執行狀態機與精準時間測試...</div>
+    </div>
+  </div>
+
+  <script>
+    "use strict";
+
+    // 1. 初始化 Firebase 專案配置
+    const firebaseConfig = {
+      apiKey: "AIzaSyAYunSi8yFHoXxBQD1cabe-uKIA6DUKP_Q",
+      authDomain: "project-8372949785937083434.firebaseapp.com",
+      projectId: "project-8372949785937083434",
+      storageBucket: "project-8372949785937083434.firebasestorage.app",
+      messagingSenderId: "353265416024",
+      appId: "1:353265416024:web:1a333c4bd6d9ac8220572d"
+    };
+
+    let app, db;
+    try {
+      if (!firebase.apps.length) {
+        app = firebase.initializeApp(firebaseConfig);
+      } else {
+        app = firebase.app();
+      }
+      db = firebase.firestore();
+      console.log("[Firebase Init Success] Connected to:", firebaseConfig.projectId);
+    } catch (e) {
+      console.error("Firebase init failed:", e);
+    }
+
+    const currentLoginStaffSelect = document.getElementById("currentLoginStaffSelect");
+    const staffResultBox = document.getElementById("staffResultBox");
+    const staffTableBody = document.getElementById("staffTableBody");
+
+    // 填充 17 人下拉選單
+    function populateStaffDropdown() {
+      const list = window.RbacService.OFFICIAL_17_STAFF_USERS;
+      currentLoginStaffSelect.innerHTML = "";
+      list.forEach(s => {
+        const opt = document.createElement("option");
+        opt.value = s.staffId;
+        const managerTag = s.isSuperUser ? " [管理階層]" : "";
+        opt.innerText = `${s.staffId} (${s.name} - ${s.role})${managerTag}`;
+        currentLoginStaffSelect.appendChild(opt);
+      });
+      // 預設選科主任
+      currentLoginStaffSelect.value = "admin_dept_head";
+    }
+
+    // 依據當前模擬身分重新渲染 17 人名冊表格
+    async function renderStaffTable() {
+      if (!db) return;
+      const currentStaffId = currentLoginStaffSelect.value;
+      const foundCurrent = window.RbacService.OFFICIAL_17_STAFF_USERS.find(s => s.staffId === currentStaffId);
+      const currentRole = foundCurrent ? foundCurrent.role : "LOGISTICS";
+
+      try {
+        const snap = await db.collection("staff_users").get();
+        let list = [];
+        if (snap.empty) {
+          list = window.RbacService.OFFICIAL_17_STAFF_USERS;
+        } else {
+          snap.forEach(doc => list.push(doc.data()));
+        }
+
+        // 套用遮蔽矩陣
+        const maskedList = window.RbacService.maskStaffAuthCodeMatrix(list, currentStaffId, currentRole);
+
+        let rows = "";
+        maskedList.forEach(s => {
+          const isManager = window.RbacService.isManagerRole(s.role);
+          const roleBadge = isManager 
+            ? `<span class="badge badge-manager">👑 ${s.role}</span>` 
+            : `<span class="badge" style="background:#334155; color:#38bdf8;">${s.role}</span>`;
+
+          const initBadge = s.hasInitialized 
+            ? `<span class="badge badge-success">已啟用</span>` 
+            : `<span class="badge badge-warning">未首登</span>`;
+
+          // 驗證碼呈現與樣式
+          let codeHtml = "";
+          if (s.authCodeDisplay === "••••••") {
+            codeHtml = `<span style="letter-spacing:2px; color:#64748b; font-weight:700;">••••••</span>`;
+          } else {
+            codeHtml = `<strong style="color:#38bdf8;">${s.authCodeDisplay}</strong>`;
+          }
+
+          // 操作按鈕
+          let actionHtml = "";
+          if (s.canEditAuthCode) {
+            actionHtml = `<button onclick="handleEditAuthCode('${s.staffId}')" style="background:#3b82f6; color:#fff; border:none; padding:0.25rem 0.5rem; border-radius:4px; cursor:pointer;">修改驗證碼</button>`;
+          } else {
+            actionHtml = `<span style="color:#475569; font-size:0.8rem;">🔒 唯讀遮蔽</span>`;
+          }
+
+          rows += `
+            <tr style="${s.staffId === currentStaffId ? 'background: rgba(56, 189, 248, 0.08);' : ''}">
+              <td><code>${s.staffId}</code> ${s.staffId === currentStaffId ? '<span class="badge badge-success">我</span>' : ''}</td>
+              <td><strong>${s.name}</strong></td>
+              <td>${roleBadge}</td>
+              <td>${initBadge}</td>
+              <td>${codeHtml}</td>
+              <td>${actionHtml}</td>
+            </tr>
+          `;
+        });
+        staffTableBody.innerHTML = rows;
+
+        staffResultBox.innerHTML = 
+          `當前視角：<strong>${foundCurrent.name}</strong> (身分：${foundCurrent.role})<br>` +
+          (window.RbacService.isManagerRole(currentRole)
+            ? `<span style="color:#34d399;">👑 最高管理權限生效：全體 17 人驗證碼皆明文顯示，且每列皆可隨時修改！</span>`
+            : `<span style="color:#fbbf24;">🛡️ 一般成員視角生效：其他 16 人驗證碼強制以 •••••• 遮蔽；僅本人可查看並修改自己的驗證碼！</span>`);
+      } catch (e) {
+        console.error("名冊載入失敗：", e);
+      }
+    }
+
+    // 切換視角按鈕
+    document.getElementById("btnSwitchView").addEventListener("click", renderStaffTable);
+
+    // 修改驗證碼處理函式
+    window.handleEditAuthCode = async function(targetStaffId) {
+      const currentStaffId = currentLoginStaffSelect.value;
+      const foundCurrent = window.RbacService.OFFICIAL_17_STAFF_USERS.find(s => s.staffId === currentStaffId);
+      const currentRole = foundCurrent ? foundCurrent.role : "LOGISTICS";
+
+      const newCode = prompt(`請輸入成員【${targetStaffId}】的新 6 碼驗證碼：`, "123456");
+      if (!newCode) return;
+
+      try {
+        const res = await window.RbacService.updateStaffAuthCode(db, currentStaffId, currentRole, targetStaffId, newCode);
+        alert(res.message);
+        renderStaffTable();
+      } catch (err) {
+        alert(err.message);
+      }
+    };
+
+    // ① 初始化 17 人帳籍
+    document.getElementById("btnInit17").addEventListener("click", async () => {
+      staffResultBox.innerText = "⏳ 正在將 17 位正式工作人員（含科主任與指導老師）寫入 staff_users 集合...";
+      try {
+        await window.RbacService.initializeStaffUsers(db);
+        staffResultBox.innerHTML = `<span class="badge badge-success">成功</span> 17 位成員雲端帳籍已完成初始化同步！`;
+        renderStaffTable();
+      } catch (err) {
+        staffResultBox.innerHTML = `<span class="badge badge-error">失敗</span> ${err.message}`;
+      }
+    });
+
+    // 測試案例 1：科主任登入
+    document.getElementById("btnTestDeptHead").addEventListener("click", async () => {
+      currentLoginStaffSelect.value = "admin_dept_head";
+      staffResultBox.innerText = "⏳ 科主任 (admin_dept_head) 驗證登入中...";
+      try {
+        const res = await window.RbacService.loginWithPassword(db, "admin_dept_head", "ZgBoss@2026_00");
+        staffResultBox.innerHTML = `<span class="badge badge-success">登入成功</span> ${res.message}`;
+        renderStaffTable();
+      } catch (err) {
+        staffResultBox.innerHTML = `<span class="badge badge-error">登入失敗</span> ${err.message}`;
+      }
+    });
+
+    // 測試案例 2：一般成員 (美術組長) 登入
+    document.getElementById("btnTestNormalStaff").addEventListener("click", async () => {
+      currentLoginStaffSelect.value = "admin_art_core";
+      staffResultBox.innerText = "⏳ 美術視覺核心 (admin_art_core) 登入中...";
+      try {
+        const res = await window.RbacService.loginWithPassword(db, "admin_art_core", "ZgShop@2026_04");
+        staffResultBox.innerHTML = `<span class="badge badge-success">登入成功</span> ${res.message}`;
+        renderStaffTable();
+      } catch (err) {
+        staffResultBox.innerHTML = `<span class="badge badge-error">登入失敗</span> ${err.message}`;
+      }
+    });
+
+    // 測試案例 3：一般成員越權修改他人驗證碼 403 阻擋測試
+    document.getElementById("btnTest403Attack").addEventListener("click", async () => {
+      staffResultBox.innerText = "⏳ 模擬越權攻擊：以美術組長 (admin_art_core) 嘗試竄改總召 (admin_director) 的驗證碼...";
+      try {
+        await window.RbacService.updateStaffAuthCode(db, "admin_art_core", "QC_REVIEWER", "admin_director", "999999");
+        staffResultBox.innerHTML = `<span class="badge badge-error">安全漏洞</span> 越權修改竟然成功，請檢驗代碼！`;
+      } catch (err) {
+        staffResultBox.innerHTML = 
+          `<span class="badge badge-error">安全防護生效 (403)</span><br>` +
+          `<strong style="color:#ef4444; font-size:1.05rem;">${err.message}</strong>`;
+      }
+    });
+
+    // ==========================================
+    // 模組 B：FSM 精準時間與時程管理測試
+    // ==========================================
+    const targetOrderId = document.getElementById("targetOrderId");
+    const rejectReasonInput = document.getElementById("rejectReasonInput");
+    const fsmResultBox = document.getElementById("fsmResultBox");
+
+    // 1. 建立測試工單 (包含精準伺服器時間)
+    document.getElementById("btnCreateMockOrder").addEventListener("click", async () => {
+      const orderId = targetOrderId.value.trim();
+      const nowPrecision = window.RbacService.formatPrecisionTime(new Date(), true);
+      fsmResultBox.innerText = `⏳ 建立測試工單【${orderId}】...`;
+
+      const mockOrder = {
+        orderId: orderId,
+        parentOrderId: "115-2026-FSM",
+        studentName: "林小天",
+        studentClass: "資處二仁",
+        productName: "客製陶瓷馬克杯",
+        qcStatus: "待審核",
+        prodStatus: "待製作",
+        requirePhysicalNotice: false,
+        createdAt: new Date().toISOString()
+      };
+
+      try {
+        await db.collection("orders").doc(orderId).set(mockOrder);
+        fsmResultBox.innerHTML = 
+          `<span class="badge badge-success">工單已建立</span><br>` +
+          `工單：<code>${orderId}</code><br>` +
+          `精準建單時間：<span class="time-badge">${nowPrecision}</span><br>` +
+          `（絕無「剛剛」等相對字樣，完全遵循標準時間戳規範）`;
+      } catch (e) {
+        fsmResultBox.innerHTML = `<span class="badge badge-error">建立失敗</span> ${e.message}`;
+      }
+    });
+
+    // 2. 測試審核通過 (寫入 3 天交期截止時間)
+    document.getElementById("btnApproveQc").addEventListener("click", async () => {
+      const orderId = targetOrderId.value.trim();
+      fsmResultBox.innerText = `⏳ 執行審核通過 (APPROVE_QC)...`;
+
+      try {
+        const res = await window.OrderFsmService.approveQcOrder(db, orderId, "admin_art_core");
+        const formattedApproved = window.RbacService.formatPrecisionTime(res.approvedAt, true);
+        const formattedDeadline = window.RbacService.formatPrecisionTime(res.deliveryDeadline, false);
+
+        fsmResultBox.innerHTML = 
+          `<span class="badge badge-success">審核通過</span><br>` +
+          `<strong>${res.message}</strong><br>` +
+          `審核通過時間戳：<span class="time-badge">${formattedApproved}</span><br>` +
+          `<strong>⏰ 3天交期截止時間：</strong> <span style="color:#f59e0b; font-weight:700;">${formattedDeadline}</span>`;
+      } catch (e) {
+        fsmResultBox.innerHTML = `<span class="badge badge-error">審核失敗</span> ${e.message}`;
+      }
+    });
+
+    // 3. 模擬退件滿 4 天未補件 (時間倒退 5 天)
+    document.getElementById("btnRejectPast4Days").addEventListener("click", async () => {
+      const orderId = targetOrderId.value.trim();
+      const reason = rejectReasonInput.value.trim();
+      fsmResultBox.innerText = `⏳ 模擬退件並將 rejectedAt 倒退 5 天前...`;
+
+      const past5DaysDate = new Date(Date.now() - (5 * 24 * 60 * 60 * 1000));
+      const formattedPast = window.RbacService.formatPrecisionTime(past5DaysDate, true);
+
+      try {
+        const res = await window.OrderFsmService.rejectQcOrder(db, orderId, reason, past5DaysDate);
+        fsmResultBox.innerHTML = 
+          `<span class="badge badge-warning">退件模擬完成</span><br>` +
+          `<strong>${res.message}</strong><br>` +
+          `精準退件記錄時間：<span class="time-badge">${formattedPast}</span>（已滿 4 天未更換圖檔）`;
+      } catch (e) {
+        fsmResultBox.innerHTML = `<span class="badge badge-error">退件失敗</span> ${e.message}`;
+      }
+    });
+
+    // 4. 掃描逾期退件並自動標註實體催單
+    document.getElementById("btnScanOverdue").addEventListener("click", async () => {
+      fsmResultBox.innerText = `⏳ 正在掃描全站退件滿 4 天之逾期未補單據...`;
+
+      try {
+        const overdueList = await window.OrderFsmService.getOverdueRejectedOrders(db, 4);
+        if (overdueList.length === 0) {
+          fsmResultBox.innerHTML = `<span class="badge badge-success">掃描完畢</span> 目前沒有超過 4 天未更換圖檔的逾期退件。`;
+        } else {
+          fsmResultBox.innerHTML = 
+            `<span class="badge badge-error">⚠️ 偵測到 ${overdueList.length} 筆逾期退件</span><br>` +
+            `<strong>已自動標記 <code>requirePhysicalNotice: true</code>（觸發外送組列印實體催單單據）！</strong><br><br>` +
+            `<pre style="background:#020617; padding:0.5rem; border-radius:6px; color:#f87171;">` +
+            JSON.stringify(overdueList, null, 2) +
+            `</pre>`;
+        }
+      } catch (e) {
+        fsmResultBox.innerHTML = `<span class="badge badge-error">掃描失敗</span> ${e.message}`;
+      }
+    });
+
+    // 初始化下拉與名冊
+    populateStaffDropdown();
+    setTimeout(() => {
+      window.RbacService.initializeStaffUsers(db).then(() => {
+        renderStaffTable();
+      });
+    }, 600);
+  </script>
+</body>
+</html>

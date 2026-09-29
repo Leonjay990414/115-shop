@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>智光商工真實學籍防撞驗證看板 (各年級獨立編碼) - 115校慶園遊會</title>
+  <style>
+    :root {
+      --bg: #0b1120;
+      --card: #1e293b;
+      --border: #334155;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --primary: #38bdf8;
+      --success: #22c55e;
+      --error: #ef4444;
+      --warning: #f59e0b;
+      --accent: #6366f1;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      padding: 2rem 1rem;
+      line-height: 1.5;
+    }
+
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .header {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      text-align: center;
+    }
+
+    .header h1 {
+      font-size: 1.5rem;
+      color: var(--primary);
+      margin-bottom: 0.5rem;
+    }
+
+    .test-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .test-card h2 {
+      font-size: 1.15rem;
+      color: #cbd5e1;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .form-group {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 0.75rem;
+    }
+
+    .input-control {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    label {
+      font-size: 0.8rem;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    input, select {
+      background: #0f172a;
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 0.6rem 0.8rem;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      outline: none;
+    }
+
+    input:focus, select:focus {
+      border-color: var(--primary);
+    }
+
+    .btn-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .btn {
+      background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+      color: #fff;
+      border: none;
+      padding: 0.75rem 1.25rem;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .btn:hover {
+      opacity: 0.9;
+      transform: translateY(-1px);
+    }
+
+    .btn:disabled {
+      background: #475569;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-success {
+      background: linear-gradient(135deg, #10b981, #047857);
+    }
+
+    .btn-warning {
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+    }
+
+    .btn-danger {
+      background: linear-gradient(135deg, #ef4444, #b91c1c);
+    }
+
+    .btn-accent {
+      background: linear-gradient(135deg, #6366f1, #4f46e5);
+    }
+
+    .output-box {
+      background: #0f172a;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.85rem;
+      min-height: 50px;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .badge-success { background: rgba(34, 197, 94, 0.2); color: var(--success); }
+    .badge-error { background: rgba(239, 68, 68, 0.2); color: var(--error); }
+    .badge-warning { background: rgba(245, 158, 11, 0.2); color: var(--warning); }
+
+    .students-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 0.5rem;
+      font-size: 0.85rem;
+    }
+
+    .students-table th, .students-table td {
+      border: 1px solid var(--border);
+      padding: 0.5rem 0.75rem;
+      text-align: left;
+    }
+
+    .students-table th {
+      background: #1e293b;
+      color: #94a3b8;
+    }
+
+    .spec-banner {
+      background: rgba(56, 189, 248, 0.08);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      border-radius: 8px;
+      padding: 0.85rem;
+      font-size: 0.85rem;
+      color: #bae6fd;
+      line-height: 1.5;
+    }
+  </style>
+
+  <!-- 引入 Firebase 9 Compat SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+  <!-- 引入業務邏輯模組 -->
+  <script src="src/services/imageValidator.service.js"></script>
+  <script src="src/services/studentAuth.service.js"></script>
+  <script src="src/services/splitOrder.service.js"></script>
+</head>
+<body>
+
+  <div class="container">
+    <div class="header">
+      <h1>智光商工真實學籍防撞驗證看板</h1>
+      <p style="color: var(--muted); font-size: 0.9rem;">
+        已落實：各年級學號獨立編碼 (複合鍵 <code>G${grade}_${studentId}</code>) 與同班級座號唯一防線
+      </p>
+    </div>
+
+    <!-- 模組 2: 學籍雙重防撞驗證 (全新升級：年級獨立編碼) -->
+    <div class="test-card">
+      <h2>🎓 模組 2：智光學籍防撞雙重驗證 (StudentAuthService)</h2>
+      
+      <div class="spec-banner">
+        <strong>📌 學籍核心防護規則：</strong><br>
+        1. <strong>智慧年級解析</strong>：自動從班級字串解析年級 (例如「資處一仁」為 1 年級；「資處二仁」為 2 年級)。<br>
+        2. <strong>第一道防線【同年級學號唯一性】</strong>：文件 ID 為 <code>G${grade}_${studentId}</code>。<strong>跨年級允許相同學號</strong>；若同年級內嘗試重複使用他人學號，立即攔截！<br>
+        3. <strong>第二道防線【同班級座號唯一性】</strong>：同一班級內嚴格禁止重複座號 (座號去除前導零，範圍 1~40)。
+      </div>
+
+      <div class="form-group">
+        <div class="input-control">
+          <label>學號 (恰好 6 碼數字)</label>
+          <input type="text" id="stuId" value="412008" maxlength="6">
+        </div>
+        <div class="input-control">
+          <label>學生姓名 (1-4個字)</label>
+          <input type="text" id="stuName" value="陳小華" maxlength="4">
+        </div>
+        <div class="input-control">
+          <label>班級 (5字內，含一/二/三或1/2/3)</label>
+          <input type="text" id="stuClass" list="chihKwangClassList" value="資處二仁" maxlength="5">
+          <datalist id="chihKwangClassList">
+            <option value="資處一仁">
+            <option value="資處二仁">
+            <option value="資處三仁">
+            <option value="觀光一真">
+            <option value="觀光二真">
+            <option value="電子二慈">
+            <option value="資訊二圓">
+            <option value="機械二華">
+            <option value="多媒一行">
+            <option value="多媒三善">
+            <option value="餐飲一信">
+          </datalist>
+        </div>
+        <div class="input-control">
+          <label>座號 (1-40，自動去除前導零)</label>
+          <input type="text" id="stuSeat" value="08">
+        </div>
+        <div class="input-control">
+          <label>性別</label>
+          <select id="stuGender">
+            <option value="男">男</option>
+            <option value="女">女</option>
+            <option value="極不方便透露">極不方便透露</option>
+          </select>
+        </div>
+        <div class="input-control">
+          <label>手機號碼 (09開頭10碼)</label>
+          <input type="text" id="stuPhone" value="0988776655" maxlength="10">
+        </div>
+      </div>
+
+      <div class="btn-group">
+        <button id="btnRegister" class="btn">
+          🛡️ 提交學籍驗證
+        </button>
+        <button id="btnTestCase1" class="btn btn-success">
+          ✨ 測試案例 1【跨年級允許相同學號】：412008 同時存在資處一仁與資處二仁 (成功不衝突)
+        </button>
+        <button id="btnTestCase2" class="btn btn-warning">
+          🚨 測試案例 2【同年級嚴禁相同學號】：已存在一年級 412008，換名字再登記一年級 (攔截報警)
+        </button>
+        <button id="btnTestCase3" class="btn btn-danger">
+          💥 測試案例 3【同班級嚴禁相同座號】：已有資處二仁 8號，另一人登記資處二仁 08號 (去零攔截)
+        </button>
+      </div>
+
+      <div id="authResultBox" class="output-box">點擊上方按鈕執行學籍驗證...</div>
+
+      <!-- 即時名冊監聽預覽 -->
+      <details open style="margin-top: 0.5rem;">
+        <summary style="cursor: pointer; color: var(--primary); font-size: 0.9rem; font-weight: 700;">
+          📋 雲端 students 集合即時會員名冊 (複合鍵 <code>G${grade}_${studentId}</code> 即時同步推播)
+        </summary>
+        <div id="studentsListDisplay" style="margin-top: 0.5rem; overflow-x: auto;">
+          <table class="students-table">
+            <thead>
+              <tr>
+                <th>文件 ID (DocId)</th>
+                <th>年級</th>
+                <th>學號</th>
+                <th>姓名</th>
+                <th>班級</th>
+                <th>座號 (正規化)</th>
+                <th>唯讀狀態</th>
+              </tr>
+            </thead>
+            <tbody id="studentsTableBody">
+              <tr><td colspan="7" style="text-align: center; color: var(--muted);">連線載入名冊中...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </details>
+    </div>
+
+    <!-- 模組 1: 1080P 圖檔解析度檢驗 -->
+    <div class="test-card">
+      <h2>🖼️ 模組 1：1080P 圖檔解析度檢驗 (ImageValidatorService)</h2>
+      <input type="file" id="imageInput" accept="image/png, image/jpeg, image/webp">
+      <div id="imageResultBox" class="output-box">等待選擇圖片檔案進行即時驗證...</div>
+    </div>
+
+    <!-- 模組 3: 智慧自動拆單演算法測試 -->
+    <div class="test-card">
+      <h2>⚡ 模組 3：智慧自動拆單與原子批次提交 (SplitOrderService)</h2>
+      <button id="btnSplitOrder" class="btn btn-accent">
+        🚀 觸發智慧自動拆單並原子提交 (Batch Commit)
+      </button>
+      <div id="splitResultBox" class="output-box">等待觸發拆單...</div>
+    </div>
+  </div>
+
+  <script>
+    "use strict";
+
+    // 1. 初始化 Firebase 專案配置
+    const firebaseConfig = {
+      apiKey: "AIzaSyAYunSi8yFHoXxBQD1cabe-uKIA6DUKP_Q",
+      authDomain: "project-8372949785937083434.firebaseapp.com",
+      projectId: "project-8372949785937083434",
+      storageBucket: "project-8372949785937083434.firebasestorage.app",
+      messagingSenderId: "353265416024",
+      appId: "1:353265416024:web:1a333c4bd6d9ac8220572d"
+    };
+
+    let app, db;
+    try {
+      if (!firebase.apps.length) {
+        app = firebase.initializeApp(firebaseConfig);
+      } else {
+        app = firebase.app();
+      }
+      db = firebase.firestore();
+      console.log("[Firebase Init Success] Connected to:", firebaseConfig.projectId);
+    } catch (e) {
+      console.error("Firebase init failed:", e);
+    }
+
+    // ==========================================
+    // 模組 2: 智光學籍防撞驗證操作
+    // ==========================================
+    const btnRegister = document.getElementById("btnRegister");
+    const btnTestCase1 = document.getElementById("btnTestCase1");
+    const btnTestCase2 = document.getElementById("btnTestCase2");
+    const btnTestCase3 = document.getElementById("btnTestCase3");
+    const authResultBox = document.getElementById("authResultBox");
+    const studentsTableBody = document.getElementById("studentsTableBody");
+
+    async function executeRegister(studentData) {
+      authResultBox.innerText = "⏳ 正在啟動雙重學籍防線（第一道：同年級學號唯一 ➔ 第二道：同班級座號唯一）...";
+      try {
+        const res = await window.StudentAuthService.registerStudent(db, studentData);
+        authResultBox.innerHTML = 
+          `<span class="badge badge-success">通過</span> ${res.message}<br>` +
+          `<strong>儲存之學生檔案：</strong><br>` + JSON.stringify(res.student, null, 2);
+      } catch (err) {
+        authResultBox.innerHTML = 
+          `<span class="badge badge-error">學籍防護攔截</span><br>` +
+          `<strong style="color:#ef4444; font-size:1.05rem;">${err.message}</strong>`;
+      }
+    }
+
+    // 手動送出
+    btnRegister.addEventListener("click", () => {
+      const studentData = {
+        studentId: document.getElementById("stuId").value,
+        name: document.getElementById("stuName").value,
+        classCode: document.getElementById("stuClass").value,
+        seatNumber: document.getElementById("stuSeat").value,
+        gender: document.getElementById("stuGender").value,
+        phone: document.getElementById("stuPhone").value
+      };
+      executeRegister(studentData);
+    });
+
+    // ① 測試案例 1【跨年級允許相同學號】：
+    // 以學號 412008 註冊「資處一仁 8號」，成功後；再以學號 412008 註冊「資處二仁 10號」
+    btnTestCase1.addEventListener("click", async () => {
+      authResultBox.innerText = "⏳ 步驟 1/2：以學號 412008 登記【資處一仁 8號】林小一 (G1_412008)...";
+      const studentGrade1 = {
+        studentId: "412008",
+        name: "林小一",
+        classCode: "資處一仁",
+        seatNumber: "8",
+        gender: "男",
+        phone: "0911000111"
+      };
+
+      try {
+        await window.StudentAuthService.registerStudent(db, studentGrade1);
+      } catch (e) {
+        console.log("Grade 1 exists:", e.message);
+      }
+
+      authResultBox.innerText = "⏳ 步驟 2/2：以相同學號 412008 跨年級登記【資處二仁 10號】陳小華 (G2_412008)...";
+      const studentGrade2 = {
+        studentId: "412008",
+        name: "陳小華",
+        classCode: "資處二仁",
+        seatNumber: "10",
+        gender: "女",
+        phone: "0922000222"
+      };
+
+      document.getElementById("stuId").value = "412008";
+      document.getElementById("stuName").value = "陳小華";
+      document.getElementById("stuClass").value = "資處二仁";
+      document.getElementById("stuSeat").value = "10";
+
+      setTimeout(() => {
+        executeRegister(studentGrade2);
+      }, 500);
+    });
+
+    // ② 測試案例 2【同年級嚴禁相同學號】：
+    // 在一年級已存在 412008 的情況下，嘗試用另一個名字以 412008 註冊「觀光一真 5號」
+    btnTestCase2.addEventListener("click", async () => {
+      // 先確保一年級存在 412008 (林小一)
+      const studentGrade1 = {
+        studentId: "412008",
+        name: "林小一",
+        classCode: "資處一仁",
+        seatNumber: "8",
+        gender: "男",
+        phone: "0911000111"
+      };
+      try {
+        await window.StudentAuthService.registerStudent(db, studentGrade1);
+      } catch (e) {}
+
+      // 嘗試換名字以相同學號 412008 登記一年級的「觀光一真 5號」
+      document.getElementById("stuId").value = "412008";
+      document.getElementById("stuName").value = "王小美";
+      document.getElementById("stuClass").value = "觀光一真";
+      document.getElementById("stuSeat").value = "5";
+
+      const studentConflict = {
+        studentId: "412008",
+        name: "王小美",
+        classCode: "觀光一真",
+        seatNumber: "5",
+        gender: "女",
+        phone: "0933000333"
+      };
+
+      authResultBox.innerText = "⏳ 嘗試在一年級重複登記相同學號 412008 (觀光一真 王小美)...";
+      setTimeout(() => {
+        executeRegister(studentConflict);
+      }, 500);
+    });
+
+    // ③ 測試案例 3【同班級嚴禁相同座號】：
+    // 已有「資處二仁 8號」時，用不同學號註冊「資處二仁 08號」
+    btnTestCase3.addEventListener("click", async () => {
+      const studentExisting = {
+        studentId: "412008",
+        name: "陳小華",
+        classCode: "資處二仁",
+        seatNumber: "8",
+        gender: "男",
+        phone: "0988776655"
+      };
+
+      try {
+        await window.StudentAuthService.registerStudent(db, studentExisting);
+      } catch (e) {}
+
+      // 用不同學號 412099 登記同一個「資處二仁 08號」
+      document.getElementById("stuId").value = "412099";
+      document.getElementById("stuName").value = "李小強";
+      document.getElementById("stuClass").value = "資處二仁";
+      document.getElementById("stuSeat").value = "08"; // 前導零測試
+
+      const studentSeatConflict = {
+        studentId: "412099",
+        name: "李小強",
+        classCode: "資處二仁",
+        seatNumber: "08",
+        gender: "男",
+        phone: "0944000444"
+      };
+
+      authResultBox.innerText = "⏳ 嘗試用不同學號 412099 登記已被佔用的【資處二仁 08號】...";
+      setTimeout(() => {
+        executeRegister(studentSeatConflict);
+      }, 500);
+    });
+
+    // ④ 雲端即時名冊監聽器
+    if (db && window.StudentAuthService) {
+      window.StudentAuthService.getStudentsListListener(
+        db,
+        (students) => {
+          if (!students || students.length === 0) {
+            studentsTableBody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--muted);">目前尚未有登記學生</td></tr>`;
+            return;
+          }
+
+          let rows = "";
+          students.forEach((s) => {
+            rows += `
+              <tr>
+                <td><code>${s.docId || s.id}</code></td>
+                <td><span class="badge" style="background:rgba(99,102,241,0.2); color:#818cf8;">${s.grade}年級</span></td>
+                <td><strong>${s.studentId}</strong></td>
+                <td>${s.name || "-"}</td>
+                <td><span class="badge" style="background:#334155; color:#38bdf8;">${s.classCode}</span></td>
+                <td><span class="badge" style="background:rgba(52,211,153,0.15); color:#34d399; font-weight:700;">${s.seatNumber} 號</span></td>
+                <td>${s.isReadOnlyLocked ? '<span style="color:#22c55e;">🔒 唯讀</span>' : '未鎖定'}</td>
+              </tr>
+            `;
+          });
+          studentsTableBody.innerHTML = rows;
+        },
+        (err) => {
+          console.error("名冊即時監聽異常：", err);
+          studentsTableBody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--error);">名冊監聽失敗：${err.message}</td></tr>`;
+        }
+      );
+    }
+
+    // ==========================================
+    // 模組 1: 圖檔 1080P 檢驗
+    // ==========================================
+    const imageInput = document.getElementById("imageInput");
+    const imageResultBox = document.getElementById("imageResultBox");
+    imageInput.addEventListener("change", async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      imageResultBox.innerText = "⏳ 正在記憶體中解算影像寬高與 MIME-Type...";
+      try {
+        const result = await window.ImageValidatorService.validateImageResolution(file, 1080, 1080);
+        if (result.isValid) {
+          imageResultBox.innerHTML = 
+            `<span class="badge badge-success">✅ 1080P 高清合格</span><br>` +
+            `檔案名稱：${file.name}<br>` +
+            `實測解析度：<strong>${result.resText}</strong><br>` +
+            `檔案類型：${file.type}<br>` +
+            `產線判定：符合 300DPI/1080P 熱轉印標準！`;
+        } else {
+          imageResultBox.innerHTML = 
+            `<span class="badge badge-warning">⚠️ 不符標準</span><br>` +
+            `實測解析度：${result.resText}<br>` +
+            `警告原因：${result.warningMessage}`;
+        }
+      } catch (err) {
+        imageResultBox.innerHTML = `<span class="badge badge-error">❌ 檢驗異常</span> ${err.message}`;
+      }
+    });
+
+    // ==========================================
+    // 模組 3: 智慧自動拆單演算法測試
+    // ==========================================
+    const btnSplitOrder = document.getElementById("btnSplitOrder");
+    const splitResultBox = document.getElementById("splitResultBox");
+
+    btnSplitOrder.addEventListener("click", async () => {
+      btnSplitOrder.disabled = true;
+      splitResultBox.innerText = "⏳ 正在執行智慧拆單演算法與 Firestore db.batch() 原子提交...";
+
+      const mockCart = [
+        {
+          productCode: "MUG",
+          productName: "經典陶瓷馬克杯",
+          unitPrice: 150,
+          quantity: 2,
+          imageUrl: "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=800",
+          imageRes: "1920x1080"
+        },
+        {
+          productCode: "BDG",
+          productName: "磨砂圓形金屬胸章",
+          unitPrice: 40,
+          quantity: 1,
+          imageUrl: "https://images.unsplash.com/photo-1576769267415-9642000eeedb?w=800",
+          imageRes: "1200x1200"
+        }
+      ];
+
+      const currentStudent = {
+        studentId: document.getElementById("stuId").value || "412008",
+        name: document.getElementById("stuName").value || "陳小華",
+        classCode: document.getElementById("stuClass").value || "資處二仁",
+        seatNumber: parseInt(document.getElementById("stuSeat").value || "8", 10),
+        phone: document.getElementById("stuPhone").value || "0988776655"
+      };
+
+      try {
+        const splitResult = await window.SplitOrderService.executeSplitOrder(
+          db,
+          mockCart,
+          currentStudent,
+          "顧客備註：智光校慶產線預排"
+        );
+
+        splitResultBox.innerHTML = 
+          `<span class="badge badge-success">✅ 智慧拆單成功</span><br>` +
+          `<strong>母單編號：</strong> ${splitResult.parentOrderId}<br>` +
+          `<strong>分裂工單總數：</strong> ${splitResult.totalCount} 筆獨立工單<br>` +
+          `<strong>原子寫入保證：</strong> 已透過 db.batch() 一次性寫入 orders 集合！<br><br>` +
+          `<strong>工單詳情：</strong><br>` +
+          JSON.stringify(splitResult.workOrders, null, 2);
+      } catch (err) {
+        splitResultBox.innerHTML = `<span class="badge badge-error">❌ 拆單失敗</span> ${err.message}`;
+      } finally {
+        btnSplitOrder.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>

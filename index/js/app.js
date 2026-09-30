@@ -147,6 +147,9 @@
   const closeNoticeBtn = document.getElementById("closeNoticeBtn");
   const btnAgreeNotice = document.getElementById("btnAgreeNotice");
 
+  // 系統發信 API 設定 (Google Apps Script Web App)
+  const GAS_API_URL = "https://script.google.com/macros/s/AKfycbzVxFfgUkLWnG_CuSwvE0RVW9UWECmLL_iKSwXckZAPGUvsvEu8m4jdcGoCE02BvSVy/exec";
+
   // 師生會員專區彈窗 (註冊 / 登入)
   const openMemberModalBtn = document.getElementById("openMemberModalBtn");
   const openTrackModalBtn = document.getElementById("openTrackModalBtn");
@@ -160,7 +163,18 @@
   const loginStudentPwd = document.getElementById("loginStudentPwd");
   const btnStudentLoginSubmit = document.getElementById("btnStudentLoginSubmit");
 
-  // 註冊表單元素
+  // 註冊表單第一階段 (Email 驗證)
+  const regStage1EmailBox = document.getElementById("regStage1EmailBox");
+  const regEmailInput = document.getElementById("regEmailInput");
+  const btnSendVerifyCode = document.getElementById("btnSendVerifyCode");
+  const regVerifyCodeInput = document.getElementById("regVerifyCodeInput");
+  const btnVerifyCodeSubmit = document.getElementById("btnVerifyCodeSubmit");
+  const verifyCodeTimerHint = document.getElementById("verifyCodeTimerHint");
+
+  // 註冊表單第二階段 (資料防呆與自訂帳密)
+  const regStage2FieldsBox = document.getElementById("regStage2FieldsBox");
+  const verifiedEmailDisplay = document.getElementById("verifiedEmailDisplay");
+  const regUsernameCheckHint = document.getElementById("regUsernameCheckHint");
   const regUserTypeRadios = document.getElementsByName("regUserType");
   const regUsername = document.getElementById("regUsername");
   const regPassword = document.getElementById("regPassword");
@@ -186,6 +200,20 @@
   const btnDoTrackSearch = document.getElementById("btnDoTrackSearch");
   const studentOrdersListContainer = document.getElementById("studentOrdersListContainer");
 
+  // 會員專區只讀模式欄位
+  const memberProfileCard = document.getElementById("memberProfileCard");
+  const profStudentId = document.getElementById("profStudentId");
+  const profName = document.getElementById("profName");
+  const profClass = document.getElementById("profClass");
+  const profSeat = document.getElementById("profSeat");
+  const profPhone = document.getElementById("profPhone");
+
+  // 動態膠囊導覽島 (Dynamic Island)
+  const dynamicIsland = document.getElementById("dynamicIsland");
+  const islandMemberBtn = document.getElementById("islandMemberBtn");
+  const islandCartBtn = document.getElementById("islandCartBtn");
+  const islandCartBadge = document.getElementById("islandCartBadge");
+
   // 結帳雙重確認彈窗
   const checkoutModalOverlay = document.getElementById("checkoutModalOverlay");
   const closeCheckoutBtn = document.getElementById("closeCheckoutBtn");
@@ -196,18 +224,27 @@
   const studentIdInput = document.getElementById("studentIdInput");
   const studentNameInput = document.getElementById("studentNameInput");
   const studentPhoneInput = document.getElementById("studentPhoneInput");
+  const studentEmailInput = document.getElementById("studentEmailInput");
   const studentGenderSelect = document.getElementById("studentGenderSelect");
   const finalOrderNotes = document.getElementById("finalOrderNotes");
+  const chkAgreeCheckoutTerms = document.getElementById("chkAgreeCheckoutTerms");
   const confirmOrderSubmitBtn = document.getElementById("confirmOrderSubmitBtn");
 
   // ==========================================================================
-  // 紅色 Toast 與 Shake 震動提示
+  // 可愛粉彩 Toast 提示訊息 (支援 HTML Entity 與粉彩圓角美學)
   // ==========================================================================
-  function showToast(message) {
+  function showToast(message, type = "warn") {
     if (!toastContainer) return;
     const toast = document.createElement("div");
-    toast.className = "toast-message";
-    toast.innerHTML = `<span>🚨</span> <span>${message}</span>`;
+    toast.className = `toast-message ${type === "success" ? "toast-success" : type === "warn" ? "toast-warn" : ""}`;
+    
+    let iconEntity = "&#128150;"; // 預設愛心
+    if (type === "success") iconEntity = "&#10024;"; // 閃光
+    if (type === "error" || type === "danger") iconEntity = "&#128525;";
+    if (type === "cart") iconEntity = "&#127873;"; // 禮物
+    if (type === "code") iconEntity = "&#128640;"; // 飛機
+
+    toast.innerHTML = `<span>${iconEntity}</span> <span>${message}</span>`;
     toastContainer.appendChild(toast);
 
     setTimeout(() => {
@@ -450,6 +487,15 @@
   // ==========================================================================
   function bindEventListeners() {
     window.addEventListener("scroll", () => {
+      // 動態島 (Dynamic Island)：滾動超過 120px 時滑下顯示，滑回頂部時自動收回
+      if (dynamicIsland) {
+        if (window.scrollY > 120) {
+          dynamicIsland.classList.add("visible");
+        } else {
+          dynamicIsland.classList.remove("visible");
+        }
+      }
+
       if (window.scrollY > 200 && cart.length > 0) {
         bottomCapsule.classList.add("visible");
       } else {
@@ -491,10 +537,208 @@
       noticeModalOverlay.classList.remove("active");
     });
 
+    // 第一階段：Email 驗證發信與驗證按鈕
+    let verifyCooldownTimer = null;
+    let usernameCheckDebounce = null;
+    let verifiedEmail = "";
+
+    // 60 秒倒數函式
+    function startVerifyCooldown() {
+      let timeLeft = 60;
+      btnSendVerifyCode.disabled = true;
+      btnSendVerifyCode.style.opacity = "0.6";
+      btnSendVerifyCode.textContent = `重新發送 (${timeLeft}s)`;
+
+      if (verifyCooldownTimer) clearInterval(verifyCooldownTimer);
+      verifyCooldownTimer = setInterval(() => {
+        timeLeft--;
+        if (timeLeft <= 0) {
+          clearInterval(verifyCooldownTimer);
+          btnSendVerifyCode.disabled = false;
+          btnSendVerifyCode.style.opacity = "1";
+          btnSendVerifyCode.textContent = "發送驗證碼";
+        } else {
+          btnSendVerifyCode.textContent = `重新發送 (${timeLeft}s)`;
+        }
+      }, 1000);
+    }
+
+    // 發送 6 位數驗證碼至 GAS
+    async function handleSendVerificationCode() {
+      const email = regEmailInput.value.trim().toLowerCase();
+      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        alert("請輸入有效的電子信箱 (包含 Gmail、新北教育帳號 @apps.ntpc.edu.tw、Yahoo、Outlook 等)！");
+        regEmailInput.focus();
+        return;
+      }
+
+      // 產生 6 位數隨機驗證碼 (100000 - 999999)
+      const code = String(Math.floor(100000 + Math.random() * 900000));
+      const expiresAt = Date.now() + 10 * 60 * 1000; // 10 分鐘有效
+
+      sessionStorage.setItem("fair115_email_verify", JSON.stringify({
+        email: email,
+        code: code,
+        expiresAt: expiresAt
+      }));
+
+      btnSendVerifyCode.disabled = true;
+      btnSendVerifyCode.textContent = "發送中...";
+
+      try {
+        // 透過 fetch POST 送至 GAS_API_URL (使用 text/plain 避免 CORS preflight 阻擋)
+        const payload = {
+          action: "send_verification_code",
+          email: email,
+          code: code
+        };
+
+        await fetch(GAS_API_URL, {
+          method: "POST",
+          mode: "no-cors",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify(payload)
+        });
+
+        startVerifyCooldown();
+        verifyCodeTimerHint.innerHTML = "&#10024; 驗證碼已送出囉！10 分鐘內有效，請記得檢查收件匣或垃圾郵件。";
+        verifyCodeTimerHint.style.color = "#059669";
+        showToast(`&#128640; 驗證碼已發送至【${email}】，請於 10 分鐘內輸入驗證碼！`, "code");
+        regVerifyCodeInput.focus();
+
+      } catch (err) {
+        console.error("[GAS Send Code Error]", err);
+        btnSendVerifyCode.disabled = false;
+        btnSendVerifyCode.textContent = "發送驗證碼";
+        showToast(`發送驗證碼時發生異常：${err.message}`, "danger");
+      }
+    }
+
+    // 核驗 6 位數驗證碼
+    function handleVerifyCodeSubmit() {
+      const inputCode = regVerifyCodeInput.value.trim();
+      if (!/^\d{6}$/.test(inputCode)) {
+        showToast("請輸入完整 6 位數字驗證碼！", "warn");
+        regVerifyCodeInput.focus();
+        return;
+      }
+
+      const storedRaw = sessionStorage.getItem("fair115_email_verify");
+      if (!storedRaw) {
+        showToast("尚未發送驗證碼或已過期，請點擊「發送驗證碼」重新取得！", "warn");
+        return;
+      }
+
+      try {
+        const stored = JSON.parse(storedRaw);
+        if (Date.now() > stored.expiresAt) {
+          showToast("驗證碼已逾時失效 (超過 10 分鐘)，請重新點擊發送！", "warn");
+          sessionStorage.removeItem("fair115_email_verify");
+          return;
+        }
+
+        if (inputCode !== stored.code) {
+          showToast("&#10060; 驗證碼不正確，請重新確認郵件！", "danger");
+          regVerifyCodeInput.focus();
+          return;
+        }
+
+        // 驗證成功：解鎖第二階段
+        verifiedEmail = stored.email;
+        regEmailInput.disabled = true;
+        btnSendVerifyCode.disabled = true;
+        regVerifyCodeInput.disabled = true;
+        btnVerifyCodeSubmit.disabled = true;
+        btnVerifyCodeSubmit.textContent = "✅ 已核驗";
+        btnVerifyCodeSubmit.style.background = "#94a3b8";
+
+        if (verifiedEmailDisplay) verifiedEmailDisplay.textContent = verifiedEmail;
+        if (regStage2FieldsBox) regStage2FieldsBox.style.display = "block";
+        verifyCodeTimerHint.innerHTML = "&#127873; 信箱驗證成功！請於下方完成帳號密碼與個資設定。";
+        verifyCodeTimerHint.style.color = "#059669";
+
+        showToast("&#10024; 信箱驗證成功！已解鎖第二階段資料填寫表單。", "success");
+        regUsername.focus();
+
+      } catch (e) {
+        showToast("驗證程序異常，請重新點擊發送！", "danger");
+      }
+    }
+
+    // 帳號唯一性即時查詢 (Debounce 防呆提示)
+    function handleUsernameInput() {
+      const val = regUsername.value.trim();
+      if (!regUsernameCheckHint) return;
+
+      if (!val) {
+        regUsernameCheckHint.textContent = "";
+        return;
+      }
+
+      if (!/^[a-zA-Z0-9_-]{3,20}$/.test(val)) {
+        regUsernameCheckHint.textContent = "⚠️ 帳號需為 3~20 碼英數字組合";
+        regUsernameCheckHint.style.color = "#ef4444";
+        return;
+      }
+
+      regUsernameCheckHint.textContent = "🔍 檢查帳號唯一性中...";
+      regUsernameCheckHint.style.color = "#64748b";
+
+      if (usernameCheckDebounce) clearTimeout(usernameCheckDebounce);
+      usernameCheckDebounce = setTimeout(async () => {
+        try {
+          const db = window.firebase ? window.firebase.firestore() : null;
+          if (!db) {
+            regUsernameCheckHint.textContent = "⚠️ 資料庫尚未初始化，請重新整理頁面！";
+            regUsernameCheckHint.style.color = "#ef4444";
+            return;
+          }
+          const memberSnap = await db.collection("members").doc(val).get();
+          const userSnap = await db.collection("users").doc(val).get();
+
+          if (memberSnap.exists || userSnap.exists) {
+            regUsernameCheckHint.textContent = `❌ 該自訂帳號【${val}】已存在，已被其他同學使用！`;
+            regUsernameCheckHint.style.color = "#ef4444";
+          } else {
+            regUsernameCheckHint.textContent = `✅ 帳號【${val}】可以使用！`;
+            regUsernameCheckHint.style.color = "#059669";
+          }
+        } catch (e) {
+          console.warn("[Check Username Error]", e);
+          regUsernameCheckHint.textContent = `⚠️ 連線異常無法檢查：${e.message || "網路連線逾時"}`;
+          regUsernameCheckHint.style.color = "#f59e0b";
+        }
+      }, 400);
+    }
+
+    // 姓名即時漢字檢核提示
+    const regNameCheckHint = document.getElementById("regNameCheckHint");
+    function handleNameInput() {
+      if (!regName || !regNameCheckHint) return;
+      const val = regName.value.trim();
+      if (!val) {
+        regNameCheckHint.textContent = "";
+        return;
+      }
+      const chineseRegex = /^[\u4e00-\u9fa5\u3400-\u4dbf\uf900-\ufaff]{2,10}$/;
+      if (!chineseRegex.test(val)) {
+        regNameCheckHint.textContent = "姓名僅限輸入 2~10 位繁體中文字元喔 (｡◕‿◕｡)";
+        regNameCheckHint.style.color = "#ef4444";
+      } else {
+        regNameCheckHint.textContent = "✅ 姓名格式正確 (｡◕‿◕｡)";
+        regNameCheckHint.style.color = "#059669";
+      }
+    }
+
+    if (btnSendVerifyCode) btnSendVerifyCode.addEventListener("click", handleSendVerificationCode);
+    if (btnVerifyCodeSubmit) btnVerifyCodeSubmit.addEventListener("click", handleVerifyCodeSubmit);
+    if (regUsername) regUsername.addEventListener("input", handleUsernameInput);
+    if (regName) regName.addEventListener("input", handleNameInput);
+
     // 師生會員專區按鈕
     openMemberModalBtn.addEventListener("click", () => {
       if (currentUser) {
-        openStudentOrdersModal(currentUser.studentId || currentUser.username);
+        openStudentOrdersModal(currentUser.username || currentUser.studentId);
       } else {
         openStudentAuthModal();
       }
@@ -502,7 +746,7 @@
 
     // 訂單查詢按鈕
     openTrackModalBtn.addEventListener("click", () => {
-      const queryId = currentUser ? (currentUser.studentId || currentUser.username) : "";
+      const queryId = currentUser ? (currentUser.username || currentUser.studentId) : "";
       openStudentOrdersModal(queryId);
     });
 
@@ -544,7 +788,7 @@
     btnDoTrackSearch.addEventListener("click", () => {
       const q = trackSearchStudentId.value.trim();
       if (!q) {
-        alert("請輸入學號或帳號！");
+        alert("請輸入會員自訂帳號！");
         return;
       }
       startMyOrdersRealtimeListener(q);
@@ -559,6 +803,20 @@
       closeCartDrawer();
       openCheckoutModal();
     });
+
+    // 動態導覽島互動
+    if (islandMemberBtn) {
+      islandMemberBtn.addEventListener("click", () => {
+        if (currentUser) {
+          openStudentOrdersModal(currentUser.username || currentUser.studentId);
+        } else {
+          openStudentAuthModal();
+        }
+      });
+    }
+    if (islandCartBtn) {
+      islandCartBtn.addEventListener("click", openCartDrawer);
+    }
 
     hamburgerBtn.addEventListener("click", toggleMobileNav);
     mobileNavBackdrop.addEventListener("click", toggleMobileNav);
@@ -620,13 +878,33 @@
     let selectedType = "STUDENT";
     regUserTypeRadios.forEach(r => { if (r.checked) selectedType = r.value; });
 
+    // 必須先完成信箱驗證
+    if (!verifiedEmail) {
+      alert("⚠️ 請先完成第一階段 Google 信箱 (Gmail) 驗證碼核驗！");
+      regEmailInput.focus();
+      return;
+    }
+
+    const trimmedName = regName.value.trim();
+    const chineseRegex = /^[\u4e00-\u9fa5\u3400-\u4dbf\uf900-\ufaff]{2,10}$/;
+    if (!trimmedName || !chineseRegex.test(trimmedName)) {
+      showToast("姓名僅限輸入 2~10 位繁體中文字元喔 (｡◕‿◕｡)", "warn");
+      if (regNameCheckHint) {
+        regNameCheckHint.textContent = "姓名僅限輸入 2~10 位繁體中文字元喔 (｡◕‿◕｡)";
+        regNameCheckHint.style.color = "#ef4444";
+      }
+      regName.focus();
+      return;
+    }
+
     const payload = {
       userType: selectedType,
       username: regUsername.value.trim(),
       password: regPassword.value.trim(),
-      name: regName.value.trim(),
+      name: trimmedName,
       gender: regGender.value,
       phone: regPhone.value.trim(),
+      email: verifiedEmail,
       studentId: regStudentId.value.trim(),
       seatNumber: regSeatNumber.value.trim(),
       classCode: regClassSelect.value.trim(),
@@ -636,6 +914,9 @@
 
     try {
       const db = window.firebase ? window.firebase.firestore() : null;
+      if (!db) {
+        throw new Error("網路連線逾時或 Firebase 資料庫尚未就緒，請重新整理頁面後再試！");
+      }
       btnStudentRegisterSubmit.disabled = true;
       btnStudentRegisterSubmit.textContent = "建立帳號中...";
 
@@ -643,15 +924,41 @@
       currentUser = res.user;
       sessionStorage.setItem("fair115_user_session", JSON.stringify(res.user));
 
-      alert(res.message);
+      // 發送歡迎開通通知信 (GAS action: "send_welcome_member")
+      try {
+        const welcomePayload = {
+          action: "send_welcome_member",
+          email: res.user.email,
+          name: res.user.name,
+          username: res.user.username,
+          userType: res.user.userType === "FACULTY" ? "教職員" : "學生",
+          studentId: res.user.studentId || res.user.username,
+          classCode: res.user.classCode || res.user.department || "--",
+          seatNumber: res.user.seatNumber || 0,
+          registeredAt: res.user.registeredAt || new Date().toISOString()
+        };
+
+        fetch(GAS_API_URL, {
+          method: "POST",
+          mode: "no-cors",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify(welcomePayload)
+        }).catch(err => console.warn("[Welcome Email Error]", err));
+      } catch (mailErr) {
+        console.warn("[Welcome Email Exception]", mailErr);
+      }
+
+      showToast(`🎁 歡迎登機！你的專屬帳號已經準備好囉 (｡◕‿◕｡)`, "success");
       updateUserBtnUI();
       closeStudentAuthModal();
-      openStudentOrdersModal(currentUser.studentId || currentUser.username);
+      openStudentOrdersModal(currentUser.username || currentUser.studentId);
     } catch (err) {
-      alert(`註冊失敗：\n${err.message}`);
+      console.error("[Register Error]", err);
+      alert(`⚠️ 註冊提示：\n${err.message || "網路連線逾時，請檢查連線後重試"}`);
+      showToast(`註冊失敗：${err.message}`, "danger");
     } finally {
       btnStudentRegisterSubmit.disabled = false;
-      btnStudentRegisterSubmit.textContent = "✨ 註冊並登入";
+      btnStudentRegisterSubmit.textContent = "✨ 完成資料填寫並送出註冊";
     }
   }
 
@@ -667,25 +974,41 @@
   }
 
   // ==========================================================================
-  // 訂單進度精準配對查詢看板 (orders studentId == 查詢學號)
+  // 訂單進度精準配對查詢看板 (orders 依登入之 username 自動過濾顯示)
   // ==========================================================================
   function openStudentOrdersModal(targetId = "") {
     if (currentUser) {
       btnStudentLogout.style.display = "inline-block";
-      memberGreeting.textContent = `歡迎 ${currentUser.name} (${currentUser.userType === "FACULTY" ? currentUser.department : currentUser.classCode} | 身分碼：${currentUser.studentId || currentUser.username})`;
+      memberGreeting.textContent = `歡迎 ${currentUser.name} (${currentUser.userType === "FACULTY" ? currentUser.department : currentUser.classCode} | 會員帳號：${currentUser.username || currentUser.studentId})`;
       quickSearchTrackBar.style.display = "none";
+
+      // 渲染唯讀個人資料 (disabled/readonly 禁止隨意竄改)
+      if (memberProfileCard) {
+        memberProfileCard.style.display = "block";
+        if (profStudentId) profStudentId.value = currentUser.username || currentUser.studentId || "--";
+        if (profName) profName.value = currentUser.name || "--";
+        if (profClass) profClass.value = currentUser.userType === "FACULTY" ? (currentUser.department || "教職員") : (currentUser.classCode || "--");
+        if (profSeat) profSeat.value = currentUser.userType === "FACULTY" ? "0 (教職員)" : (currentUser.seatNumber || "--");
+        if (profPhone) profPhone.value = currentUser.phone || "--";
+      }
+
       studentOrdersModalOverlay.classList.add("active");
-      startMyOrdersRealtimeListener(currentUser.studentId || currentUser.username);
+      startMyOrdersRealtimeListener(currentUser.username || currentUser.studentId);
     } else {
       btnStudentLogout.style.display = "none";
-      memberGreeting.textContent = "請輸入 6 碼學號查詢自身專屬訂單進度：";
+      memberGreeting.textContent = "請輸入會員自訂帳號查詢自身專屬訂單進度：";
       quickSearchTrackBar.style.display = "flex";
+
+      if (memberProfileCard) {
+        memberProfileCard.style.display = "none";
+      }
+
       studentOrdersModalOverlay.classList.add("active");
       if (targetId) {
         trackSearchStudentId.value = targetId;
         startMyOrdersRealtimeListener(targetId);
       } else {
-        studentOrdersListContainer.innerHTML = '<p style="text-align:center; color:var(--text-muted); padding:1.5rem;">請在上方輸入學號並點擊「查詢」</p>';
+        studentOrdersListContainer.innerHTML = '<p style="text-align:center; color:var(--text-muted); padding:1.5rem;">請在上方輸入會員自訂帳號並點擊「查詢」</p>';
       }
     }
   }
@@ -698,95 +1021,113 @@
     }
   }
 
-  function startMyOrdersRealtimeListener(queryStudentId) {
+  function startMyOrdersRealtimeListener(queryAccount) {
     const db = window.firebase ? window.firebase.firestore() : null;
     if (!db) return;
 
-    const cleanId = String(queryStudentId).trim();
-    if (!cleanId) return;
+    const cleanAccount = String(queryAccount).trim();
+    if (!cleanAccount) return;
 
     studentOrdersListContainer.innerHTML = '<p style="text-align:center; color:var(--text-muted); padding:1rem;">載入訂單進度中...</p>';
 
     if (unsubscribeOrders) unsubscribeOrders();
 
-    // 嚴格比對 studentId == cleanId，絕不全域撈取
-    unsubscribeOrders = db.collection("orders")
-      .where("studentId", "==", cleanId)
-      .onSnapshot((snapshot) => {
-        if (snapshot.empty) {
-          studentOrdersListContainer.innerHTML = `
-            <div style="text-align:center; color:var(--text-muted); padding:2rem 1rem;">
-              <span style="font-size:2rem; display:block; margin-bottom:0.5rem;">📭</span>
-              查無學號【${cleanId}】之訂單，若剛下單請稍候 1~2 秒或核對學號是否正確！
-            </div>
-          `;
-          return;
+    // 優先以 username 查詢；若查無則兼顧 studentId (相容舊單)
+    const renderOrderCards = (docs) => {
+      if (!docs || docs.length === 0) {
+        studentOrdersListContainer.innerHTML = `
+          <div style="text-align:center; color:var(--text-muted); padding:2rem 1rem;">
+            <span style="font-size:2rem; display:block; margin-bottom:0.5rem;">📭</span>
+            查無帳號【${cleanAccount}】之訂單，若剛下單請稍候 1~2 秒或核對帳號是否正確！
+          </div>
+        `;
+        return;
+      }
+
+      studentOrdersListContainer.innerHTML = "";
+      docs.forEach((doc) => {
+        const o = doc.data();
+
+        // 軌道 1：美術審查
+        let qcText = "待審核";
+        let qcClass = "val-pending";
+        if (o.qcStatus === "審核通過") {
+          qcText = "✅ 審核通過";
+          qcClass = "val-pass";
+        } else if (o.qcStatus === "不通過" || o.qcStatus === "退件待補") {
+          qcText = `❌ 不通過 (${o.qcRejectedReason || "圖檔不符"})`;
+          qcClass = "val-fail";
         }
 
-        studentOrdersListContainer.innerHTML = "";
-        snapshot.forEach((doc) => {
-          const o = doc.data();
+        // 軌道 2：財務收款
+        let payText = "⏳ 待收款";
+        let payClass = "val-pending";
+        if (o.paymentStatus === "PAID" || o.paymentStatus === "已收款") {
+          payText = "💵 已收款核銷";
+          payClass = "val-pass";
+        } else if (o.paymentStatus === "未收款") {
+          payText = "⏳ 未收款 (現場繳納)";
+          payClass = "val-info";
+        }
 
-          // 軌道 1：美術審查
-          let qcText = "待審核";
-          let qcClass = "val-pending";
-          if (o.qcStatus === "審核通過") {
-            qcText = "✅ 審核通過";
-            qcClass = "val-pass";
-          } else if (o.qcStatus === "退件待補") {
-            qcText = `❌ 退件 (${o.qcRejectedReason || "圖檔不符"})`;
-            qcClass = "val-fail";
-          }
+        // 軌道 3：物流配送
+        let deliveryText = "未派送 (派送單製作中)";
+        let deliveryClass = "val-info";
+        if (o.deliveryStatus === "派送中" || o.deliveryStatus === "配送中") {
+          deliveryText = "🚚 派送單送至班級現場";
+          deliveryClass = "val-pending";
+        } else if (o.deliveryStatus === "已派送完成" || o.deliveryStatus === "配送完成" || o.deliveryStatus === "已取件") {
+          deliveryText = "🎁 派送完成・第一聯取貨憑證";
+          deliveryClass = "val-pass";
+        }
 
-          // 軌道 2：財務收款
-          let payText = "⏳ 待收款";
-          let payClass = "val-pending";
-          if (o.paymentStatus === "PAID" || o.paymentStatus === "已收款") {
-            payText = "💵 已收款核銷";
-            payClass = "val-pass";
-          }
-
-          // 軌道 3：物流配送
-          let deliveryText = "未配送 (校慶當日取貨)";
-          let deliveryClass = "val-info";
-          if (o.deliveryStatus === "配送中") {
-            deliveryText = "🚚 配送中";
-            deliveryClass = "val-pending";
-          } else if (o.deliveryStatus === "配送完成" || o.deliveryStatus === "已取件") {
-            deliveryText = "🎁 取件完成";
-            deliveryClass = "val-pass";
-          }
-
-          const card = document.createElement("div");
-          card.className = "order-track-card";
-          card.innerHTML = `
-            <div class="order-track-header">
-              <div>
-                <strong style="color:var(--accent-primary); font-size:0.9rem;">${o.orderId}</strong>
-                <span style="font-size:0.75rem; color:var(--text-muted); margin-left:0.5rem;">${o.productName} x ${o.quantity || 1}</span>
-              </div>
-              <strong style="color:#0f172a; font-size:0.95rem;">NT$ ${o.subtotal || o.unitPrice * (o.quantity || 1)}</strong>
+        const card = document.createElement("div");
+        card.className = "order-track-card";
+        card.innerHTML = `
+          <div class="order-track-header">
+            <div>
+              <strong style="color:var(--accent-primary); font-size:0.9rem;">${o.orderId}</strong>
+              <span style="font-size:0.75rem; color:var(--text-muted); margin-left:0.5rem;">${o.productName} x ${o.quantity || 1}</span>
             </div>
+            <strong style="color:#0f172a; font-size:0.95rem;">NT$ ${o.subtotal || o.unitPrice * (o.quantity || 1)}</strong>
+          </div>
 
-            <!-- 三軌即時進度看板 -->
-            <div class="track-grid">
-              <div class="track-step">
-                <span class="track-step-title">🎨 美術組審核</span>
-                <span class="track-step-val ${qcClass}">${qcText}</span>
-              </div>
-              <div class="track-step">
-                <span class="track-step-title">💰 財務組收款</span>
-                <span class="track-step-val ${payClass}">${payText}</span>
-              </div>
-              <div class="track-step">
-                <span class="track-step-title">📦 物流外送組</span>
-                <span class="track-step-val ${deliveryClass}">${deliveryText}</span>
-              </div>
+          <!-- 三軌即時進度看板 -->
+          <div class="track-grid">
+            <div class="track-step">
+              <span class="track-step-title">🎨 美術組審核</span>
+              <span class="track-step-val ${qcClass}">${qcText}</span>
             </div>
-          `;
-          studentOrdersListContainer.appendChild(card);
-        });
-      }, (err) => {
+            <div class="track-step">
+              <span class="track-step-title">💰 財務組收款</span>
+              <span class="track-step-val ${payClass}">${payText}</span>
+            </div>
+            <div class="track-step">
+              <span class="track-step-title">📦 物流外送組</span>
+              <span class="track-step-val ${deliveryClass}">${deliveryText}</span>
+            </div>
+          </div>
+        `;
+        studentOrdersListContainer.appendChild(card);
+      });
+    };
+
+    // 監聽 username 匹配訂單
+    unsubscribeOrders = db.collection("orders")
+      .where("username", "==", cleanAccount)
+      .onSnapshot((snapshot) => {
+        if (!snapshot.empty) {
+          renderOrderCards(snapshot.docs);
+        } else {
+          // 若無 username 則嘗試比對 studentId (向前相容)
+          db.collection("orders")
+            .where("studentId", "==", cleanAccount)
+            .get()
+            .then(subSnap => {
+              renderOrderCards(subSnap.docs);
+            })
+            .catch(() => renderOrderCards([]));
+        }
         studentOrdersListContainer.innerHTML = `<p style="color:var(--danger); text-align:center;">查詢出錯：${err.message}</p>`;
       });
   }
@@ -933,6 +1274,7 @@
 
     cartBadgeCount.textContent = totalQty;
     capsuleBadge.textContent = totalQty;
+    if (islandCartBadge) islandCartBadge.textContent = totalQty;
     capsuleTotal.textContent = `NT$ ${totalPrice}`;
     drawerTotalPrice.textContent = `NT$ ${totalPrice}`;
 
@@ -1034,6 +1376,7 @@
       studentIdInput.value = currentUser.studentId || currentUser.facultyId || currentUser.username || "";
       studentNameInput.value = currentUser.name || "";
       studentPhoneInput.value = currentUser.phone || "";
+      if (studentEmailInput) studentEmailInput.value = currentUser.email || "";
       studentGenderSelect.value = currentUser.gender || "保密";
     }
 
@@ -1045,7 +1388,7 @@
   }
 
   // ==========================================================================
-  // 結帳送單 (自動註冊 + 批次拆單提交)
+  // 結帳送單 (自動註冊 + 批次拆單提交 + GAS 訂單成功通知信)
   // ==========================================================================
   async function handleFinalOrderSubmit() {
     const rawStudent = {
@@ -1054,6 +1397,7 @@
       studentId: studentIdInput.value.trim(),
       name: studentNameInput.value.trim(),
       phone: studentPhoneInput.value.trim(),
+      email: studentEmailInput ? studentEmailInput.value.trim().toLowerCase() : "",
       gender: studentGenderSelect.value
     };
 
@@ -1082,6 +1426,17 @@
       studentPhoneInput.focus();
       return;
     }
+    if (!rawStudent.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(rawStudent.email)) {
+      alert("請輸入正確之電子信箱 (支援 Gmail、教育帳號、Yahoo、Outlook 等) 以便接收訂單與三聯單通知！");
+      if (studentEmailInput) studentEmailInput.focus();
+      return;
+    }
+    if (chkAgreeCheckoutTerms && !chkAgreeCheckoutTerms.checked) {
+      alert("⚠️ 請先閱讀並勾選同意「購物須知與退換貨條款」方可提交訂單！");
+      chkAgreeCheckoutTerms.focus();
+      triggerShake(chkAgreeCheckoutTerms.closest(".checkout-terms-box"));
+      return;
+    }
 
     confirmOrderSubmitBtn.disabled = true;
     confirmOrderSubmitBtn.textContent = "⏳ 建立身分與安全拆單中...";
@@ -1102,6 +1457,12 @@
         updateUserBtnUI();
       }
 
+      // 補足 email 欄位
+      userProfile = {
+        ...userProfile,
+        email: userProfile.email || rawStudent.email
+      };
+
       // 批次拆單寫入
       confirmOrderSubmitBtn.textContent = "📦 批次工單排印提交中...";
       const orderNotes = finalOrderNotes.value.trim();
@@ -1112,14 +1473,16 @@
         orderNotes
       );
 
-      alert(`🎉 預購成功！\n母單編號：${splitResult.parentOrderId}\n已自動為您拆分為 ${splitResult.workOrders.length} 張產線工單！\n\n※ 您可隨時點擊右上角「訂單查詢」即時追蹤三軌進度！`);
+      // 二、下單完成：信件改為後台手動核驗發送，前台下單時不自動呼叫發信
+      showToast("🎉 訂單已提交！工作人員確認個資無誤後將發送確認信", "success");
+      alert(`🎉 訂單已提交！工作人員確認個資無誤後將發送確認信\n\n母單編號：${splitResult.parentOrderId}\n已自動為您拆分為 ${splitResult.workOrders.length} 張產線工單。\n\n※ 您可隨時點擊右上角「訂單查詢」即時追蹤三軌進度！`);
 
       cart = [];
       updateCartUI();
       closeCheckoutModal();
 
       // 自動開啟三軌訂單查詢看板
-      openStudentOrdersModal(userProfile.studentId || userProfile.username);
+      openStudentOrdersModal(userProfile.username || userProfile.studentId);
 
     } catch (err) {
       console.error("[Order Error]", err);

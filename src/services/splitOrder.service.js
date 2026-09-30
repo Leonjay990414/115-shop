@@ -157,6 +157,8 @@
 
         // 訂購人身分欄位 (相容學生與教職員)
         userType: studentProfile.userType || "STUDENT",
+        username: String(studentProfile.username || studentProfile.studentId || ""),
+        email: String(studentProfile.email || ""),
         studentId: String(studentProfile.studentId || studentProfile.staffNo || studentProfile.account || ""),
         studentName: String(studentProfile.name || ""),
         studentClass: String(studentProfile.classCode || studentProfile.department || ""),
@@ -175,11 +177,16 @@
         imageRes: agg.imageRes,
         customerNotes: customerNotes || "",
 
-        // 狀態機初始狀態
+        // 狀態機初始狀態 (嚴格相依狀態機初始值)
         qcStatus: "待審核",
-        prodStatus: "待製作",
-        paymentStatus: "UNPAID",
-        deliveryStatus: "待配送",
+        deliveryStatus: "未派送",
+        paymentStatus: "未收款",
+        prodStatus: "未排單",
+        printStatus: "UNPRINTED",
+        printedAt: null,
+        directorApproved: false,
+        mailStatus: "UNSENT",
+        mailSentAt: null,
 
         // 時間戳記
         createdAt: serverTimestamp

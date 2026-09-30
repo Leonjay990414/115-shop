@@ -37,38 +37,50 @@
     const name = String(userData.name || "").trim();
     const gender = String(userData.gender || "保密").trim();
     const phone = String(userData.phone || "").trim();
+    const email = String(userData.email || "").trim().toLowerCase();
 
-    if (!username || username.length < 3) {
-      throw new Error("帳號設定錯誤：帳號長度至少需 3 個字元！");
+    // 帳號格式驗證 (英文與數字組合)
+    if (!username || !/^[a-zA-Z0-9_-]{3,20}$/.test(username)) {
+      throw new Error("帳號設定錯誤：請輸入 3~20 碼之英文與數字組合！");
     }
     if (!password || password.length < 4) {
       throw new Error("密碼設定錯誤：密碼長度至少需 4 個字元！");
     }
-    if (!name || name.length > 5) {
-      throw new Error("姓名格式錯誤：請輸入 1~5 字元之真實姓名！");
+    // 姓名嚴格驗證：僅限 2~10 位中文漢字 (支援擴展漢字)
+    if (!name || !/^[\u4e00-\u9fa5\u3400-\u4dbf\uf900-\ufaff]{2,10}$/.test(name)) {
+      throw new Error("姓名格式錯誤：僅限輸入 2~10 位真實中文姓名（禁止輸入英文、數字或特殊符號）！");
     }
     if (!/^09\d{8}$/.test(phone)) {
       throw new Error("手機號碼格式錯誤：必須為 09 開頭之 10 碼電話！");
     }
 
-    // 檢查 users 集合中帳號唯一性
+    // 檢查 members 集合中帳號唯一性 (亦向容 users)
+    const memberDocRef = db.collection("members").doc(username);
+    const memberSnap = await memberDocRef.get();
+    if (memberSnap.exists) {
+      throw new Error(`❌ 帳號【${username}】已被全校其他同學註冊，請換一個使用者帳號！`);
+    }
+
     const userDocRef = db.collection("users").doc(username);
     const userSnap = await userDocRef.get();
     if (userSnap.exists) {
       throw new Error(`❌ 帳號【${username}】已被註冊，請換一個使用者帳號！`);
     }
 
+    const nowIso = new Date().toISOString();
     const serverTimestamp = global.firebase && global.firebase.firestore 
       ? global.firebase.firestore.FieldValue.serverTimestamp() 
-      : new Date().toISOString();
+      : nowIso;
 
     let userProfile = {
       username: username,
       password: password,
       userType: userType,
       name: name,
+      email: email,
       gender: gender,
       phone: phone,
+      registeredAt: nowIso,
       createdAt: serverTimestamp
     };
 
@@ -78,8 +90,9 @@
       const rawSeat = String(userData.seatNumber || "").trim();
       const seatNumber = parseInt(rawSeat, 10);
 
+      // 學號精確 6 碼數字
       if (!/^\d{6}$/.test(studentId)) {
-        throw new Error("學號格式錯誤：必須為完整 6 位數字！");
+        throw new Error("學號格式錯誤：學號必須為精準 6 位數字！");
       }
       if (!classCode) {
         throw new Error("請選擇所屬班級！");
@@ -124,6 +137,7 @@
         classCode: classCode,
         seatNumber: seatNumber,
         name: name,
+        email: email,
         gender: gender,
         phone: phone,
         username: username,
@@ -151,13 +165,14 @@
         ...userProfile,
         facultyId: facultyId,
         department: department,
-        studentId: facultyId, // 相容欄位供訂單索引
+        studentId: facultyId,
         classCode: department,
         seatNumber: 0
       };
     }
 
-    // 寫入 users 集合
+    // 同步寫入 members 與 users 集合 (確保持續保全與向後相容)
+    await memberDocRef.set(userProfile);
     await userDocRef.set(userProfile);
 
     return {
@@ -180,7 +195,19 @@
       throw new Error("請完整填寫帳號與密碼！");
     }
 
-    // 1. 優先查 users/{username}
+    // 1. 優先查 members/{username} 與 users/{username}
+    let matchedUser = null;
+    const memberDocRef = db.collection("members").doc(cleanAccount);
+    const memberSnap = await memberDocRef.get();
+
+    if (memberSnap.exists) {
+      const uData = memberSnap.data();
+      if (uData.password !== cleanPwd) {
+        throw new Error("❌ 密碼錯誤，請重新輸入！");
+      }
+      return { success: true, user: uData };
+    }
+
     const userDocRef = db.collection("users").doc(cleanAccount);
     const userSnap = await userDocRef.get();
 
@@ -192,7 +219,7 @@
       return { success: true, user: uData };
     }
 
-    // 2. 支援以 6 碼學號查詢學生實體登入
+    // 2. 備用：若舊資料使用 6 碼學號查詢
     if (/^\d{6}$/.test(cleanAccount)) {
       const snap = await db.collection("students").where("studentId", "==", cleanAccount).get();
       if (!snap.empty) {
@@ -215,7 +242,7 @@
       }
     }
 
-    throw new Error(`❌ 查無帳號或學號【${cleanAccount}】，請確認或重新註冊！`);
+    throw new Error(`❌ 查無此帳號【${cleanAccount}】，請確認或重新註冊！`);
   }
 
   /**

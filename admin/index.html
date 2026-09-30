@@ -51,18 +51,37 @@
         </button>
       </div>
 
-      <!-- 軌道 2：學號身分驗證碼登入 (純系統帳號 + 學號驗證碼) -->
+      <!-- 軌道 2：身分快捷驗證碼登入 (17席位下拉選單 + 專屬數字驗證碼) -->
       <div id="codeLoginForm" style="display: none;">
         <div class="auth-input-group">
-          <label class="auth-label">系統帳號 (staffId)</label>
-          <input type="text" id="codeStaffIdInput" class="auth-input" placeholder="輸入成員帳號 (例：admin_director)">
+          <label class="auth-label">選擇身分席位 (17 位幹部與師長)</label>
+          <select id="codeStaffSelect" class="auth-select" style="font-size: 0.9rem;">
+            <option value="">-- 請點擊選擇所屬身分角色 --</option>
+            <option value="admin_director">總召 (admin_director)</option>
+            <option value="admin_dept_head">科主任 (admin_dept_head)</option>
+            <option value="admin_teacher">指導老師 (admin_teacher)</option>
+            <option value="admin_web_core">AI 網站組核心 / 組長 (admin_web_core)</option>
+            <option value="admin_web_staff">AI 網站組招募 / 組員 (admin_web_staff)</option>
+            <option value="admin_art_core">美術視覺組核心 / 組長 (admin_art_core)</option>
+            <option value="admin_art_staff">美術視覺組招募 / 組員 (admin_art_staff)</option>
+            <option value="admin_maker_core">商品製作組核心 / 組長 (admin_maker_core)</option>
+            <option value="admin_maker_staff">商品製作組招募 / 組員 (admin_maker_staff)</option>
+            <option value="admin_finance_core">財務組核心 / 組長 (admin_finance_core)</option>
+            <option value="admin_finance_staff">財務組招募 / 組員 (admin_finance_staff)</option>
+            <option value="staff_plan_A">企劃組 A / 組長 (staff_plan_A)</option>
+            <option value="staff_plan_B">企劃組 B / 組員 (staff_plan_B)</option>
+            <option value="staff_promo_A">宣傳組 A / 組長 (staff_promo_A)</option>
+            <option value="staff_promo_B">宣傳組 B / 組員 (staff_promo_B)</option>
+            <option value="staff_delivery_A">外送組 A / 組長 (staff_delivery_A)</option>
+            <option value="staff_delivery_B">外送組 B / 組員 (staff_delivery_B)</option>
+          </select>
         </div>
         <div class="auth-input-group">
-          <label class="auth-label">6 位身分驗證碼 (真實學號)</label>
-          <input type="text" id="loginAuthCodeInput" class="auth-input" maxlength="6" placeholder="輸入 6 碼學號驗證碼">
+          <label class="auth-label">專屬 6 碼數字驗證碼</label>
+          <input type="password" id="loginAuthCodeInput" class="auth-input" maxlength="6" placeholder="輸入 6 位數專屬驗證碼" style="letter-spacing: 0.25em; font-size: 1.1rem; text-align: center;">
         </div>
         <button id="btnSubmitCodeLogin" class="btn-auth-submit">
-          🔓 身分驗證碼登入 (軌道 2)
+          🔓 身分快捷驗證碼登入 (軌道 2)
         </button>
       </div>
     </div>
@@ -92,86 +111,220 @@
     </div>
   </header>
 
+  <!-- 後台主功能分頁切換列 (工單看板、會員名冊、幹部帳密管理、美術退件滿4天專區) -->
+  <nav class="admin-tab-nav">
+    <div class="tab-nav-inner">
+      <button id="tabNavOrders" class="admin-tab-btn active">
+        <span>📋</span> 工單調度看板
+      </button>
+      <button id="tabNavMembers" class="admin-tab-btn">
+        <span>👥</span> 會員名冊 (全校資料庫)
+      </button>
+      <button id="tabNavOverdue" class="admin-tab-btn" style="color: #f87171;">
+        <span>⚠️</span> 退件催單專區 (>4天)
+        <span id="overdueBadgeCount" class="tab-badge" style="display:none;">0</span>
+      </button>
+      <button id="tabNavStaffManager" class="admin-tab-btn" style="display: none; color: #a78bfa;">
+        <span>🔐</span> 幹部帳密與驗證碼設置 (總召專屬)
+      </button>
+    </div>
+  </nav>
+
   <!-- 工作區主容器 (Viewport-Locked Layout) -->
   <main class="admin-workspace">
     
-    <!-- 頂部 HUD 狀態卡片 (快速過濾) -->
-    <section class="hud-grid">
-      <div id="hudCardQc" class="hud-card qc" title="點擊過濾待審核工單">
-        <div class="hud-label">
-          <span>待美術圖審</span>
-          <span>🎨</span>
+    <!-- 分頁 1：工單調度看板 (預設) -->
+    <div id="viewOrdersSection">
+      <!-- 頂部 HUD 狀態卡片 (快速過濾) -->
+      <section class="hud-grid">
+        <div id="hudCardQc" class="hud-card qc" title="點擊過濾待審核工單">
+          <div class="hud-label">
+            <span>待美術圖審</span>
+            <span>🎨</span>
+          </div>
+          <div id="hudValQc" class="hud-val">0</div>
         </div>
-        <div id="hudValQc" class="hud-val">0</div>
-      </div>
 
-      <div id="hudCardProd" class="hud-card prod" title="點擊過濾產線製作中工單">
-        <div class="hud-label">
-          <span>產線製作中</span>
-          <span>⚡</span>
+        <div id="hudCardProd" class="hud-card prod" title="點擊過濾產線製作中工單">
+          <div class="hud-label">
+            <span>產線製作中</span>
+            <span>⚡</span>
+          </div>
+          <div id="hudValProd" class="hud-val">0</div>
         </div>
-        <div id="hudValProd" class="hud-val">0</div>
-      </div>
 
-      <div id="hudCardLogistics" class="hud-card logistics" title="點擊過濾待外送派件工單">
-        <div class="hud-label">
-          <span>待派送出件</span>
-          <span>📦</span>
+        <div id="hudCardLogistics" class="hud-card logistics" title="點擊過濾待外送派件工單">
+          <div class="hud-label">
+            <span>待派送出件</span>
+            <span>📦</span>
+          </div>
+          <div id="hudValLogistics" class="hud-val">0</div>
         </div>
-        <div id="hudValLogistics" class="hud-val">0</div>
-      </div>
 
-      <div id="hudCardFinance" class="hud-card finance" title="點擊過濾待收款核銷工單">
-        <div class="hud-label">
-          <span>待財務收款</span>
-          <span>💰</span>
+        <div id="hudCardFinance" class="hud-card finance" title="點擊過濾待收款核銷工單">
+          <div class="hud-label">
+            <span>待財務收款</span>
+            <span>💰</span>
+          </div>
+          <div id="hudValFinance" class="hud-val">0</div>
         </div>
-        <div id="hudValFinance" class="hud-val">0</div>
-      </div>
-    </section>
+      </section>
 
-    <!-- 工具列 (搜尋、勾選列印、匯出) -->
-    <div class="toolbar-bar">
-      <div class="toolbar-left">
-        <input type="text" id="searchInput" class="search-input" placeholder="🔍 搜尋工單號、學生、班級...">
+      <!-- 工具列 (搜尋、三聯單篩選、勾選列印、匯出) -->
+      <div class="toolbar-bar">
+        <div class="toolbar-left" style="display: flex; gap: 0.6rem; align-items: center; flex-wrap: wrap;">
+          <input type="text" id="searchInput" class="search-input" placeholder="🔍 搜尋工單號、學生、班級、品項...">
+          <select id="printStatusFilterSelect" class="auth-select" style="padding: 0.5rem 0.75rem; font-size: 0.82rem; border-radius: var(--radius-sm); width: auto; background: rgba(15, 23, 42, 0.9); color: #fff; border: 1px solid rgba(255,255,255,0.15);">
+            <option value="ALL">📑 三聯單狀態：全部</option>
+            <option value="UNPRINTED">🟡 待列印 (UNPRINTED)</option>
+            <option value="PRINTED">🟢 已列印三聯單 (PRINTED)</option>
+          </select>
+        </div>
+
+        <div class="toolbar-right">
+          <button id="btnOpenPimModal" class="btn-tool" style="background: rgba(129, 140, 248, 0.2); border-color: rgba(129, 140, 248, 0.4);">
+            📦 PIM 商品庫存管理
+          </button>
+          <button id="btnBatchPrint" class="btn-tool btn-tool-primary">
+            🖨️ 批次列印所選三聯單 (A4不跨頁)
+          </button>
+          <button id="btnExportExcel" class="btn-tool btn-tool-success">
+            📊 匯出 Excel 總表 (含原圖連結)
+          </button>
+        </div>
       </div>
 
-      <div class="toolbar-right">
-        <button id="btnOpenPimModal" class="btn-tool" style="background: rgba(129, 140, 248, 0.2); border-color: rgba(129, 140, 248, 0.4);">
-          📦 PIM 商品庫存管理
-        </button>
-        <button id="btnBatchPrint" class="btn-tool btn-tool-primary">
-          🖨️ 批次列印所選三聯單 (A4不跨頁)
-        </button>
-        <button id="btnExportExcel" class="btn-tool btn-tool-success">
-          📊 匯出 Excel 總表 (含原圖連結)
-        </button>
+      <!-- 固定表頭表格視窗 (全組態動態更新下拉選單) -->
+      <div class="table-viewport-card">
+        <div class="table-scroll-container">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th style="width: 36px;">
+                  <input type="checkbox" id="selectAllCheckbox" title="全選可視工單">
+                </th>
+                <th>客製預覽</th>
+                <th>工單號 (Order ID)</th>
+                <th>班級 / 座號</th>
+                <th>姓名 (個資)</th>
+                <th>商品與數量</th>
+                <th>金額</th>
+                <th>🖨️ 三聯單狀態</th>
+                <th>🎨 1. 美術組審核</th>
+                <th>📦 2. 派送組進度</th>
+                <th>💰 3. 財務組收款</th>
+                <th>⚡ 4. 產線組製作</th>
+                <th>👑 5. 總召審定</th>
+                <th>詳情</th>
+              </tr>
+            </thead>
+            <tbody id="ordersTableBody">
+              <tr><td colspan="14" style="text-align: center; color: var(--text-muted); padding: 2rem;">連線資料庫中...</td></tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
 
-    <!-- 固定表頭表格視窗 (Sticky Header Table) -->
-    <div class="table-viewport-card">
-      <div class="table-scroll-container">
-        <table class="admin-table">
-          <thead>
-            <tr>
-              <th style="width: 40px;">
-                <input type="checkbox" id="selectAllCheckbox" title="全選可視工單">
-              </th>
-              <th>工單號 (Order ID)</th>
-              <th>班級 / 座號</th>
-              <th>學生姓名</th>
-              <th>商品品項與數量</th>
-              <th>應收金額</th>
-              <th>美術圖審</th>
-              <th>財務狀態</th>
-              <th>動作</th>
-            </tr>
-          </thead>
-          <tbody id="ordersTableBody">
-            <tr><td colspan="9" style="text-align: center; color: var(--text-muted); padding: 2rem;">連線資料庫中...</td></tr>
-          </tbody>
-        </table>
+    <!-- 分頁 2：全校會員資料庫看板 (Member Directory) -->
+    <div id="viewMembersSection" style="display: none;">
+      <div class="toolbar-bar" style="margin-top: 0.5rem;">
+        <div class="toolbar-left" style="flex: 1;">
+          <input type="text" id="memberSearchInput" class="search-input" placeholder="🔍 搜尋學號、姓名、班級、帳號或電話...">
+        </div>
+        <div class="toolbar-right">
+          <span id="memberCountBadge" style="font-size: 0.85rem; color: #94a3b8; font-weight: 600;">共 0 筆會員</span>
+        </div>
+      </div>
+      <div class="table-viewport-card">
+        <div class="table-scroll-container">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>身分</th>
+                <th>自訂帳號</th>
+                <th>通知 Email</th>
+                <th>學號 / 代碼</th>
+                <th>真實姓名</th>
+                <th>班級 / 處室</th>
+                <th>座號</th>
+                <th>聯絡電話</th>
+                <th>註冊時間</th>
+              </tr>
+            </thead>
+            <tbody id="membersTableBody">
+              <tr><td colspan="9" style="text-align: center; color: var(--text-muted); padding: 2rem;">讀取會員資料中...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- 分頁 3：美術退件滿 4 天「退貨通知單」排程專區 -->
+    <div id="viewOverdueSection" style="display: none;">
+      <div class="toolbar-bar" style="margin-top: 0.5rem;">
+        <div class="toolbar-left">
+          <span style="font-size: 0.88rem; color: #f87171; font-weight: 700;">
+            ⚠️ 下列為「美術審核不通過且已逾 4 日未補正圖檔」之訂單，請列印線下退貨通知憑證交由派送組轉交！
+          </span>
+        </div>
+        <div class="toolbar-right">
+          <button id="btnPrintAllOverdueSlips" class="btn-tool" style="background: rgba(239, 68, 68, 0.2); border-color: rgba(239, 68, 68, 0.5); color: #f87171; font-weight: 700;">
+            🖨️ 批次列印【退貨通知憑證】
+          </button>
+        </div>
+      </div>
+      <div class="table-viewport-card">
+        <div class="table-scroll-container">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>工單編號</th>
+                <th>班級座號</th>
+                <th>訂購人姓名</th>
+                <th>商品品項</th>
+                <th>退件原因</th>
+                <th>退件時間</th>
+                <th>已逾期天數</th>
+                <th>單獨列印</th>
+              </tr>
+            </thead>
+            <tbody id="overdueTableBody">
+              <tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 2rem;">目前無逾期退件工單</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- 分頁 4：幹部驗證碼與帳密管理 (總召專屬 SUPER_ADMIN) -->
+    <div id="viewStaffManagerSection" style="display: none;">
+      <div class="toolbar-bar" style="margin-top: 0.5rem;">
+        <div class="toolbar-left">
+          <span style="font-size: 0.88rem; color: #c084fc; font-weight: 700;">
+            🔐 總召專屬控制台：17 位幹部密碼、權限角色與專屬 6 碼驗證碼即時管理
+          </span>
+        </div>
+      </div>
+      <div class="table-viewport-card">
+        <div class="table-scroll-container">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>系統帳號 (staffId)</th>
+                <th>工作人員稱謂</th>
+                <th>角色權限 (Role)</th>
+                <th>登入密碼 (可修改)</th>
+                <th>專屬 6 碼驗證碼</th>
+                <th>首次啟用狀態 (isActivated)</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody id="staffTableBody">
+              <tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 2rem;">讀取幹部資料中...</td></tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
 
@@ -217,6 +370,111 @@
       </div>
     </div>
   </aside>
+
+  <!-- 圖片高畫質燈箱與縮放檢視 (Image Lightbox) -->
+  <div id="imageLightboxModal" class="lightbox-overlay" style="display:none;">
+    <div class="lightbox-toolbar">
+      <div class="lightbox-title-box">
+        <span id="lightboxTitle" style="font-weight:700; color:#fff; font-size:0.9rem;">高畫質客製圖檔檢視</span>
+        <span id="lightboxResText" style="font-size:0.75rem; color:#94a3b8; margin-left:0.5rem;"></span>
+      </div>
+      <div class="lightbox-controls">
+        <button id="btnZoomIn" class="btn-lightbox-tool" title="放大 (+)">🔍➕</button>
+        <button id="btnZoomOut" class="btn-lightbox-tool" title="縮小 (-)">🔍➖</button>
+        <button id="btnZoomReset" class="btn-lightbox-tool" title="重設縮放 (100%)">↺ 1:1</button>
+        <a id="btnOpenRawImage" href="#" target="_blank" class="btn-lightbox-tool" style="text-decoration:none;" title="另開分頁檢視原圖">↗ 原圖</a>
+        <button id="btnCloseLightbox" class="btn-lightbox-tool btn-lightbox-close" title="關閉燈箱">✕</button>
+      </div>
+    </div>
+    <div class="lightbox-image-stage" id="lightboxImageStage">
+      <img id="lightboxTargetImg" src="" alt="客製圖檢視" class="lightbox-target-img">
+    </div>
+  </div>
+
+  <!-- 美術組「審核不通過」填寫退件理由彈窗 -->
+  <div id="qcRejectModalOverlay" class="auth-overlay" style="display: none; z-index: 1050;">
+    <div class="auth-card" style="max-width: 480px;">
+      <div class="auth-header">
+        <h2 style="color: var(--danger);">🎨 美術組退件審核作業</h2>
+        <p id="qcRejectOrderTitle">請詳細說明退件理由，以利學生儘速更換圖檔</p>
+      </div>
+      <div class="auth-input-group">
+        <label class="auth-label">快速常見退件原因選擇</label>
+        <select id="qcRejectPresetSelect" class="auth-select" style="margin-bottom: 0.5rem;">
+          <option value="">-- 點擊選擇常用範本 --</option>
+          <option value="圖片解析度不足（未達1080P門檻），印出將產生明顯鋸齒模糊">解析度過低（未達1080P）</option>
+          <option value="主視覺圖案過度靠近裁切邊緣，熱轉印有被裁切風險，請縮小居中">主視覺貼邊（可能被裁切）</option>
+          <option value="圖檔格式錯誤或損毀，無法正常進行色版解析">檔案損毀無法解析</option>
+          <option value="圖片涉及版權或違背校規不雅內容，恕無法印製">不合規範內容</option>
+        </select>
+        <label class="auth-label">退件具體說明 (必填)</label>
+        <textarea id="qcRejectReasonInput" class="auth-input" rows="3" placeholder="例如：圖檔尺寸僅 480x480，印製於馬克杯會嚴重模糊，請於個人中心重新上傳高清大圖。"></textarea>
+      </div>
+      <div style="display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 1rem;">
+        <button id="btnCancelQcReject" class="btn-tool" style="background: rgba(255,255,255,0.1);">取消</button>
+        <button id="btnConfirmQcReject" class="btn-tool" style="background: var(--danger); border-color: var(--danger); color: #fff; font-weight:700;">
+          ❌ 確認退件並通知
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ➕ 新增商品彈窗 (PIM Add Product Modal) -->
+  <div id="pimAddProductModalOverlay" class="auth-overlay" style="display: none; z-index: 1050;">
+    <div class="auth-card" style="max-width: 520px;">
+      <div class="auth-header">
+        <h2 style="color: #10b981;">➕ 新增校慶周邊商品</h2>
+        <p>填寫商品規格後，雲端將立即上架並同步前台</p>
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 0.75rem;">
+        <div class="auth-input-group">
+          <label class="auth-label">商品代碼 (例: TOTE)</label>
+          <input type="text" id="newProdCode" class="auth-input" maxlength="6" placeholder="大寫英文3~6碼">
+        </div>
+        <div class="auth-input-group">
+          <label class="auth-label">商品名稱 (例: 紀念帆布袋)</label>
+          <input type="text" id="newProdName" class="auth-input" placeholder="輸入商品全名">
+        </div>
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+        <div class="auth-input-group">
+          <label class="auth-label">預購單價 (NT$)</label>
+          <input type="number" id="newProdPrice" class="auth-input" min="1" placeholder="例如: 120">
+        </div>
+        <div class="auth-input-group">
+          <label class="auth-label">分類類別</label>
+          <select id="newProdCategory" class="auth-select">
+            <option value="accessories">經典配件 (accessories)</option>
+            <option value="tableware">杯器餐具 (tableware)</option>
+            <option value="stationery">文具周邊 (stationery)</option>
+            <option value="prints">海報印刷 (prints)</option>
+          </select>
+        </div>
+      </div>
+      <div class="auth-input-group">
+        <label class="auth-label">商品簡短說明</label>
+        <input type="text" id="newProdDesc" class="auth-input" placeholder="例如: 12安純棉加厚帆布，全彩噴印。">
+      </div>
+      <div class="auth-input-group">
+        <label class="auth-label">展示圖 URL (選填)</label>
+        <input type="text" id="newProdImage" class="auth-input" placeholder="https://.../item.png">
+      </div>
+      <div class="auth-input-group">
+        <label class="auth-label">初始庫存狀態</label>
+        <select id="newProdStockStatus" class="auth-select">
+          <option value="IN_STOCK">🟢 【有貨】(IN_STOCK)</option>
+          <option value="OUT_OF_STOCK">🔴 【缺貨】(OUT_OF_STOCK)</option>
+          <option value="RESTOCKING">🟡 【補貨中】(RESTOCKING)</option>
+        </select>
+      </div>
+      <div style="display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 1rem;">
+        <button id="btnCancelAddProduct" class="btn-tool" style="background: rgba(255,255,255,0.1);">取消</button>
+        <button id="btnSubmitAddProduct" class="btn-tool" style="background: #10b981; border-color: #10b981; color: #fff; font-weight:700;">
+          ✨ 建立並上架商品
+        </button>
+      </div>
+    </div>
+  </div>
 
   <!-- Firebase 初始化設定 -->
   <script>

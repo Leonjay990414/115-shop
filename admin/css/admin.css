@@ -637,3 +637,199 @@ body {
     flex-wrap: wrap;
   }
 }
+
+/* ==========================================================================
+   後台主功能分頁切換列 (Admin Tab Navigation)
+   ========================================================================== */
+.admin-tab-nav {
+  background: rgba(15, 23, 42, 0.95);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 0.5rem 1.5rem;
+  position: sticky;
+  top: 60px;
+  z-index: 50;
+}
+
+.tab-nav-inner {
+  display: flex;
+  gap: 0.6rem;
+  align-items: center;
+  overflow-x: auto;
+}
+
+.admin-tab-btn {
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-muted);
+  padding: 0.45rem 1rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.admin-tab-btn:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+}
+
+.admin-tab-btn.active {
+  background: rgba(99, 102, 241, 0.2);
+  border-color: rgba(99, 102, 241, 0.5);
+  color: #818cf8;
+}
+
+.tab-badge {
+  background: var(--danger);
+  color: #fff;
+  font-size: 0.7rem;
+  padding: 0.1rem 0.4rem;
+  border-radius: 9999px;
+  font-weight: 800;
+}
+
+/* ==========================================================================
+   表格中各組獨立狀態切換下拉選單 (Inline FSM Dropdowns)
+   ========================================================================== */
+.table-status-select {
+  background: #0f172a;
+  border: 1px solid #334155;
+  color: #f8fafc;
+  font-size: 0.76rem;
+  font-weight: 600;
+  padding: 0.25rem 0.45rem;
+  border-radius: 6px;
+  cursor: pointer;
+  outline: none;
+  max-width: 110px;
+}
+
+.table-status-select:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 6px var(--primary-glow);
+}
+
+.status-qc-pass { border-color: rgba(16, 185, 129, 0.6); color: #34d399; }
+.status-qc-fail { border-color: rgba(239, 68, 68, 0.6); color: #f87171; }
+.status-qc-pending { border-color: rgba(245, 158, 11, 0.6); color: #fbbf24; }
+
+.status-prod-done { border-color: rgba(16, 185, 129, 0.6); color: #34d399; }
+.status-prod-in { border-color: rgba(56, 189, 248, 0.6); color: #38bdf8; }
+.status-prod-wait { border-color: rgba(148, 163, 184, 0.6); color: #94a3b8; }
+
+.status-logistics-done { border-color: rgba(16, 185, 129, 0.6); color: #34d399; }
+.status-logistics-in { border-color: rgba(168, 85, 247, 0.6); color: #c084fc; }
+.status-logistics-wait { border-color: rgba(148, 163, 184, 0.6); color: #94a3b8; }
+
+.status-pay-done { border-color: rgba(16, 185, 129, 0.6); color: #34d399; }
+.status-pay-wait { border-color: rgba(245, 158, 11, 0.6); color: #fbbf24; }
+.status-pay-none { border-color: rgba(239, 68, 68, 0.6); color: #f87171; }
+
+.thumb-preview-box {
+  width: 44px;
+  height: 44px;
+  border-radius: 6px;
+  overflow: hidden;
+  cursor: pointer;
+  background: #020617;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.thumb-preview-box:hover {
+  transform: scale(1.15);
+  border-color: var(--primary);
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.4);
+}
+
+.thumb-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* ==========================================================================
+   圖片高畫質燈箱 (Image Lightbox)
+   ========================================================================== */
+.lightbox-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  background: rgba(0, 0, 0, 0.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  display: flex;
+  flex-direction: column;
+}
+
+.lightbox-toolbar {
+  height: 54px;
+  background: rgba(15, 23, 42, 0.95);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1.5rem;
+}
+
+.lightbox-controls {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.btn-lightbox-tool {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff;
+  padding: 0.35rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-lightbox-tool:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: #fff;
+}
+
+.btn-lightbox-close {
+  background: rgba(239, 68, 68, 0.3);
+  border-color: rgba(239, 68, 68, 0.6);
+  color: #fca5a5;
+  margin-left: 0.5rem;
+}
+
+.btn-lightbox-close:hover {
+  background: rgba(239, 68, 68, 0.7);
+  color: #fff;
+}
+
+.lightbox-image-stage {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: auto;
+  padding: 1.5rem;
+  position: relative;
+}
+
+.lightbox-target-img {
+  max-width: 90vw;
+  max-height: 82vh;
+  object-fit: contain;
+  transition: transform 0.25s ease-out;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
+  border-radius: 8px;
+}

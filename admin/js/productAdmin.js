@@ -121,14 +121,83 @@
   }
 
   /**
-   * 3. 渲染 PIM 編輯卡片至抽屜容器
+   * 3. 新增商品項目 (➕ 新增商品)
    */
-  function renderPimProducts(containerEl, productsList, onSaveCallback) {
+  async function createProductItem(db, productData) {
+    if (!db) throw new Error("db 實例不可為空");
+    if (!productData || !productData.code) throw new Error("商品代碼不可為空！");
+
+    const code = productData.code.trim().toUpperCase();
+    const docRef = db.collection("products").doc(code);
+    const snap = await docRef.get();
+    if (snap.exists) {
+      throw new Error(`商品代碼【${code}】已存在，不可重複建立！`);
+    }
+
+    const payload = {
+      code: code,
+      name: productData.name ? productData.name.trim() : "新商品",
+      category: productData.category || "accessories",
+      price: Number(productData.price) || 0,
+      stockStatus: productData.stockStatus || "IN_STOCK",
+      imageUrl: productData.imageUrl ? productData.imageUrl.trim() : "",
+      desc: productData.desc ? productData.desc.trim() : "",
+      specDetail: productData.specDetail ? productData.specDetail.trim() : "校慶前統一批次印製完畢。",
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+
+    await docRef.set(payload);
+    return { success: true, message: `✨ 商品【${code}】已成功新增！`, product: payload };
+  }
+
+  /**
+   * 4. 刪除商品項目 (🗑️ 刪除商品，含確認防呆)
+   */
+  async function deleteProductItem(db, productCode) {
+    if (!db) throw new Error("db 實例不可為空");
+    if (!productCode) throw new Error("商品代碼不可為空！");
+
+    const code = productCode.trim().toUpperCase();
+    await db.collection("products").doc(code).delete();
+    return { success: true, message: `🗑️ 商品【${code}】已從雲端永久刪除！` };
+  }
+
+  /**
+   * 5. 渲染 PIM 編輯卡片至抽屜容器 (含「➕ 新增商品」按鈕與各品項「🗑️ 刪除」防呆)
+   */
+  function renderPimProducts(containerEl, productsList, onSaveCallback, onDeleteCallback, onAddCallback) {
     if (!containerEl) return;
     containerEl.innerHTML = "";
 
+    // 頂部動作列：新增商品按鈕
+    const topActionBar = document.createElement("div");
+    topActionBar.style.display = "flex";
+    topActionBar.style.justifyContent = "space-between";
+    topActionBar.style.alignItems = "center";
+    topActionBar.style.marginBottom = "0.75rem";
+
+    topActionBar.innerHTML = `
+      <span style="font-size:0.85rem; color:#94a3b8;">共 ${productsList ? productsList.length : 0} 項商品型錄</span>
+      <button id="btnPimAddNewProduct" class="btn-tool" style="background: rgba(16, 185, 129, 0.2); border-color: rgba(16, 185, 129, 0.5); color: #10b981; font-weight: 700; padding: 0.4rem 0.9rem;">
+        ➕ 新增商品
+      </button>
+    `;
+
+    topActionBar.querySelector("#btnPimAddNewProduct").addEventListener("click", () => {
+      if (typeof onAddCallback === "function") {
+        onAddCallback();
+      }
+    });
+
+    containerEl.appendChild(topActionBar);
+
     if (!productsList || productsList.length === 0) {
-      containerEl.innerHTML = `<p style="color:var(--text-muted); text-align:center;">無商品資料</p>`;
+      const emptyMsg = document.createElement("p");
+      emptyMsg.style.color = "var(--text-muted)";
+      emptyMsg.style.textAlign = "center";
+      emptyMsg.textContent = "目前無商品資料，請點擊上方「➕ 新增商品」建立";
+      containerEl.appendChild(emptyMsg);
       return;
     }
 
@@ -138,12 +207,13 @@
       card.style.display = "flex";
       card.style.flexDirection = "column";
       card.style.gap = "0.75rem";
+      card.style.position = "relative";
 
       card.innerHTML = `
         <div style="display:flex; justify-content:space-between; align-items:center;">
           <strong style="color:var(--primary); font-size:1rem;">[${p.code}] ${p.name}</strong>
-          <div>
-            <label style="font-size:0.75rem; color:var(--text-muted); margin-right:0.4rem;">庫存狀態：</label>
+          <div style="display:flex; align-items:center; gap:0.5rem;">
+            <label style="font-size:0.75rem; color:var(--text-muted);">庫存：</label>
             <select class="pim-stock-select auth-select" style="padding:0.25rem 0.5rem; font-size:0.8rem; width:auto; display:inline-block;">
               <option value="IN_STOCK" ${p.stockStatus === "IN_STOCK" ? "selected" : ""}>🟢 【有貨】</option>
               <option value="OUT_OF_STOCK" ${p.stockStatus === "OUT_OF_STOCK" ? "selected" : ""}>🔴 【缺貨】</option>
@@ -173,7 +243,10 @@
           <input type="text" class="pim-img-input auth-input" value="${p.imageUrl || ""}" placeholder="例如：https://.../mug.png" style="padding:0.45rem 0.75rem; font-size:0.85rem;">
         </div>
 
-        <div style="text-align:right; margin-top:0.25rem;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:0.25rem;">
+          <button class="btn-tool btn-delete-pim-item" style="padding:0.35rem 0.75rem; font-size:0.8rem; background:rgba(239,68,68,0.15); border-color:var(--danger); color:var(--danger);">
+            🗑️ 刪除商品
+          </button>
           <button class="btn-tool btn-save-pim-item" style="padding:0.35rem 0.85rem; font-size:0.8rem; background:rgba(56,189,248,0.15); border-color:var(--primary); color:#fff;">
             💾 儲存此品項變更
           </button>
@@ -195,6 +268,15 @@
         }
       });
 
+      // 刪除事件 (防呆二度確認)
+      const btnDel = card.querySelector(".btn-delete-pim-item");
+      btnDel.addEventListener("click", () => {
+        const confirmed = window.confirm(`⚠️ 確定要刪除商品【${p.name}】(${p.code}) 嗎？\n刪除後此品項將不再於前台與後台顯示！`);
+        if (confirmed && typeof onDeleteCallback === "function") {
+          onDeleteCallback(p.code);
+        }
+      });
+
       containerEl.appendChild(card);
     });
   }
@@ -203,6 +285,8 @@
     SEED_PRODUCTS,
     initProductAdmin,
     updateProductItem,
+    createProductItem,
+    deleteProductItem,
     renderPimProducts
   };
 

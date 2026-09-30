@@ -50,42 +50,42 @@
       : `${y}/${m}/${d} ${hh}:${mm}:${ss}`;
   }
 
-  // 正式 17 人標準成員帳籍矩陣 (最新校準 412001~412015 驗證碼體系)
+  // 正式 17 人標準成員帳籍矩陣 (最新校準 412001~412015 驗證碼體系，首次登入開通狀態 isActivated)
   const OFFICIAL_17_STAFF_USERS = [
     // 兩位最高階師長
-    { staffId: "admin_dept_head", password: "ZgBoss@2026_00", authCode: "000000", role: USER_ROLES.HEAD_OF_DEPT, name: "科主任", hasInitialized: false, isSuperUser: true },
-    { staffId: "admin_teacher", password: "ZgTeacher@2026", authCode: "888888", role: USER_ROLES.ADVISOR_TEACHER, name: "指導老師", hasInitialized: false, isSuperUser: true },
+    { staffId: "admin_dept_head", password: "ZgBoss@2026_00", authCode: "000000", role: USER_ROLES.HEAD_OF_DEPT, name: "科主任", isActivated: false, hasInitialized: false, isSuperUser: true },
+    { staffId: "admin_teacher", password: "ZgTeacher@2026", authCode: "888888", role: USER_ROLES.ADVISOR_TEACHER, name: "指導老師", isActivated: false, hasInitialized: false, isSuperUser: true },
 
     // 總召
-    { staffId: "admin_director", password: "ZgShop@2026_01", authCode: "412001", role: USER_ROLES.SUPER_ADMIN, name: "總召", hasInitialized: false, isSuperUser: true },
+    { staffId: "admin_director", password: "ZgShop@2026_01", authCode: "412001", role: USER_ROLES.SUPER_ADMIN, name: "總召", isActivated: false, hasInitialized: false, isSuperUser: true },
 
     // AI 網站組 (412002, 412003)
-    { staffId: "admin_web_core", password: "ZgShop@2026_02", authCode: "412002", role: USER_ROLES.DEVELOPER, name: "AI 網站核心", hasInitialized: false, isSuperUser: false },
-    { staffId: "admin_web_staff", password: "ZgShop@2026_03", authCode: "412003", role: USER_ROLES.DEVELOPER, name: "AI 網站招募", hasInitialized: false, isSuperUser: false },
+    { staffId: "admin_web_core", password: "ZgShop@2026_02", authCode: "412002", role: USER_ROLES.DEVELOPER, name: "AI 網站核心 (組長)", isActivated: false, hasInitialized: false, isSuperUser: false },
+    { staffId: "admin_web_staff", password: "ZgShop@2026_03", authCode: "412003", role: USER_ROLES.DEVELOPER, name: "AI 網站招募 (組員)", isActivated: false, hasInitialized: false, isSuperUser: false },
 
     // 美術視覺組 (412004, 412005)
-    { staffId: "admin_art_core", password: "ZgShop@2026_04", authCode: "412004", role: USER_ROLES.QC_REVIEWER, name: "美術視覺核心", hasInitialized: false, isSuperUser: false },
-    { staffId: "admin_art_staff", password: "ZgShop@2026_05", authCode: "412005", role: USER_ROLES.QC_REVIEWER, name: "美術視覺招募", hasInitialized: false, isSuperUser: false },
+    { staffId: "admin_art_core", password: "ZgShop@2026_04", authCode: "412004", role: USER_ROLES.QC_REVIEWER, name: "美術視覺核心 (組長)", isActivated: false, hasInitialized: false, isSuperUser: false },
+    { staffId: "admin_art_staff", password: "ZgShop@2026_05", authCode: "412005", role: USER_ROLES.QC_REVIEWER, name: "美術視覺招募 (組員)", isActivated: false, hasInitialized: false, isSuperUser: false },
 
     // 商品製作組 (412006, 412007)
-    { staffId: "admin_maker_core", password: "ZgShop@2026_06", authCode: "412006", role: USER_ROLES.PRODUCTION, name: "商品製作核心", hasInitialized: false, isSuperUser: false },
-    { staffId: "admin_maker_staff", password: "ZgShop@2026_07", authCode: "412007", role: USER_ROLES.PRODUCTION, name: "商品製作招募", hasInitialized: false, isSuperUser: false },
+    { staffId: "admin_maker_core", password: "ZgShop@2026_06", authCode: "412006", role: USER_ROLES.PRODUCTION, name: "商品製作核心 (組長)", isActivated: false, hasInitialized: false, isSuperUser: false },
+    { staffId: "admin_maker_staff", password: "ZgShop@2026_07", authCode: "412007", role: USER_ROLES.PRODUCTION, name: "商品製作招募 (組員)", isActivated: false, hasInitialized: false, isSuperUser: false },
 
     // 財務組 (412008, 412009)
-    { staffId: "admin_finance_core", password: "ZgShop@2026_08", authCode: "412008", role: USER_ROLES.FINANCE, name: "財務組核心", hasInitialized: false, isSuperUser: false },
-    { staffId: "admin_finance_staff", password: "ZgShop@2026_09", authCode: "412009", role: USER_ROLES.FINANCE, name: "財務組招募", hasInitialized: false, isSuperUser: false },
+    { staffId: "admin_finance_core", password: "ZgShop@2026_08", authCode: "412008", role: USER_ROLES.FINANCE, name: "財務組核心 (組長)", isActivated: false, hasInitialized: false, isSuperUser: false },
+    { staffId: "admin_finance_staff", password: "ZgShop@2026_09", authCode: "412009", role: USER_ROLES.FINANCE, name: "財務組招募 (組員)", isActivated: false, hasInitialized: false, isSuperUser: false },
 
     // 企劃組 (412010, 412011)
-    { staffId: "staff_plan_A", password: "ZgStaff@2026_10", authCode: "412010", role: USER_ROLES.MARKETING, name: "企劃組 A", hasInitialized: false, isSuperUser: false },
-    { staffId: "staff_plan_B", password: "ZgStaff@2026_11", authCode: "412011", role: USER_ROLES.MARKETING, name: "企劃組 B", hasInitialized: false, isSuperUser: false },
+    { staffId: "staff_plan_A", password: "ZgStaff@2026_10", authCode: "412010", role: USER_ROLES.MARKETING, name: "企劃組 A (組長)", isActivated: false, hasInitialized: false, isSuperUser: false },
+    { staffId: "staff_plan_B", password: "ZgStaff@2026_11", authCode: "412011", role: USER_ROLES.MARKETING, name: "企劃組 B (組員)", isActivated: false, hasInitialized: false, isSuperUser: false },
 
     // 宣傳組 (412012, 412013)
-    { staffId: "staff_promo_A", password: "ZgStaff@2026_12", authCode: "412012", role: USER_ROLES.PROMOTION, name: "宣傳組 A", hasInitialized: false, isSuperUser: false },
-    { staffId: "staff_promo_B", password: "ZgStaff@2026_13", authCode: "412013", role: USER_ROLES.PROMOTION, name: "宣傳組 B", hasInitialized: false, isSuperUser: false },
+    { staffId: "staff_promo_A", password: "ZgStaff@2026_12", authCode: "412012", role: USER_ROLES.PROMOTION, name: "宣傳組 A (組長)", isActivated: false, hasInitialized: false, isSuperUser: false },
+    { staffId: "staff_promo_B", password: "ZgStaff@2026_13", authCode: "412013", role: USER_ROLES.PROMOTION, name: "宣傳組 B (組員)", isActivated: false, hasInitialized: false, isSuperUser: false },
 
     // 外送組 (412014, 412015)
-    { staffId: "staff_delivery_A", password: "ZgStaff@2026_14", authCode: "412014", role: USER_ROLES.LOGISTICS, name: "外送組 A", hasInitialized: false, isSuperUser: false },
-    { staffId: "staff_delivery_B", password: "ZgStaff@2026_15", authCode: "412015", role: USER_ROLES.LOGISTICS, name: "外送組 B", hasInitialized: false, isSuperUser: false }
+    { staffId: "staff_delivery_A", password: "ZgStaff@2026_14", authCode: "412014", role: USER_ROLES.LOGISTICS, name: "外送組 A (組長)", isActivated: false, hasInitialized: false, isSuperUser: false },
+    { staffId: "staff_delivery_B", password: "ZgStaff@2026_15", authCode: "412015", role: USER_ROLES.LOGISTICS, name: "外送組 B (組員)", isActivated: false, hasInitialized: false, isSuperUser: false }
   ];
 
   /**
@@ -111,20 +111,24 @@
       if (!snap.exists) {
         batch.set(docRef, {
           ...staff,
+          isActivated: false,
+          hasInitialized: false,
           createdAt: global.firebase && global.firebase.firestore ? global.firebase.firestore.FieldValue.serverTimestamp() : new Date().toISOString(),
           firstLoginAt: null
         });
         needCommit = true;
       } else {
         const existingData = snap.data();
-        // 若雲端密碼或驗證碼不符，自動校準更新
-        if (existingData.password !== staff.password || existingData.authCode !== staff.authCode || existingData.role !== staff.role) {
-          batch.update(docRef, {
-            password: staff.password,
-            authCode: staff.authCode,
-            role: staff.role,
-            name: staff.name
-          });
+        const updateData = {};
+        // 確保 isActivated 欄位存在
+        if (existingData.isActivated === undefined) {
+          updateData.isActivated = existingData.hasInitialized || false;
+        }
+        if (existingData.name !== staff.name) {
+          updateData.name = staff.name;
+        }
+        if (Object.keys(updateData).length > 0) {
+          batch.update(docRef, updateData);
           needCommit = true;
         }
       }
@@ -179,12 +183,14 @@
       }
     }
 
-    // 帳號密碼登入成功後，將 hasInitialized 自動標記為 true，解鎖其後續的身分+學號驗證碼快速登入
+    // 帳號密碼登入成功後，將 isActivated 與 hasInitialized 自動標記為 true，解鎖其後續的身分+驗證碼快速登入
     const serverTimestamp = global.firebase && global.firebase.firestore ? global.firebase.firestore.FieldValue.serverTimestamp() : new Date().toISOString();
     await docRef.update({
+      isActivated: true,
       hasInitialized: true,
       firstLoginAt: staffData.firstLoginAt || serverTimestamp
     });
+    staffData.isActivated = true;
     staffData.hasInitialized = true;
 
     return {
@@ -199,10 +205,15 @@
 
   /**
    * 2. 軌道 2【身分與學號驗證碼登入】
+   * 規範：
+   * 1. 選擇身分席位 (staffId 或角色) + 輸入 6 碼驗證碼
+   * 2. 若資料庫查出該身分尚未完成首次帳密登入 (isActivated !== true)，則拒絕登入並彈窗提示：
+   *    「⚠️ 該身分尚未完成首次登入開通，請先切換至【帳號密碼】登入一次以啟用驗證碼功能！」
+   * 3. 若已開通且驗證碼正確，則順利登入
    */
   async function loginWithIdentityCode(db, staffIdOrRole, authCode) {
     if (!db) throw new Error("[RbacService] db 實例不可為空");
-    if (!staffIdOrRole || !authCode) throw new Error("請填寫帳號/身分並輸入 6 碼驗證碼！");
+    if (!staffIdOrRole || !authCode) throw new Error("請選擇身分席位並輸入 6 碼專屬驗證碼！");
 
     const trimmedCode = String(authCode).trim();
     const cleanId = String(staffIdOrRole).trim();
@@ -219,17 +230,18 @@
     }
 
     if (!targetDocSnap || !targetDocSnap.exists) {
-      throw new Error(`❌ 找不到符合此身分【${cleanId}】或驗證碼【${trimmedCode}】的工作人員檔案！`);
+      throw new Error(`❌ 找不到符合此身分【${cleanId}】的工作人員檔案！`);
     }
 
     const staffData = targetDocSnap.data();
 
-    if (!staffData.hasInitialized) {
-      throw new Error(`🚨 權限尚未解鎖：此帳號【${staffData.name}】尚未完成首次帳密登入，請先使用帳號密碼登入一次以解鎖驗證碼快速登入！`);
+    // 檢查是否已完成首次帳密登入開通 (isActivated 欄位)
+    if (staffData.isActivated !== true && staffData.hasInitialized !== true) {
+      throw new Error(`⚠️ 該身分尚未完成首次登入開通，請先切換至【帳號密碼】登入一次以啟用驗證碼功能！`);
     }
 
     if (staffData.authCode !== trimmedCode) {
-      throw new Error(`❌ 驗證碼錯誤：輸入的 6 位數驗證碼不相符！`);
+      throw new Error(`❌ 驗證碼錯誤：輸入的 6 位數專屬驗證碼不相符！`);
     }
 
     return {

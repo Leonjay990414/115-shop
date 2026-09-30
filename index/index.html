@@ -5,6 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>115校慶園遊會 - 客製化紀念商品商城</title>
   
+  <!-- Google Fonts: Noto Sans TC & Zen Maru Gothic (質感圓體與標準黑體) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700;900&family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
+  
   <!-- 外部樣式表 -->
   <link rel="stylesheet" href="css/style.css">
 
@@ -26,6 +31,24 @@
 
   <!-- 全域 Toast 容器 (用以呈現強制上傳圖片之紅色提示) -->
   <div id="toastContainer" class="toast-container"></div>
+
+  <!-- 頂部/下滑式動態膠囊導覽島 (Dynamic Island) -->
+  <aside id="dynamicIsland" class="dynamic-island-capsule">
+    <div class="island-collapsed-content">
+      <div class="island-badge">115</div>
+      <span class="island-status-dot"></span>
+      <span class="island-title">校慶客製商城</span>
+    </div>
+    <div class="island-expanded-content">
+      <a href="#catalog" class="island-link">商品</a>
+      <a href="#features" class="island-link">規範</a>
+      <a href="#notice" class="island-link">取件</a>
+      <button id="islandMemberBtn" class="island-btn">會員</button>
+      <button id="islandCartBtn" class="island-btn island-btn-cart">
+        🛒 <span id="islandCartBadge">0</span>
+      </button>
+    </div>
+  </aside>
 
   <!-- 頂部液態玻璃導覽列 -->
   <header class="main-header">
@@ -120,12 +143,12 @@
 
     <!-- 取件須知專區 -->
     <section class="hero-banner" id="notice" style="margin-bottom: 3rem;">
-      <h2 style="font-size: 1.25rem; font-weight: 700; color: #0f172a; margin-bottom: 0.5rem;">📝 校慶預購與取貨須知</h2>
-      <p style="font-size: 0.88rem; color: var(--text-muted); max-width: 680px; text-align: left; line-height: 1.6;">
-        1. <strong>線上選購與圖檔檢測</strong>：挑選品項並強制上傳圖檔，系統自動檢驗 1080P 高解析度。<br>
-        2. <strong>送出訂單與拆單</strong>：結帳時填寫完整身分資料，自動建立會員並將訂單分派各產線排印。<br>
-        3. <strong>財務核銷與簽收</strong>：送出後請至財務組繳費並簽收第一聯顧客憑證。<br>
-        4. <strong>校慶當日取貨</strong>：商品於校慶前統一印製完畢，校慶當日請持第一聯憑證至現場專屬攤位驗章取貨。客製化商品專屬訂製，無退換貨服務。
+      <h2 style="font-size: 1.25rem; font-weight: 700; color: #0f172a; margin-bottom: 0.5rem;">📝 校慶預購與退換貨規範須知</h2>
+      <p style="font-size: 0.88rem; color: var(--text-muted); max-width: 720px; text-align: left; line-height: 1.7;">
+        1. <strong>發送三聯單並簽名後，即不接受退貨</strong>。<br>
+        2. <strong>若要退貨，必須在三聯單發送前，親自到資料處理科 6 樓科辦公室向主任說明</strong>。如果主任不在，請向現場老師說明由其轉達給其他老師；或下次再來，或向現場師生詢問主任去向後再行處理。<br>
+        3. <strong>領貨時一律憑第一聯【顧客付款與取貨憑證聯】領取</strong>。<br>
+        4. <strong>三聯單由派送組送達時，財務人員將隨行前往並當場完成款項收訖</strong>。
       </p>
     </section>
 
@@ -248,25 +271,25 @@
 
       <div class="notice-rules-box">
         <div class="notice-rule-item">
-          <span>📐</span>
-          <div><strong>解析度建議</strong>：圖檔建議達到 1080P 以上，支援 PNG、JPG、WEBP 格式，以確保印製成品精美細膩。</div>
+          <span>✍️</span>
+          <div><strong>條款 1【簽名即生效】</strong>：發送三聯單並簽名後，即不接受退貨。</div>
         </div>
         <div class="notice-rule-item">
-          <span>🚫</span>
-          <div><strong>不予取消與退費</strong>：客製化商品依個人指示專屬製作，完成送單排印後<strong>恕不可取消或退費</strong>。</div>
-        </div>
-        <div class="notice-rule-item">
-          <span>🎪</span>
-          <div><strong>校慶當日取貨憑證</strong>：商品將於校慶前統一印製，請務必妥善保管第一聯顧客聯，於<strong>校慶當日憑單至專屬攤位驗章取貨</strong>。</div>
+          <span>🏫</span>
+          <div><strong>條款 2【退貨申請程序】</strong>：若要退貨，必須在三聯單發送前，親自到資料處理科 6 樓科辦公室向主任說明。如果主任不在，請向現場老師說明由其轉達給其他老師；或下次再來，或向現場師生詢問主任去向後再行處理。</div>
         </div>
         <div class="notice-rule-item">
           <span>🧾</span>
-          <div><strong>財務實收為憑</strong>：送出訂單後請至財務組繳費完成核銷簽收。</div>
+          <div><strong>條款 3【憑單領貨原則】</strong>：領貨時一律憑第一聯【顧客付款與取貨憑證聯】領取。</div>
+        </div>
+        <div class="notice-rule-item">
+          <span>💰</span>
+          <div><strong>條款 4【派送隨行收訖】</strong>：三聯單由派送組送達時，財務人員將隨行前往並當場完成款項收訖。</div>
         </div>
       </div>
 
       <button id="btnAgreeNotice" class="checkout-btn" style="background: var(--accent-gradient);">
-        🤝 我已清楚明白並同意
+        🤝 我已清楚閱讀並全數同意以上條款
       </button>
     </div>
   </div>
@@ -288,101 +311,145 @@
       <!-- 登入表單 -->
       <div id="studentLoginBox">
         <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem;">
-          登入狀態嚴格存放於當前分頁 (sessionStorage)，關閉分頁即自動安全登出。
+          前台登入一律使用【自訂帳號】與【自訂密碼】。登入狀態保存在當前分頁 (sessionStorage)。
         </p>
         <div class="form-group">
-          <label class="form-label">使用者帳號 / 6位學號</label>
-          <input type="text" id="loginStudentId" class="form-input" placeholder="輸入帳號或 6 碼學號">
+          <label class="form-label">自訂使用者帳號 <span style="color: var(--danger);">*</span></label>
+          <input type="text" id="loginStudentId" class="form-input" placeholder="輸入自訂帳號 (英數字組合)">
         </div>
         <div class="form-group">
-          <label class="form-label">登入密碼</label>
-          <input type="password" id="loginStudentPwd" class="form-input" placeholder="輸入密碼 (預設為學號後4碼)">
+          <label class="form-label">自訂登入密碼 <span style="color: var(--danger);">*</span></label>
+          <input type="password" id="loginStudentPwd" class="form-input" placeholder="輸入自訂密碼">
         </div>
         <button id="btnStudentLoginSubmit" class="checkout-btn" style="margin-top: 0.5rem;">
           🚀 登入會員帳號
         </button>
       </div>
 
-      <!-- 註冊表單 (師生通用) -->
+      <!-- 註冊表單 (兩階段：1. Email 驗證碼 2. 自訂帳密與個資) -->
       <div id="studentRegisterBox" style="display: none;">
-        <div class="form-group">
-          <label class="form-label">身分選擇</label>
-          <div style="display: flex; gap: 1rem; margin-top: 0.25rem;">
-            <label style="font-size: 0.9rem; display: flex; align-items: center; gap: 0.3rem;">
-              <input type="radio" name="regUserType" value="STUDENT" checked> 學生
-            </label>
-            <label style="font-size: 0.9rem; display: flex; align-items: center; gap: 0.3rem;">
-              <input type="radio" name="regUserType" value="FACULTY"> 教職員
-            </label>
+        
+        <!-- 第一階段：電子信箱驗證 -->
+        <div id="regStage1EmailBox">
+          <div style="background: rgba(99, 102, 241, 0.08); border: 1px solid rgba(99, 102, 241, 0.2); border-radius: 12px; padding: 0.85rem; margin-bottom: 1rem;">
+            <strong style="font-size: 0.85rem; color: var(--accent-primary); display: block; margin-bottom: 0.25rem;">
+              📧 第一階段：電子信箱身分驗證
+            </strong>
+            <p style="font-size: 0.78rem; color: var(--text-muted); margin: 0;">
+              為確保訂單通知信件送達，請先輸入您的電子信箱 (支援 Gmail、新北教育帳號 @apps.ntpc.edu.tw 等) 並完成 6 位數驗證碼核驗。
+            </p>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">電子信箱 (支援所有信箱) <span style="color: var(--danger);">*</span></label>
+            <div style="display: flex; gap: 0.5rem;">
+              <input type="email" id="regEmailInput" class="form-input" placeholder="例如：user@gmail.com 或 @apps.ntpc.edu.tw" style="flex: 1;">
+              <button type="button" id="btnSendVerifyCode" class="btn-tool" style="background: var(--accent-primary); color: #fff; border: none; border-radius: 10px; padding: 0.55rem 0.9rem; font-size: 0.8rem; font-weight: 700; white-space: nowrap; cursor: pointer;">
+                發送驗證碼
+              </button>
+            </div>
+          </div>
+
+          <div class="form-group" id="regCodeInputGroup" style="margin-top: 0.75rem;">
+            <label class="form-label">輸入 6 位數 Email 驗證碼 <span style="color: var(--danger);">*</span></label>
+            <div style="display: flex; gap: 0.5rem;">
+              <input type="text" id="regVerifyCodeInput" class="form-input" maxlength="6" placeholder="請輸入 6 碼數字" style="flex: 1; font-family: monospace; font-size: 1.1rem; letter-spacing: 2px;">
+              <button type="button" id="btnVerifyCodeSubmit" class="btn-tool" style="background: #10b981; color: #fff; border: none; border-radius: 10px; padding: 0.55rem 1.1rem; font-size: 0.82rem; font-weight: 700; white-space: nowrap; cursor: pointer;">
+                ✅ 驗證
+              </button>
+            </div>
+            <span id="verifyCodeTimerHint" style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.3rem; display: block;"></span>
           </div>
         </div>
 
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
-          <div class="form-group">
-            <label class="form-label">設定使用者帳號 <span style="color: var(--danger);">*</span></label>
-            <input type="text" id="regUsername" class="form-input" placeholder="如：user412008">
+        <!-- 第二階段：自訂帳號密碼與防呆資料填寫 (通過驗證後解鎖) -->
+        <div id="regStage2FieldsBox" style="display: none; border-top: 1px dashed #cbd5e1; padding-top: 1rem; margin-top: 0.75rem;">
+          <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 10px; padding: 0.6rem 0.85rem; margin-bottom: 0.85rem; display: flex; align-items: center; justify-content: space-between;">
+            <span style="font-size: 0.8rem; color: #047857; font-weight: 700;">🟢 信箱驗證通過：<code id="verifiedEmailDisplay"></code></span>
+            <span style="font-size: 0.72rem; color: #059669; font-weight: 600;">第二階段：資料填寫</span>
           </div>
-          <div class="form-group">
-            <label class="form-label">設定登入密碼 <span style="color: var(--danger);">*</span></label>
-            <input type="password" id="regPassword" class="form-input" placeholder="至少4碼密碼">
-          </div>
-        </div>
 
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
           <div class="form-group">
-            <label class="form-label">真實姓名 <span style="color: var(--danger);">*</span></label>
-            <input type="text" id="regName" class="form-input" maxlength="5" placeholder="例如：王小明">
+            <label class="form-label">身分選擇</label>
+            <div style="display: flex; gap: 1rem; margin-top: 0.25rem;">
+              <label style="font-size: 0.9rem; display: flex; align-items: center; gap: 0.3rem;">
+                <input type="radio" name="regUserType" value="STUDENT" checked> 學生
+              </label>
+              <label style="font-size: 0.9rem; display: flex; align-items: center; gap: 0.3rem;">
+                <input type="radio" name="regUserType" value="FACULTY"> 教職員
+              </label>
+            </div>
           </div>
-          <div class="form-group">
-            <label class="form-label">性別</label>
-            <select id="regGender" class="form-select">
-              <option value="男">男</option>
-              <option value="女">女</option>
-              <option value="保密">保密</option>
-            </select>
-          </div>
-        </div>
 
-        <div class="form-group">
-          <label class="form-label">10 碼連絡電話 <span style="color: var(--danger);">*</span></label>
-          <input type="tel" id="regPhone" class="form-input" maxlength="10" placeholder="例如：0912345678">
-        </div>
-
-        <!-- 學生專屬欄位 (班級以 34 個標準選項下拉) -->
-        <div id="regStudentFields">
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
             <div class="form-group">
-              <label class="form-label">學號 (6位數字) <span style="color: var(--danger);">*</span></label>
-              <input type="text" id="regStudentId" class="form-input" maxlength="6" placeholder="例如：412008">
+              <label class="form-label">自訂帳號 (英數字組合) <span style="color: var(--danger);">* 全校唯一</span></label>
+              <input type="text" id="regUsername" class="form-input" placeholder="例如：leo115" maxlength="20">
+              <span id="regUsernameCheckHint" style="font-size: 0.72rem; display: block; margin-top: 2px;"></span>
             </div>
             <div class="form-group">
-              <label class="form-label">座號 (1~40) <span style="color: var(--danger);">*</span></label>
-              <input type="number" id="regSeatNumber" class="form-input" min="1" max="40" placeholder="例如：8">
+              <label class="form-label">設定登入密碼 <span style="color: var(--danger);">*</span></label>
+              <input type="password" id="regPassword" class="form-input" placeholder="至少4碼密碼">
             </div>
           </div>
-          <div class="form-group">
-            <label class="form-label">就讀班級 (34班標準選單) <span style="color: var(--danger);">*</span></label>
-            <select id="regClassSelect" class="form-select" required></select>
-          </div>
-        </div>
 
-        <!-- 教職員專屬欄位 -->
-        <div id="regFacultyFields" style="display: none;">
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
             <div class="form-group">
-              <label class="form-label">教職員編號 <span style="color: var(--danger);">*</span></label>
-              <input type="text" id="regFacultyId" class="form-input" placeholder="例如：T88801">
+              <label class="form-label">真實姓名 (限繁體中文) <span style="color: var(--danger);">*</span></label>
+              <input type="text" id="regName" class="form-input" maxlength="10" placeholder="僅限 2~10 位中文姓名">
+              <span id="regNameCheckHint" style="font-size: 0.72rem; display: block; margin-top: 3px; min-height: 1.1em;"></span>
             </div>
             <div class="form-group">
-              <label class="form-label">服務處室 / 科別 <span style="color: var(--danger);">*</span></label>
-              <input type="text" id="regDepartment" class="form-input" placeholder="例如：資料處理科 / 學務處">
+              <label class="form-label">性別</label>
+              <select id="regGender" class="form-select">
+                <option value="男">男</option>
+                <option value="女">女</option>
+                <option value="保密">保密</option>
+              </select>
             </div>
           </div>
-        </div>
 
-        <button id="btnStudentRegisterSubmit" class="checkout-btn" style="margin-top: 0.5rem; background: var(--accent-gradient);">
-          ✨ 註冊並登入
-        </button>
+          <div class="form-group">
+            <label class="form-label">10 碼連絡電話 <span style="color: var(--danger);">*</span></label>
+            <input type="tel" id="regPhone" class="form-input" maxlength="10" placeholder="例如：0912345678">
+          </div>
+
+          <!-- 學生專屬欄位 (班級以 34 個標準選項下拉) -->
+          <div id="regStudentFields">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+              <div class="form-group">
+                <label class="form-label">學號 (精準6位數字) <span style="color: var(--danger);">*</span></label>
+                <input type="text" id="regStudentId" class="form-input" maxlength="6" placeholder="例如：412008">
+              </div>
+              <div class="form-group">
+                <label class="form-label">座號 (1~40) <span style="color: var(--danger);">*</span></label>
+                <input type="number" id="regSeatNumber" class="form-input" min="1" max="40" placeholder="例如：8">
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">就讀班級 (34班標準選單) <span style="color: var(--danger);">*</span></label>
+              <select id="regClassSelect" class="form-select" required></select>
+            </div>
+          </div>
+
+          <!-- 教職員專屬欄位 -->
+          <div id="regFacultyFields" style="display: none;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+              <div class="form-group">
+                <label class="form-label">教職員編號 <span style="color: var(--danger);">*</span></label>
+                <input type="text" id="regFacultyId" class="form-input" placeholder="例如：T88801">
+              </div>
+              <div class="form-group">
+                <label class="form-label">服務處室 / 科別 <span style="color: var(--danger);">*</span></label>
+                <input type="text" id="regDepartment" class="form-input" placeholder="例如：資料處理科 / 學務處">
+              </div>
+            </div>
+          </div>
+
+          <button id="btnStudentRegisterSubmit" class="checkout-btn" style="margin-top: 0.5rem; background: var(--accent-gradient);">
+            ✨ 完成資料填寫並送出註冊
+          </button>
+        </div>
       </div>
 
     </div>
@@ -393,7 +460,7 @@
     <div class="modal-card member-card">
       <div class="modal-header">
         <div>
-          <strong class="modal-title">📋 校慶客製工單三軌進度查詢</strong>
+          <strong class="modal-title">📋 校慶客製工單與會員中心</strong>
           <p id="memberGreeting" style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.2rem;"></p>
         </div>
         <div style="display: flex; gap: 0.5rem; align-items: center;">
@@ -402,15 +469,45 @@
         </div>
       </div>
 
-      <!-- 快速輸入學號查詢列 (若未登入) -->
+      <!-- 會員專區只讀模式卡片 (學號、姓名、班級、座號、電話 - disabled/readonly 禁止隨意竄改) -->
+      <div id="memberProfileCard" class="member-readonly-profile" style="display: none; margin-bottom: 1.25rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem;">
+          <strong style="font-size: 0.85rem; color: #475569;">👤 會員基本資料 (已驗證・唯讀保全)</strong>
+          <span style="font-size: 0.72rem; padding: 0.15rem 0.55rem; background: rgba(16, 185, 129, 0.15); color: #059669; border-radius: 9999px; font-weight: 700;">🔒 欄位防竄改保護中</span>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0.6rem;">
+          <div>
+            <label class="readonly-label">學號 / 帳號</label>
+            <input type="text" id="profStudentId" class="readonly-field" readonly disabled>
+          </div>
+          <div>
+            <label class="readonly-label">真實姓名</label>
+            <input type="text" id="profName" class="readonly-field" readonly disabled>
+          </div>
+          <div>
+            <label class="readonly-label">就讀班級 / 處室</label>
+            <input type="text" id="profClass" class="readonly-field" readonly disabled>
+          </div>
+          <div>
+            <label class="readonly-label">座號</label>
+            <input type="text" id="profSeat" class="readonly-field" readonly disabled>
+          </div>
+          <div>
+            <label class="readonly-label">聯絡電話</label>
+            <input type="text" id="profPhone" class="readonly-field" readonly disabled>
+          </div>
+        </div>
+      </div>
+
+      <!-- 快速輸入帳號查詢列 (若未登入) -->
       <div id="quickSearchTrackBar" style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
-        <input type="text" id="trackSearchStudentId" class="form-input" maxlength="6" placeholder="輸入 6 碼學號查詢自身訂單..." style="flex: 1;">
+        <input type="text" id="trackSearchStudentId" class="form-input" placeholder="輸入會員自訂帳號查詢自身訂單..." style="flex: 1;">
         <button id="btnDoTrackSearch" class="btn-tool" style="background: var(--accent-gradient-btn); color: #fff; padding: 0.6rem 1.2rem; border: none; border-radius: 12px; font-weight: 700; cursor: pointer;">
           🔍 查詢
         </button>
       </div>
 
-      <div id="studentOrdersListContainer" style="max-height: 60vh; overflow-y: auto; padding-right: 0.3rem;">
+      <div id="studentOrdersListContainer" style="max-height: 52vh; overflow-y: auto; padding-right: 0.3rem;">
         <!-- 由 js/app.js 即時動態注入三軌進度卡片 -->
       </div>
     </div>
@@ -461,19 +558,24 @@
         </div>
       </div>
 
-      <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 0.75rem;">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
         <div class="form-group">
           <label class="form-label">連絡電話 (10碼手機) <span style="color: var(--danger);">*</span></label>
           <input type="tel" id="studentPhoneInput" class="form-input" maxlength="10" placeholder="例如：0912345678">
         </div>
         <div class="form-group">
-          <label class="form-label">性別</label>
-          <select id="studentGenderSelect" class="form-select">
-            <option value="保密">保密</option>
-            <option value="男">男</option>
-            <option value="女">女</option>
-          </select>
+          <label class="form-label">通知電子信箱 <span style="color: var(--danger);">*</span></label>
+          <input type="email" id="studentEmailInput" class="form-input" placeholder="例如：user@gmail.com 或 @apps.ntpc.edu.tw">
         </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">性別</label>
+        <select id="studentGenderSelect" class="form-select">
+          <option value="保密">保密</option>
+          <option value="男">男</option>
+          <option value="女">女</option>
+        </select>
       </div>
 
       <div class="form-group">
@@ -481,11 +583,51 @@
         <textarea id="finalOrderNotes" class="form-textarea" rows="2" placeholder="可輸入給製作團隊的備註事項"></textarea>
       </div>
 
+      <!-- 結帳前必勾選：四大購物須知與退換貨條款 -->
+      <div class="checkout-terms-box" style="background: rgba(248, 250, 252, 0.95); border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 0.85rem 1rem; margin-top: 0.75rem; margin-bottom: 0.5rem;">
+        <strong style="display:block; font-size: 0.84rem; color: #1e293b; margin-bottom: 0.45rem;">📜 購物須知與退換貨條款 (結帳前請詳細閱讀並勾選同意)：</strong>
+        <ol style="margin: 0; padding-left: 1.2rem; font-size: 0.78rem; color: #475569; line-height: 1.55;">
+          <li><strong>發送三聯單並簽名後，即不接受退貨</strong>。</li>
+          <li><strong>若要退貨，必須在三聯單發送前，親自到資料處理科 6 樓科辦公室向主任說明</strong>。如果主任不在，請向現場老師說明由其轉達給其他老師；或下次再來，或向現場師生詢問主任去向後再行處理。</li>
+          <li><strong>領貨時一律憑第一聯【顧客付款與取貨憑證聯】領取</strong>。</li>
+          <li><strong>三聯單由派送組送達時，財務人員將隨行前往並當場完成款項收訖</strong>。</li>
+        </ol>
+        <label style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.65rem; cursor: pointer; padding-top: 0.5rem; border-top: 1px dashed #cbd5e1;">
+          <input type="checkbox" id="chkAgreeCheckoutTerms" style="width: 17px; height: 17px; cursor: pointer; accent-color: var(--accent-primary);">
+          <span style="font-size: 0.82rem; font-weight: 700; color: var(--accent-primary);">我已閱讀並全數同意上述 4 項購物與退換貨規範條款 <span style="color: var(--danger);">*</span></span>
+        </label>
+      </div>
+
       <button id="confirmOrderSubmitBtn" class="checkout-btn" style="margin-top: 0.5rem;">
         🚀 確認並提交訂單
       </button>
     </div>
   </div>
+
+  <!-- 網站最底部 Footer (含低調優雅的幹部管理後台入口) -->
+  <footer class="main-footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <span class="footer-logo">115</span>
+        <div>
+          <p class="footer-title">智光高級商工職業學校 115校慶園遊會</p>
+          <p class="footer-subtitle">資料處理科 客製化商品專案團隊 榮譽出品</p>
+        </div>
+      </div>
+      <div class="footer-links">
+        <a href="#catalog" class="footer-link">商品型錄</a>
+        <a href="#features" class="footer-link">預購規範</a>
+        <a href="#notice" class="footer-link">取件須知</a>
+        <!-- 低調優雅的幹部管理後台入口 -->
+        <a href="../admin/index.html" target="_blank" class="admin-portal-link" title="工作人員與幹部調度管理工作站">
+          <span>🔐</span> 幹部管理後台入口
+        </a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2026 智光商工 115校慶園遊會客製專案. All Rights Reserved.</p>
+    </div>
+  </footer>
 
   <!-- Firebase 初始化設定 -->
   <script>

@@ -28,9 +28,15 @@ service cloud.firestore {
     }
 
     // ==========================================
-    // 2. 師生通用會員體系 (users)
+    // 2. 師生通用會員體系 (users & members)
     // ==========================================
     match /users/{username} {
+      allow read: if true;
+      allow create, update: if true;
+      allow delete: if isSuperAdmin();
+    }
+
+    match /members/{username} {
       allow read: if true;
       allow create, update: if true;
       allow delete: if isSuperAdmin();

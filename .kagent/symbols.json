@@ -197,6 +197,24 @@
       "delisted": false,
       "last_source": "onEdit",
       "last_content_hash": "a56ddc35"
+    },
+    "zg115_customer_manual.txt": {
+      "ipo_ts": 1790776432234,
+      "edit_count": 1,
+      "last_lines": 104,
+      "last_ts": 1790776432234,
+      "delisted": false,
+      "last_source": "onEdit",
+      "last_content_hash": "c4e81e61"
+    },
+    "zg115_admin_manual.txt": {
+      "ipo_ts": 1790776552392,
+      "edit_count": 1,
+      "last_lines": 147,
+      "last_ts": 1790776552392,
+      "delisted": false,
+      "last_source": "onEdit",
+      "last_content_hash": "b883faa"
     }
   }
 }

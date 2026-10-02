@@ -38,6 +38,13 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+  touch-action: manipulation;
+}
+
+html, body {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+  touch-action: pan-y;
 }
 
 body {
@@ -48,9 +55,11 @@ body {
     radial-gradient(at 100% 100%, rgba(129, 140, 248, 0.1) 0px, transparent 50%);
   color: var(--text-main);
   min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
   overflow-x: hidden;
+  padding-bottom: calc(24px + env(safe-area-inset-bottom, 20px));
 }
 
 /* ==========================================================================
@@ -306,6 +315,7 @@ body {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 1rem;
+  margin-bottom: 24px;
 }
 
 .hud-card {
@@ -372,6 +382,7 @@ body {
   border-radius: var(--radius-md);
   gap: 1rem;
   flex-wrap: wrap;
+  margin-bottom: 24px;
 }
 
 .toolbar-left, .toolbar-right {
@@ -433,20 +444,25 @@ body {
 .table-viewport-card {
   flex: 1;
   background: var(--card-bg);
-  backdrop-filter: var(--blur);
   border: var(--card-border);
   border-radius: var(--radius-md);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
   overflow: hidden;
   display: flex;
   flex-direction: column;
   min-height: 480px;
+  margin-bottom: 24px;
 }
 
 .table-scroll-container {
   flex: 1;
+  width: 100%;
   overflow-y: auto;
-  overflow-x: hidden; /* 嚴禁水平捲軸破版 */
+  overflow-x: auto !important; /* 確保手機橫向滑動順暢 */
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 16px;
   position: relative;
+  transform: translateZ(0);
 }
 
 .admin-table {
@@ -454,6 +470,7 @@ body {
   border-collapse: collapse;
   font-size: 0.85rem;
   text-align: left;
+  min-width: 950px; /* 保證在各裝置上維持合理欄位排版 */
 }
 
 .admin-table thead {
@@ -477,6 +494,15 @@ body {
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   color: var(--text-main);
   vertical-align: middle;
+}
+
+/* 表格最後一欄（操作/詳情/列印欄）：保證滑動到底能 100% 完整看到並點擊 */
+.admin-table th:last-child,
+.admin-table td:last-child {
+  min-width: 150px;
+  position: relative;
+  text-align: center;
+  padding-right: 40px !important;
 }
 
 .admin-table tbody tr {
@@ -832,4 +858,24 @@ body {
   transition: transform 0.25s ease-out;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
   border-radius: 8px;
+}
+
+/* ========================================================
+   後台全站表格標題、商品標籤、狀態徽章與欄位防折行規範
+   ======================================================== */
+.admin-table th,
+.admin-table td,
+.data-table th,
+.data-table td,
+.status-pill,
+.badge,
+.tab-nav-btn,
+.btn-tool,
+.role-badge,
+.member-tag,
+.pim-header th,
+.order-id-code,
+.student-code {
+  white-space: nowrap !important;
+  text-overflow: ellipsis;
 }

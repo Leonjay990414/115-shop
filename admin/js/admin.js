@@ -24,6 +24,7 @@
   let currentFilter = "ALL"; // ALL, PENDING_QC, IN_PROD, LOGISTICS, UNPAID
   let printStatusFilter = "ALL"; // ALL, UNPRINTED, PRINTED
   let selectedOrderIds = new Set();
+  let lastCheckedIndex = null; // 支援 Shift 連續範圍多選
   let currentInspectingOrder = null;
   let unsubscribeOrders = null;
   let unsubscribeMembers = null;
@@ -124,8 +125,11 @@
   const newProdName = document.getElementById("newProdName");
   const newProdPrice = document.getElementById("newProdPrice");
   const newProdCategory = document.getElementById("newProdCategory");
+  const newProdMaterial = document.getElementById("newProdMaterial");
   const newProdDesc = document.getElementById("newProdDesc");
-  const newProdImage = document.getElementById("newProdImage");
+  const newProdImageFile = document.getElementById("newProdImageFile");
+  const newProdImgPreviewBox = document.getElementById("newProdImgPreviewBox");
+  const newProdImgPreview = document.getElementById("newProdImgPreview");
   const newProdStockStatus = document.getElementById("newProdStockStatus");
   const btnCancelAddProduct = document.getElementById("btnCancelAddProduct");
   const btnSubmitAddProduct = document.getElementById("btnSubmitAddProduct");
@@ -300,9 +304,101 @@
       });
     }
 
-    // 新增商品彈窗按鈕
+    // 新增商品彈窗按鈕與圖片預覽
+    let newProdTempBase64 = "";
+
+    if (newProdImageFile) {
+      newProdImageFile.addEventListener("change", (e) => {
+        const file = e.target.files && e.target.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = (evt) => {
+            newProdTempBase64 = evt.target.result;
+            if (newProdImgPreview) newProdImgPreview.src = newProdTempBase64;
+            if (newProdImgPreviewBox) newProdImgPreviewBox.style.display = "flex";
+          };
+          reader.readAsDataURL(file);
+        } else {
+          newProdTempBase64 = "";
+          if (newProdImgPreviewBox) newProdImgPreviewBox.style.display = "none";
+        }
+      });
+    }
+
     btnCancelAddProduct.addEventListener("click", closePimAddProductModal);
     btnSubmitAddProduct.addEventListener("click", handleSubmitNewProduct);
+
+    function openPimAddProductModal() {
+      newProdCode.value = "";
+      newProdName.value = "";
+      newProdPrice.value = "";
+      newProdCategory.value = "accessories";
+      if (newProdMaterial) newProdMaterial.value = "";
+      newProdDesc.value = "";
+      if (newProdImageFile) newProdImageFile.value = "";
+      if (newProdImgPreviewBox) newProdImgPreviewBox.style.display = "none";
+      newProdTempBase64 = "";
+      newProdStockStatus.value = "IN_STOCK";
+      pimAddProductModalOverlay.style.display = "flex";
+    }
+
+    function closePimAddProductModal() {
+      pimAddProductModalOverlay.style.display = "none";
+    }
+
+    async function handleSubmitNewProduct() {
+      const code = newProdCode.value.trim().toUpperCase();
+      const name = newProdName.value.trim();
+      const price = Number(newProdPrice.value) || 0;
+      const category = newProdCategory.value;
+      const material = newProdMaterial ? newProdMaterial.value.trim() : "";
+      const desc = newProdDesc.value.trim();
+      const stockStatus = newProdStockStatus.value;
+
+      if (!code || !/^[A-Z0-9]{3,6}$/.test(code)) {
+        alert("商品代碼請輸入 3~6 碼大寫英數字！");
+        newProdCode.focus();
+        return;
+      }
+      if (!name) {
+        alert("請輸入商品名稱！");
+        newProdName.focus();
+        return;
+      }
+      if (price <= 0) {
+        alert("請輸入大於 0 之商品單價！");
+        newProdPrice.focus();
+        return;
+      }
+
+      btnSubmitAddProduct.disabled = true;
+      btnSubmitAddProduct.textContent = "上架處理中...";
+
+      try {
+        const db = window.firebase ? window.firebase.firestore() : null;
+        if (!db) throw new Error("資料庫未連線");
+
+        await window.ProductAdminService.createProductItem(db, {
+          code: code,
+          name: name,
+          price: price,
+          category: category,
+          material: material || "優質規格材質",
+          desc: desc,
+          imageUrl: newProdTempBase64 || "",
+          stockStatus: stockStatus,
+          specDetail: `材質規格：${material || "優選工藝"}。校慶前統一批次印製完畢。`
+        });
+
+        alert(`🎉 商品【${name}】(${code}) 上架成功！前台已即時同步。`);
+        closePimAddProductModal();
+      } catch (err) {
+        alert(`❌ 上架失敗：${err.message}`);
+      } finally {
+        btnSubmitAddProduct.disabled = false;
+        btnSubmitAddProduct.textContent = "✨ 建立並上架商品";
+      }
+    }
 
     // 抽屜關閉
     btnCloseDrawer.addEventListener("click", closeOrderDrawer);
@@ -585,7 +681,7 @@
     const isQc = role === "QC_REVIEWER" || isTeacherOrDirector;
     const isProd = role === "PRODUCTION" || isTeacherOrDirector;
 
-    visibleOrders.forEach((o) => {
+    visibleOrders.forEach((o, index) => {
       const isSelected = selectedOrderIds.has(o.orderId);
       const tr = document.createElement("tr");
 
@@ -723,14 +819,38 @@
       });
       tr.addEventListener("click", () => openOrderDrawer(o));
 
-      // 勾選核取方塊
+      // 勾選核取方塊 (支援 Shift 連續範圍多選)
       const chk = tr.querySelector(".order-chk");
-      chk.addEventListener("change", (e) => {
-        if (e.target.checked) {
-          selectedOrderIds.add(o.orderId);
+      chk.addEventListener("click", (e) => {
+        const currentIndex = index;
+        const isChecked = chk.checked;
+
+        if (e.shiftKey && lastCheckedIndex !== null) {
+          const start = Math.min(lastCheckedIndex, currentIndex);
+          const end = Math.max(lastCheckedIndex, currentIndex);
+          const allCheckboxes = ordersTableBody.querySelectorAll(".order-chk");
+
+          for (let i = start; i <= end; i++) {
+            const targetChk = allCheckboxes[i];
+            if (targetChk) {
+              targetChk.checked = isChecked;
+              const targetOrderId = targetChk.dataset.id;
+              if (isChecked) {
+                selectedOrderIds.add(targetOrderId);
+              } else {
+                selectedOrderIds.delete(targetOrderId);
+              }
+            }
+          }
         } else {
-          selectedOrderIds.delete(o.orderId);
+          if (isChecked) {
+            selectedOrderIds.add(o.orderId);
+          } else {
+            selectedOrderIds.delete(o.orderId);
+          }
         }
+
+        lastCheckedIndex = currentIndex;
       });
 
       // 綁定連鎖狀態機下拉選單變更
@@ -856,6 +976,8 @@
             orderId: targetOrder.orderId,
             productName: targetOrder.productName || "客製化商品",
             reason: reason,
+            notice: "經美術組審核未符印製標準，請於 3 天內登入官網修改上傳圖檔；若逾期未處理，配送組將於第 4 天親送紙本退貨通知憑證至班級。",
+            deadlineDays: 3,
             portalUrl: "https://project-8372949785937083434.web.app/"
           };
 

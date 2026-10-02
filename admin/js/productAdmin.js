@@ -18,9 +18,10 @@
       category: "tableware",
       price: 150,
       stockStatus: "IN_STOCK", // IN_STOCK, OUT_OF_STOCK, RESTOCKING
+      material: "高溫強化白瓷",
       imageUrl: "",
       desc: "高溫白瓷熱轉印，全彩不掉色，附防撞紙盒。",
-      specDetail: "材質：高溫強化白瓷 / 容量：350ml / 印製：全彩昇華轉印。校慶前統一批次印製完畢。"
+      specDetail: "材質規格：高溫強化白瓷 / 容量：350ml / 印製：全彩昇華轉印。校慶前統一批次印製完畢。"
     },
     {
       code: "CST",
@@ -28,9 +29,10 @@
       category: "tableware",
       price: 60,
       stockStatus: "IN_STOCK",
+      material: "鶯歌吸水陶瓷 + EVA防滑墊",
       imageUrl: "",
       desc: "天然鶯歌陶瓷吸水材質，底部EVA防滑墊。",
-      specDetail: "材質：鶯歌吸水陶瓷 / 直徑：110mm / 底部：EVA止滑墊。校慶前統一排印。"
+      specDetail: "材質規格：鶯歌吸水陶瓷 / 直徑：110mm / 底部：EVA止滑墊。校慶前統一排印。"
     },
     {
       code: "BDG",
@@ -38,9 +40,10 @@
       category: "accessories",
       price: 40,
       stockStatus: "IN_STOCK",
+      material: "馬口鐵金屬 + 霧面磨砂膜",
       imageUrl: "",
       desc: "58mm 經典磨砂質感金屬別針胸章，防刮防水。",
-      specDetail: "規格：58mm 圓形 / 表面：細緻霧面磨砂膜 / 背面：安全別針。"
+      specDetail: "材質規格：58mm 圓形馬口鐵 / 表面：細緻霧面磨砂膜 / 背面：安全別針。"
     },
     {
       code: "CRD",
@@ -48,9 +51,10 @@
       category: "stationery",
       price: 50,
       stockStatus: "IN_STOCK",
+      material: "進口PET防水抗刮膜",
       imageUrl: "",
       desc: "標準悠遊卡尺寸霧面防水防刮卡貼，一組兩張。",
-      specDetail: "尺寸：85.6 x 54 mm / 材質：進口PET防水抗刮膜 / 數量：一組 2 張。"
+      specDetail: "材質規格：85.6 x 54 mm / 材質：進口PET防水抗刮膜 / 數量：一組 2 張。"
     },
     {
       code: "PSP",
@@ -58,9 +62,10 @@
       category: "prints",
       price: 80,
       stockStatus: "IN_STOCK",
+      material: "250g 特級雪銅紙雙面亮膜",
       imageUrl: "",
       desc: "250g 特級雪銅紙雙面高光覆膜，色彩鮮明飽和。",
-      specDetail: "尺寸：A3 (297 x 420 mm) / 紙質：250g 特厚雪銅紙 / 覆膜：雙面亮光防水保護膜。"
+      specDetail: "材質規格：A3 (297 x 420 mm) / 紙質：250g 特厚雪銅紙 / 覆膜：雙面亮光防水保護膜。"
     }
   ];
 
@@ -140,9 +145,10 @@
       category: productData.category || "accessories",
       price: Number(productData.price) || 0,
       stockStatus: productData.stockStatus || "IN_STOCK",
-      imageUrl: productData.imageUrl ? productData.imageUrl.trim() : "",
+      material: productData.material ? productData.material.trim() : "標準優選材質",
+      imageUrl: productData.imageUrl || "",
       desc: productData.desc ? productData.desc.trim() : "",
-      specDetail: productData.specDetail ? productData.specDetail.trim() : "校慶前統一批次印製完畢。",
+      specDetail: productData.specDetail || `材質規格：${productData.material || "優質規格"}。校慶前統一批次印製完畢。`,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
@@ -161,6 +167,18 @@
     const code = productCode.trim().toUpperCase();
     await db.collection("products").doc(code).delete();
     return { success: true, message: `🗑️ 商品【${code}】已從雲端永久刪除！` };
+  }
+
+  /**
+   * 圖片轉 Base64 輔助函式
+   */
+  function readFileAsBase64(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => resolve(e.target.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
   }
 
   /**
@@ -209,6 +227,9 @@
       card.style.gap = "0.75rem";
       card.style.position = "relative";
 
+      const currentImgSrc = p.imageUrl || "";
+      let tempBase64Img = null;
+
       card.innerHTML = `
         <div style="display:flex; justify-content:space-between; align-items:center;">
           <strong style="color:var(--primary); font-size:1rem;">[${p.code}] ${p.name}</strong>
@@ -234,13 +255,31 @@
         </div>
 
         <div>
+          <label style="font-size:0.75rem; color:var(--text-muted); display:block; margin-bottom:0.2rem;">材質規格 (Material)</label>
+          <input type="text" class="pim-material-input auth-input" value="${p.material || ""}" placeholder="例如: 高溫強化白瓷 / 馬口鐵金屬" style="padding:0.45rem 0.75rem; font-size:0.85rem;">
+        </div>
+
+        <div>
           <label style="font-size:0.75rem; color:var(--text-muted); display:block; margin-bottom:0.2rem;">商品簡短說明</label>
           <input type="text" class="pim-desc-input auth-input" value="${p.desc || p.description || ""}" style="padding:0.45rem 0.75rem; font-size:0.85rem;">
         </div>
 
-        <div>
-          <label style="font-size:0.75rem; color:var(--text-muted); display:block; margin-bottom:0.2rem;">自訂展示圖 URL (選填，填入後前台優先顯示此圖)</label>
-          <input type="text" class="pim-img-input auth-input" value="${p.imageUrl || ""}" placeholder="例如：https://.../mug.png" style="padding:0.45rem 0.75rem; font-size:0.85rem;">
+        <!-- 純檔案上傳取代展示圖 URL -->
+        <div style="background: rgba(15,23,42,0.6); padding: 0.75rem; border-radius: 8px; border: 1px dashed rgba(255,255,255,0.15);">
+          <label style="font-size:0.75rem; color:var(--primary); font-weight:700; display:block; margin-bottom:0.4rem;">
+            📸 商品展示圖（純檔案上傳，未選擇新檔案自動保留原圖）
+          </label>
+          <div style="display:flex; align-items:center; gap:0.75rem;">
+            <div class="pim-current-img-preview" style="width:52px; height:52px; border-radius:8px; overflow:hidden; background:#020617; border:1px solid rgba(255,255,255,0.2); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+              ${currentImgSrc ? `<img class="pim-preview-thumb" src="${currentImgSrc}" style="width:100%; height:100%; object-fit:cover;">` : `<span style="font-size:0.7rem; color:#64748b;">無圖片</span>`}
+            </div>
+            <div style="flex:1;">
+              <input type="file" class="pim-file-input auth-input" accept="image/*" style="padding:0.35rem 0.5rem; font-size:0.8rem;">
+              <span class="pim-file-status-hint" style="font-size:0.72rem; color:#94a3b8; margin-top:0.25rem; display:block;">
+                ${currentImgSrc ? "已設定圖片，選擇新檔案即可覆蓋更換" : "尚未上傳圖片，可選擇圖片上傳"}
+              </span>
+            </div>
+          </div>
         </div>
 
         <div style="display:flex; justify-content:space-between; align-items:center; margin-top:0.25rem;">
@@ -253,15 +292,36 @@
         </div>
       `;
 
+      // 檔案選取預覽處理
+      const fileInput = card.querySelector(".pim-file-input");
+      const previewThumbBox = card.querySelector(".pim-current-img-preview");
+      const fileHint = card.querySelector(".pim-file-status-hint");
+
+      fileInput.addEventListener("change", async (e) => {
+        const file = e.target.files && e.target.files[0];
+        if (file) {
+          try {
+            tempBase64Img = await readFileAsBase64(file);
+            previewThumbBox.innerHTML = `<img class="pim-preview-thumb" src="${tempBase64Img}" style="width:100%; height:100%; object-fit:cover;">`;
+            fileHint.textContent = `✅ 已選取新檔案: ${file.name} (儲存後生效)`;
+            fileHint.style.color = "#34d399";
+          } catch (err) {
+            alert(`讀取圖片失敗: ${err.message}`);
+          }
+        }
+      });
+
       // 儲存事件
       const btnSave = card.querySelector(".btn-save-pim-item");
       btnSave.addEventListener("click", () => {
         const updatedData = {
           name: card.querySelector(".pim-name-input").value.trim(),
           price: Number(card.querySelector(".pim-price-input").value) || p.price,
+          material: card.querySelector(".pim-material-input").value.trim(),
           desc: card.querySelector(".pim-desc-input").value.trim(),
-          imageUrl: card.querySelector(".pim-img-input").value.trim(),
-          stockStatus: card.querySelector(".pim-stock-select").value
+          imageUrl: tempBase64Img !== null ? tempBase64Img : (p.imageUrl || ""),
+          stockStatus: card.querySelector(".pim-stock-select").value,
+          specDetail: `材質規格：${card.querySelector(".pim-material-input").value.trim() || "優質規格"}。校慶前統一批次印製完畢。`
         };
         if (typeof onSaveCallback === "function") {
           onSaveCallback(p.code, updatedData);

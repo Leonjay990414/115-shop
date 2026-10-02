@@ -2,7 +2,7 @@
 <html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>115校慶園遊會 - 生產調度管理工作站 (Admin Station)</title>
 
   <!-- 後台深色擬態樣式表 -->
@@ -452,12 +452,20 @@
         </div>
       </div>
       <div class="auth-input-group">
+        <label class="auth-label">材質規格 (Material)</label>
+        <input type="text" id="newProdMaterial" class="auth-input" placeholder="例如: 12安純棉加厚帆布 / 高溫白瓷 / PET防水膜">
+      </div>
+      <div class="auth-input-group">
         <label class="auth-label">商品簡短說明</label>
         <input type="text" id="newProdDesc" class="auth-input" placeholder="例如: 12安純棉加厚帆布，全彩噴印。">
       </div>
       <div class="auth-input-group">
-        <label class="auth-label">展示圖 URL (選填)</label>
-        <input type="text" id="newProdImage" class="auth-input" placeholder="https://.../item.png">
+        <label class="auth-label">商品展示圖片 (純檔案上傳，支援選傳或不放圖)</label>
+        <input type="file" id="newProdImageFile" class="auth-input" accept="image/*" style="padding: 0.35rem 0.6rem;">
+        <div id="newProdImgPreviewBox" style="display:none; margin-top:0.4rem; align-items:center; gap:0.5rem;">
+          <img id="newProdImgPreview" src="" alt="預覽" style="width:44px; height:44px; border-radius:6px; object-fit:cover; border:1px solid rgba(255,255,255,0.2);">
+          <span style="font-size:0.75rem; color:#10b981;">已載入新圖片</span>
+        </div>
       </div>
       <div class="auth-input-group">
         <label class="auth-label">初始庫存狀態</label>

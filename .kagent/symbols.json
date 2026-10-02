@@ -119,21 +119,21 @@
     },
     "index/index.html": {
       "ipo_ts": 1790687570015,
-      "edit_count": 15,
-      "last_lines": 652,
-      "last_ts": 1790776137636,
+      "edit_count": 21,
+      "last_lines": 963,
+      "last_ts": 1790945893853,
       "delisted": false,
       "last_source": "onEdit",
-      "last_content_hash": "4903b83f"
+      "last_content_hash": "e9c4396"
     },
     "admin/index.html": {
       "ipo_ts": 1790687650786,
-      "edit_count": 8,
-      "last_lines": 499,
-      "last_ts": 1790771446124,
+      "edit_count": 10,
+      "last_lines": 508,
+      "last_ts": 1790945975245,
       "delisted": false,
       "last_source": "onEdit",
-      "last_content_hash": "2ce8f8b9"
+      "last_content_hash": "8d40e85e"
     },
     "src/config/system.config.js": {
       "ipo_ts": 1790689290172,
@@ -173,30 +173,30 @@
     },
     "index/css/style.css": {
       "ipo_ts": 1790770151918,
-      "edit_count": 12,
-      "last_lines": 1863,
-      "last_ts": 1790776321364,
+      "edit_count": 24,
+      "last_lines": 2112,
+      "last_ts": 1790946296343,
       "delisted": false,
       "last_source": "onEdit",
-      "last_content_hash": "a80ddfdf"
+      "last_content_hash": "e590fcc3"
     },
     "index/js/app.js": {
       "ipo_ts": 1790770194688,
-      "edit_count": 17,
-      "last_lines": 1497,
-      "last_ts": 1790776197835,
+      "edit_count": 32,
+      "last_lines": 1638,
+      "last_ts": 1790946255315,
       "delisted": false,
       "last_source": "onEdit",
-      "last_content_hash": "711d9899"
+      "last_content_hash": "7e014752"
     },
     "admin/js/admin.js": {
       "ipo_ts": 1790770705400,
-      "edit_count": 14,
-      "last_lines": 1557,
-      "last_ts": 1790776227829,
+      "edit_count": 19,
+      "last_lines": 1679,
+      "last_ts": 1790946186095,
       "delisted": false,
       "last_source": "onEdit",
-      "last_content_hash": "a56ddc35"
+      "last_content_hash": "802854d8"
     },
     "zg115_customer_manual.txt": {
       "ipo_ts": 1790776432234,
@@ -215,6 +215,24 @@
       "delisted": false,
       "last_source": "onEdit",
       "last_content_hash": "b883faa"
+    },
+    "admin/css/admin.css": {
+      "ipo_ts": 1790944734001,
+      "edit_count": 2,
+      "last_lines": 861,
+      "last_ts": 1790944744202,
+      "delisted": false,
+      "last_source": "onEdit",
+      "last_content_hash": "a36434ff"
+    },
+    "admin/js/productAdmin.js": {
+      "ipo_ts": 1790945994684,
+      "edit_count": 3,
+      "last_lines": 353,
+      "last_ts": 1790946055720,
+      "delisted": false,
+      "last_source": "onEdit",
+      "last_content_hash": "7c35c660"
     }
   }
 }

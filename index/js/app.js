@@ -105,11 +105,10 @@
   // DOM 元素引用
   const toastContainer = document.getElementById("toastContainer");
   const productsGrid = document.getElementById("productsGrid");
-  const categoriesTrack = document.getElementById("categoriesTrack");
-  const bottomCapsule = document.getElementById("bottomCapsule");
-  const capsuleBadge = document.getElementById("capsuleBadge");
-  const capsuleTotal = document.getElementById("capsuleTotal");
+  const categorySelect = document.getElementById("categorySelect");
   const cartBadgeCount = document.getElementById("cartBadgeCount");
+  const mobileCartBadgeCount = document.getElementById("mobileCartBadgeCount");
+  const mobileCartBtn = document.getElementById("mobileCartBtn");
   
   // 側邊抽屜
   const cartDrawerBackdrop = document.getElementById("cartDrawerBackdrop");
@@ -118,13 +117,20 @@
   const drawerTotalPrice = document.getElementById("drawerTotalPrice");
   const openCartBtn = document.getElementById("openCartBtn");
   const closeCartBtn = document.getElementById("closeCartBtn");
-  const capsuleCheckoutBtn = document.getElementById("capsuleCheckoutBtn");
   const drawerCheckoutBtn = document.getElementById("drawerCheckoutBtn");
 
   // 手機漢堡選單
   const hamburgerBtn = document.getElementById("hamburgerBtn");
+  const closeMobileNavBtn = document.getElementById("closeMobileNavBtn");
   const mobileNavDrawer = document.getElementById("mobileNavDrawer");
   const mobileNavBackdrop = document.getElementById("mobileNavBackdrop");
+  const mobileNavLinks = document.querySelectorAll(".mobile-nav-link");
+
+  // 顧客自訂圖檔大圖燈箱
+  const imageLightboxOverlay = document.getElementById("imageLightboxOverlay");
+  const closeImageLightboxBtn = document.getElementById("closeImageLightboxBtn");
+  const lightboxImg = document.getElementById("lightboxImg");
+  const lightboxCaption = document.getElementById("lightboxCaption");
 
   // 客製彈窗 (PDP)
   const customizeModalOverlay = document.getElementById("customizeModalOverlay");
@@ -141,6 +147,11 @@
   const custQtyInput = document.getElementById("custQtyInput");
   const custNotesInput = document.getElementById("custNotesInput");
   const addToCartConfirmBtn = document.getElementById("addToCartConfirmBtn");
+  const btnOpenAiGuide = document.getElementById("btnOpenAiGuide");
+
+  // AI 客製圖檔生圖指南彈窗 (AI Guide Modal)
+  const aiGuideModalOverlay = document.getElementById("aiGuideModalOverlay");
+  const closeAiGuideBtn = document.getElementById("closeAiGuideBtn");
 
   // 訂購須知確認彈窗 (Notice Modal)
   const noticeModalOverlay = document.getElementById("noticeModalOverlay");
@@ -207,12 +218,6 @@
   const profClass = document.getElementById("profClass");
   const profSeat = document.getElementById("profSeat");
   const profPhone = document.getElementById("profPhone");
-
-  // 動態膠囊導覽島 (Dynamic Island)
-  const dynamicIsland = document.getElementById("dynamicIsland");
-  const islandMemberBtn = document.getElementById("islandMemberBtn");
-  const islandCartBtn = document.getElementById("islandCartBtn");
-  const islandCartBadge = document.getElementById("islandCartBadge");
 
   // 結帳雙重確認彈窗
   const checkoutModalOverlay = document.getElementById("checkoutModalOverlay");
@@ -401,6 +406,7 @@
             leadTime: "校慶現場取件",
             stockStatus: p.stockStatus || "IN_STOCK",
             minRes: defaultP ? defaultP.minRes : { w: 1080, h: 1080 },
+            material: p.material || (defaultP ? defaultP.material : "優選工藝材質"),
             desc: p.desc || p.description || (defaultP ? defaultP.desc : ""),
             specDetail: p.specDetail || (defaultP ? defaultP.specDetail : ""),
             iconSvg: (defaultP ? defaultP.iconSvg : ""),
@@ -451,12 +457,15 @@
         imgContent = `<img src="${p.imageUrl}" alt="${p.name}" style="width:100%; height:100%; object-fit:contain;">`;
       }
 
+      const materialBadge = p.material ? `<span class="product-material-pill" title="材質規格：${p.material}">💎 ${p.material}</span>` : "";
+
       card.innerHTML = `
         ${stockBadgeHtml}
         <div class="product-image-box">
           ${imgContent}
         </div>
         <strong class="product-title" title="${p.name}">${p.name}</strong>
+        ${materialBadge}
         <p class="product-desc" title="${p.desc}">${p.desc}</p>
         <div class="product-meta-row">
           <div class="price-box">
@@ -486,30 +495,12 @@
   // 事件監聽與綁定
   // ==========================================================================
   function bindEventListeners() {
-    window.addEventListener("scroll", () => {
-      // 動態島 (Dynamic Island)：滾動超過 120px 時滑下顯示，滑回頂部時自動收回
-      if (dynamicIsland) {
-        if (window.scrollY > 120) {
-          dynamicIsland.classList.add("visible");
-        } else {
-          dynamicIsland.classList.remove("visible");
-        }
-      }
-
-      if (window.scrollY > 200 && cart.length > 0) {
-        bottomCapsule.classList.add("visible");
-      } else {
-        bottomCapsule.classList.remove("visible");
-      }
-    }, { passive: true });
-
-    categoriesTrack.addEventListener("click", (e) => {
-      const pill = e.target.closest(".category-pill");
-      if (!pill) return;
-      document.querySelectorAll(".category-pill").forEach(el => el.classList.remove("active"));
-      pill.classList.add("active");
-      renderProducts(pill.dataset.category);
-    });
+    // 商品分類下拉選單變更
+    if (categorySelect) {
+      categorySelect.addEventListener("change", (e) => {
+        renderProducts(e.target.value);
+      });
+    }
 
     custDropzone.addEventListener("click", () => custFileInput.click());
     custFileInput.addEventListener("change", handleFileUpload);
@@ -795,31 +786,88 @@
     });
 
     // 購物車抽屜
-    openCartBtn.addEventListener("click", openCartDrawer);
-    closeCartBtn.addEventListener("click", closeCartDrawer);
-    cartDrawerBackdrop.addEventListener("click", closeCartDrawer);
-    capsuleCheckoutBtn.addEventListener("click", openCheckoutModal);
-    drawerCheckoutBtn.addEventListener("click", () => {
-      closeCartDrawer();
-      openCheckoutModal();
-    });
+    if (openCartBtn) openCartBtn.addEventListener("click", openCartDrawer);
+    if (mobileCartBtn) mobileCartBtn.addEventListener("click", openCartDrawer);
+    if (closeCartBtn) closeCartBtn.addEventListener("click", closeCartDrawer);
+    if (cartDrawerBackdrop) cartDrawerBackdrop.addEventListener("click", closeCartDrawer);
+    if (drawerCheckoutBtn) {
+      drawerCheckoutBtn.addEventListener("click", () => {
+        closeCartDrawer();
+        openCheckoutModal();
+      });
+    }
 
-    // 動態導覽島互動
-    if (islandMemberBtn) {
-      islandMemberBtn.addEventListener("click", () => {
-        if (currentUser) {
-          openStudentOrdersModal(currentUser.username || currentUser.studentId);
+    // 手機版漢堡選單
+    if (hamburgerBtn) hamburgerBtn.addEventListener("click", toggleMobileNav);
+    if (closeMobileNavBtn) closeMobileNavBtn.addEventListener("click", closeMobileNav);
+    if (mobileNavBackdrop) mobileNavBackdrop.addEventListener("click", closeMobileNav);
+    if (mobileNavLinks) {
+      mobileNavLinks.forEach(link => {
+        link.addEventListener("click", () => {
+          closeMobileNav();
+        });
+      });
+    }
+
+    // 顧客圖檔大圖燈箱關閉
+    if (closeImageLightboxBtn) {
+      closeImageLightboxBtn.addEventListener("click", closeImageLightbox);
+    }
+    if (imageLightboxOverlay) {
+      imageLightboxOverlay.addEventListener("click", (e) => {
+        if (e.target === imageLightboxOverlay) closeImageLightbox();
+      });
+    }
+
+    // AI 客製圖檔生圖指南互動 (支援 Navbar、手機抽屜、PDP 詳情頁與上傳區雙入口)
+    const openAiGuideNavBtn = document.getElementById("openAiGuideNavBtn");
+    if (openAiGuideNavBtn) {
+      openAiGuideNavBtn.addEventListener("click", () => {
+        const sec = document.getElementById("ai-guide-section");
+        if (sec) {
+          sec.scrollIntoView({ behavior: "smooth" });
         } else {
-          openStudentAuthModal();
+          openAiGuideModal();
         }
       });
     }
-    if (islandCartBtn) {
-      islandCartBtn.addEventListener("click", openCartDrawer);
+
+    if (btnOpenAiGuide) {
+      btnOpenAiGuide.addEventListener("click", openAiGuideModal);
     }
 
-    hamburgerBtn.addEventListener("click", toggleMobileNav);
-    mobileNavBackdrop.addEventListener("click", toggleMobileNav);
+    document.querySelectorAll(".btn-open-ai-guide-clone").forEach(btn => {
+      btn.addEventListener("click", openAiGuideModal);
+    });
+
+    if (closeAiGuideBtn) {
+      closeAiGuideBtn.addEventListener("click", closeAiGuideModal);
+    }
+    if (aiGuideModalOverlay) {
+      aiGuideModalOverlay.addEventListener("click", (e) => {
+        if (e.target === aiGuideModalOverlay) closeAiGuideModal();
+      });
+    }
+
+    // 一鍵複製 AI 咒語模板
+    document.querySelectorAll(".btn-copy-prompt").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const targetId = btn.dataset.target;
+        const targetEl = document.getElementById(targetId);
+        if (!targetEl) return;
+        const textToCopy = targetEl.textContent.trim();
+        
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(textToCopy).then(() => {
+            showToast("✔ 咒語已複製，快去貼上生圖吧！", "success");
+          }).catch(() => {
+            fallbackCopyText(textToCopy);
+          });
+        } else {
+          fallbackCopyText(textToCopy);
+        }
+      });
+    });
 
     closeCustomizeBtn.addEventListener("click", closeCustomizeModal);
     customizeModalOverlay.addEventListener("click", (e) => {
@@ -1081,15 +1129,50 @@
           deliveryClass = "val-pass";
         }
 
+        // 顧客上傳客製化圖片預覽
+        const custImgHtml = o.imageUrl 
+          ? `<div class="order-track-thumb-box" data-img="${o.imageUrl}" data-order="${o.orderId}" title="點擊放大檢視原圖">
+               <img src="${o.imageUrl}" class="order-track-thumb-img" alt="客製圖檔" />
+             </div>`
+          : `<div class="order-track-thumb-box" style="background:#f1f5f9; display:flex; align-items:center; justify-content:center; color:#94a3b8; font-size:0.75rem;">無圖檔</div>`;
+
+        // 顧客備註與材質資訊
+        const materialInfo = o.material ? `<span style="display:inline-block; font-size:0.75rem; color:#6366f1; background:#e0e7ff; padding:0.15rem 0.45rem; border-radius:4px; margin-bottom:0.25rem;">材質：${escapeHtml(o.material)}</span>` : "";
+
+        const notesHtml = o.customerNotes 
+          ? `<div class="order-track-notes"><strong>客製備註：</strong>${escapeHtml(o.customerNotes)}</div>`
+          : "";
+
+        // 若被退件，呈現明確的退貨理由警示方塊
+        const rejectReasonHtml = (o.qcStatus === "不通過" || o.qcStatus === "退件待補" || o.qcStatus === "審核不通過")
+          ? `<div style="background:#fef2f2; border:1px solid #fecaca; border-radius:8px; padding:0.6rem 0.8rem; margin-top:0.5rem; font-size:0.8rem; color:#991b1b; line-height:1.5;">
+               <strong style="display:block; margin-bottom:0.2rem;">⚠️ 美術組退件原因說明：</strong>
+               ${escapeHtml(o.qcRejectedReason || "未符印製標準")}
+               <span style="display:block; font-size:0.75rem; color:#dc2626; margin-top:0.25rem;">※ 請於 3 天內聯繫或重新上傳圖檔；若逾期未處理，配送組將於第 4 天親送紙本退貨憑證。</span>
+             </div>`
+          : "";
+
         const card = document.createElement("div");
         card.className = "order-track-card";
         card.innerHTML = `
           <div class="order-track-header">
             <div>
-              <strong style="color:var(--accent-primary); font-size:0.9rem;">${o.orderId}</strong>
-              <span style="font-size:0.75rem; color:var(--text-muted); margin-left:0.5rem;">${o.productName} x ${o.quantity || 1}</span>
+              <strong style="color:var(--accent-primary); font-size:0.92rem;">${o.orderId}</strong>
+              <span style="font-size:0.78rem; color:var(--text-muted); margin-left:0.5rem;">${escapeHtml(o.productName || "")} x ${o.quantity || 1}</span>
             </div>
-            <strong style="color:#0f172a; font-size:0.95rem;">NT$ ${o.subtotal || o.unitPrice * (o.quantity || 1)}</strong>
+            <strong style="color:#0f172a; font-size:1rem;">NT$ ${o.subtotal || ((o.unitPrice || 0) * (o.quantity || 1))}</strong>
+          </div>
+
+          <div class="order-track-detail-row">
+            ${custImgHtml}
+            <div style="flex:1; min-width:0;">
+              <div style="font-size:0.82rem; color:var(--text-muted); margin-bottom:0.25rem;">
+                單價：NT$ ${o.unitPrice || "--"} | 數量：${o.quantity || 1}
+              </div>
+              ${materialInfo}
+              ${notesHtml}
+              ${rejectReasonHtml}
+            </div>
           </div>
 
           <!-- 三軌即時進度看板 -->
@@ -1108,6 +1191,15 @@
             </div>
           </div>
         `;
+
+        // 綁定圖片點擊開啟大圖燈箱
+        const thumbBox = card.querySelector(".order-track-thumb-box");
+        if (thumbBox && thumbBox.dataset.img) {
+          thumbBox.addEventListener("click", () => {
+            openImageLightbox(thumbBox.dataset.img, `工單編號：${thumbBox.dataset.order} - 客製化圖片`);
+          });
+        }
+
         studentOrdersListContainer.appendChild(card);
       });
     };
@@ -1187,8 +1279,11 @@
     pendingCartItem = null;
 
     custModalTitle.textContent = `${product.name}・商品詳情與客製`;
-    custModalSpec.textContent = `建議解析度：${product.minRes.w} x ${product.minRes.h} px 以上 / 支援 PNG, JPG, WEBP`;
-    pdpAccordionSpec.textContent = product.specDetail;
+    const matDetail = product.material ? `材質規格：${product.material}` : "";
+    pdpAccordionSpec.innerHTML = `
+      <div style="margin-bottom:0.4rem; color:#4338ca; font-weight:700;">💎 ${matDetail || "標準精緻工藝材質"}</div>
+      <div>${escapeHtml(product.specDetail || product.desc || "")}</div>
+    `;
 
     custFileInput.value = "";
     custPreviewBox.style.display = "none";
@@ -1201,6 +1296,39 @@
 
   function closeCustomizeModal() {
     customizeModalOverlay.classList.remove("active");
+  }
+
+  // AI 客製圖檔生圖指南
+  function openAiGuideModal() {
+    if (!aiGuideModalOverlay) return;
+    aiGuideModalOverlay.classList.add("active");
+  }
+
+  function closeAiGuideModal() {
+    if (!aiGuideModalOverlay) return;
+    aiGuideModalOverlay.classList.remove("active");
+  }
+
+  function fallbackCopyText(text) {
+    try {
+      const textArea = document.createElement("textarea");
+      textArea.value = text;
+      textArea.style.position = "fixed";
+      textArea.style.top = "-9999px";
+      textArea.style.left = "-9999px";
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      const successful = document.execCommand("copy");
+      document.body.removeChild(textArea);
+      if (successful) {
+        showToast("✔ 咒語已複製，快去貼上生圖吧！", "success");
+      } else {
+        showToast("複製失敗，請手動選取複製！", "warn");
+      }
+    } catch (err) {
+      showToast("複製失敗，請手動選取複製！", "warn");
+    }
   }
 
   function handleAddToCartAttempt() {
@@ -1224,6 +1352,7 @@
       productName: currentCustomizingProduct.name,
       unitPrice: currentCustomizingProduct.price,
       quantity: qty,
+      material: currentCustomizingProduct.material || "優質規格材質",
       imageUrl: currentFileResInfo ? currentFileResInfo.safeBase64 : custPreviewImg.src,
       imageRes: currentFileResInfo ? currentFileResInfo.resText : "未提供",
       notes: custNotesInput.value.trim()
@@ -1260,29 +1389,43 @@
   function toggleMobileNav() {
     const isActive = mobileNavDrawer.classList.contains("active");
     if (isActive) {
-      mobileNavDrawer.classList.remove("active");
-      mobileNavBackdrop.classList.remove("active");
+      closeMobileNav();
     } else {
       mobileNavDrawer.classList.add("active");
       mobileNavBackdrop.classList.add("active");
+      document.body.classList.add("no-scroll");
     }
+  }
+
+  function closeMobileNav() {
+    mobileNavDrawer.classList.remove("active");
+    mobileNavBackdrop.classList.remove("active");
+    document.body.classList.remove("no-scroll");
+  }
+
+  // 顧客圖檔大圖燈箱
+  function openImageLightbox(imgUrl, captionText = "客製化圖檔預覽") {
+    if (!imageLightboxOverlay || !lightboxImg) return;
+    lightboxImg.src = imgUrl;
+    if (lightboxCaption) lightboxCaption.textContent = captionText;
+    imageLightboxOverlay.classList.add("active");
+    document.body.classList.add("no-scroll");
+  }
+
+  function closeImageLightbox() {
+    if (!imageLightboxOverlay) return;
+    imageLightboxOverlay.classList.remove("active");
+    if (lightboxImg) lightboxImg.src = "";
+    document.body.classList.remove("no-scroll");
   }
 
   function updateCartUI() {
     const totalQty = cart.reduce((sum, item) => sum + item.quantity, 0);
     const totalPrice = cart.reduce((sum, item) => sum + (item.unitPrice * item.quantity), 0);
 
-    cartBadgeCount.textContent = totalQty;
-    capsuleBadge.textContent = totalQty;
-    if (islandCartBadge) islandCartBadge.textContent = totalQty;
-    capsuleTotal.textContent = `NT$ ${totalPrice}`;
-    drawerTotalPrice.textContent = `NT$ ${totalPrice}`;
-
-    if (totalQty > 0 && window.scrollY > 200) {
-      bottomCapsule.classList.add("visible");
-    } else if (totalQty === 0) {
-      bottomCapsule.classList.remove("visible");
-    }
+    if (cartBadgeCount) cartBadgeCount.textContent = totalQty;
+    if (mobileCartBadgeCount) mobileCartBadgeCount.textContent = totalQty;
+    if (drawerTotalPrice) drawerTotalPrice.textContent = `NT$ ${totalPrice}`;
 
     if (cart.length === 0) {
       drawerBody.innerHTML = `
@@ -1292,11 +1435,9 @@
           <span style="font-size: 0.8rem; color: var(--text-light);">快去選購校慶客製化紀念商品吧</span>
         </div>
       `;
-      drawerCheckoutBtn.disabled = true;
-      capsuleCheckoutBtn.disabled = true;
+      if (drawerCheckoutBtn) drawerCheckoutBtn.disabled = true;
     } else {
-      drawerCheckoutBtn.disabled = false;
-      capsuleCheckoutBtn.disabled = false;
+      if (drawerCheckoutBtn) drawerCheckoutBtn.disabled = false;
       drawerBody.innerHTML = "";
 
       cart.forEach((item, index) => {

@@ -685,13 +685,13 @@
       const isSelected = selectedOrderIds.has(o.orderId);
       const tr = document.createElement("tr");
 
-      // 個資動態脫敏與帳號/Email 清楚呈現
-      const accountText = o.username ? `<span style="font-family:monospace; font-size:0.75rem; color:#38bdf8; display:block;">@${o.username}</span>` : "";
-      const emailText = o.email ? `<span style="font-size:0.72rem; color:#94a3b8; display:block;">${o.email}</span>` : "";
+      // 個資動態脫敏與帳號/Email 清楚呈現 (一行流暢呈現，絕無垂直排版折行)
+      const accountBadge = o.username ? `<span style="font-family:monospace; font-size:0.75rem; color:#38bdf8; background:rgba(56,189,248,0.12); padding:0.1rem 0.4rem; border-radius:4px; margin-left:0.35rem; white-space:nowrap;">@${o.username}</span>` : "";
+      const emailBadge = o.email ? `<span style="font-size:0.75rem; color:#94a3b8; margin-left:0.35rem; white-space:nowrap;">(${o.email})</span>` : "";
 
       const displayName = isLogistics || isFinance 
-        ? `<div><strong>${o.studentName || o.name || "--"}</strong>${accountText}${emailText}</div>`
-        : `<div><strong>${o.studentName ? o.studentName[0] + "○" : "同學"}</strong>${accountText}</div>`;
+        ? `<div style="white-space:nowrap; display:flex; align-items:center;"><strong>${o.studentName || o.name || "--"}</strong>${accountBadge}${emailBadge}</div>`
+        : `<div style="white-space:nowrap; display:flex; align-items:center;"><strong>${o.studentName ? o.studentName[0] + "○" : "同學"}</strong>${accountBadge}</div>`;
 
       const displayClassSeat = isLogistics || isFinance
         ? `${o.studentClass || o.classCode || "--"} (${o.studentSeat || o.seatNumber || "--"}號)`

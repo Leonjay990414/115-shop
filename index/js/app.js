@@ -1634,5 +1634,41 @@
     }
   }
 
+  // 暴露全域視窗操作函式，供手機抽屜與外部按鈕精準呼叫
+  window.closeMobileNav = closeMobileNav;
+  window.openMobileNav = function() {
+    if (mobileNavDrawer && mobileNavBackdrop) {
+      mobileNavDrawer.classList.add("active");
+      mobileNavBackdrop.classList.add("active");
+      document.body.classList.add("no-scroll");
+    }
+  };
+  window.toggleMobileNav = toggleMobileNav;
+  window.openAiGuideModal = openAiGuideModal;
+  window.closeAiGuideModal = closeAiGuideModal;
+  window.openStudentAuthModal = openStudentAuthModal;
+  window.closeStudentAuthModal = closeStudentAuthModal;
+  window.openStudentOrdersModal = function(queryId) {
+    const targetQuery = queryId || (currentUser ? (currentUser.username || currentUser.studentId) : "");
+    if (studentOrdersModalOverlay) studentOrdersModalOverlay.classList.add("active");
+    if (trackSearchStudentId) trackSearchStudentId.value = targetQuery || "";
+    if (targetQuery) {
+      startMyOrdersRealtimeListener(targetQuery);
+    } else {
+      if (studentOrdersListContainer) {
+        studentOrdersListContainer.innerHTML = `
+          <div style="text-align: center; color: var(--text-muted); padding: 2rem;">
+            請於上方搜尋欄輸入自訂帳號，即可即時查詢名下專屬工單！
+          </div>
+        `;
+      }
+    }
+  };
+  window.closeStudentOrdersModal = closeStudentOrdersModal;
+  window.openCartDrawer = openCartDrawer;
+  window.closeCartDrawer = closeCartDrawer;
+  window.openCheckoutModal = openCheckoutModal;
+
   window.addEventListener("DOMContentLoaded", init);
 })();
+

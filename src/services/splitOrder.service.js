@@ -100,9 +100,9 @@
       throw new Error("[SplitOrderEngine] 缺少會員基本身分資料！");
     }
 
-    // ① 自動生成母訂單編號 parentOrderId (格式：115-2026-四位流水號)
-    const randomSeq = Math.floor(1000 + Math.random() * 9000);
-    const parentOrderId = `115-2026-${randomSeq}`;
+    // ① 自動生成母訂單編號 parentOrderId (格式：ZG115-五位亂數/流水號，如 #ZG115-18293)
+    const randomSeq = Math.floor(10000 + Math.random() * 90000);
+    const parentOrderId = `ZG115-${randomSeq}`;
 
     // ② 品項聚合分流 (Aggregation)
     const aggregatedMap = new Map();
@@ -141,9 +141,10 @@
 
     // ③ 欄位齊全：為每個聚合後的獨立品項實例化工單物件
     const workOrders = [];
+    const nowIso = new Date().toISOString();
     const serverTimestamp = global.firebase && global.firebase.firestore 
       ? global.firebase.firestore.FieldValue.serverTimestamp() 
-      : new Date().toISOString();
+      : nowIso;
 
     let subIndex = 1;
     for (const [code, agg] of aggregatedMap.entries()) {
@@ -189,21 +190,53 @@
         mailSentAt: null,
 
         // 時間戳記
-        createdAt: serverTimestamp
+        createdAt: serverTimestamp,
+        createdAtClient: nowIso
       };
 
       workOrders.push(workOrderDoc);
       subIndex++;
     }
 
-    // ④ Firestore 批次原子寫入 (Atomic Batch Commit)
-    const batch = db.batch();
-    for (const wo of workOrders) {
-      const docRef = db.collection("orders").doc(wo.orderId);
-      batch.set(docRef, wo);
+    // ④ 本機 LocalStorage 與 Broadcast 即時持久化 (備援與後台雙向即時同步)
+    try {
+      const localKey = "zg115_local_orders";
+      const existingStr = localStorage.getItem(localKey);
+      let localOrders = existingStr ? JSON.parse(existingStr) : [];
+      if (!Array.isArray(localOrders)) localOrders = [];
+      
+      workOrders.forEach(wo => {
+        // 轉為純 JSON 相容物件儲存
+        const plainWo = { ...wo, createdAt: nowIso };
+        localOrders.unshift(plainWo);
+      });
+      // 保留最新 200 筆本機備份
+      if (localOrders.length > 200) localOrders = localOrders.slice(0, 200);
+      localStorage.setItem(localKey, JSON.stringify(localOrders));
+
+      // 若有 BroadcastChannel 廣播至後台
+      if (typeof BroadcastChannel !== "undefined") {
+        const orderChannel = new BroadcastChannel("zg_orders_sync_channel");
+        orderChannel.postMessage({ type: "ORDER_CREATED", parentOrderId, workOrders });
+      }
+    } catch (saveErr) {
+      console.warn("[Local Orders Storage]", saveErr);
     }
 
-    const batchResult = await batch.commit();
+    // ⑤ Firestore 批次原子寫入 (Atomic Batch Commit) - 若網路或伺服器異常則降級容錯，絕不卡死使用者
+    let batchResult = null;
+    if (db && typeof db.batch === "function") {
+      try {
+        const batch = db.batch();
+        for (const wo of workOrders) {
+          const docRef = db.collection("orders").doc(wo.orderId);
+          batch.set(docRef, wo);
+        }
+        batchResult = await batch.commit();
+      } catch (cloudErr) {
+        console.warn("[SplitOrderEngine] Firestore commit warning, fallback to local storage:", cloudErr);
+      }
+    }
 
     return {
       parentOrderId: parentOrderId,

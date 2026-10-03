@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>📢 最新消息與活動公告詳情 | 智光商工 115校慶園遊會</title>
+  
+  <!-- 115 校慶 App 與網頁圖示 -->
+  <link rel="icon" type="image/png" href="images/logo115.png">
+  <link rel="apple-touch-icon" href="images/logo115.png">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700;900&family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
+  
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    body {
+      background: var(--pastel-candy-gradient);
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 1.5rem 1rem 3rem;
+      box-sizing: border-box;
+    }
+
+    .detail-card-container {
+      width: 100%;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .detail-card {
+      background: #ffffff;
+      border-radius: 24px;
+      padding: 2.25rem 2rem;
+      box-shadow: 0 12px 36px rgba(15, 23, 42, 0.08);
+      border: 1px solid rgba(226, 232, 240, 0.9);
+      position: relative;
+    }
+
+    .detail-header-nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.5rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid #f1f5f9;
+    }
+
+    .back-home-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      text-decoration: none;
+      color: #475569;
+      font-size: 0.9rem;
+      font-weight: 600;
+      padding: 0.45rem 0.9rem;
+      background: #f1f5f9;
+      border-radius: var(--radius-capsule);
+      transition: var(--transition-smooth);
+    }
+
+    .back-home-btn:hover {
+      background: #e2e8f0;
+      color: #0f172a;
+    }
+
+    .detail-tag-bar {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 0.85rem;
+    }
+
+    .detail-category-badge {
+      display: inline-block;
+      padding: 0.35rem 0.85rem;
+      border-radius: 9999px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      background: rgba(99, 102, 241, 0.12);
+      color: var(--accent-primary);
+    }
+
+    .detail-date-badge {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .detail-title {
+      font-size: 1.75rem;
+      font-family: var(--font-display);
+      font-weight: 800;
+      color: #0f172a;
+      line-height: 1.35;
+      margin: 0 0 1.25rem 0;
+    }
+
+    .detail-media-box {
+      margin: 1.5rem 0 2rem;
+      border-radius: 16px;
+      overflow: hidden;
+      background: #0f172a;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+    }
+
+    .detail-media-box img {
+      width: 100%;
+      height: auto;
+      display: block;
+      object-fit: cover;
+    }
+
+    .detail-media-box video {
+      width: 100%;
+      display: block;
+      max-height: 480px;
+    }
+
+    .detail-media-box iframe {
+      width: 100%;
+      height: 420px;
+      display: block;
+      border: none;
+    }
+
+    .detail-content {
+      font-size: 1.05rem;
+      line-height: 1.85;
+      color: #334155;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .detail-footer-bar {
+      margin-top: 2.5rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid #f1f5f9;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .source-meta {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    @media (max-width: 640px) {
+      .detail-card {
+        padding: 1.5rem 1.25rem;
+      }
+      .detail-title {
+        font-size: 1.4rem;
+      }
+      .detail-media-box iframe {
+        height: 240px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="detail-card-container">
+    <div class="detail-card">
+      <div class="detail-header-nav">
+        <a href="index.html" class="back-home-btn">
+          <span>‹</span> 返回主商城首頁
+        </a>
+        <span style="font-size: 0.82rem; color: #94a3b8; font-weight: 600;">智光商工 115 週年校慶</span>
+      </div>
+
+      <div id="loadingBox" style="text-align: center; padding: 3rem 1rem; color: #64748b;">
+        <div style="font-size: 2.5rem; margin-bottom: 0.75rem;">⏳</div>
+        <p>正在連線讀取公告詳情，請稍候...</p>
+      </div>
+
+      <div id="errorBox" style="display: none; text-align: center; padding: 3rem 1rem; color: #ef4444;">
+        <div style="font-size: 2.5rem; margin-bottom: 0.75rem;">⚠️</div>
+        <h3 style="margin-bottom: 0.5rem;">查無此則公告資料</h3>
+        <p style="color: #64748b; font-size: 0.9rem;">該消息可能已被移除或連結有誤。</p>
+        <a href="index.html" class="checkout-btn" style="display: inline-block; width: auto; padding: 0.6rem 1.5rem; text-decoration: none; margin-top: 1rem;">返回首頁</a>
+      </div>
+
+      <article id="newsContentBox" style="display: none;">
+        <div class="detail-tag-bar">
+          <span id="newsCategoryBadge" class="detail-category-badge">最新消息</span>
+          <span id="newsDateBadge" class="detail-date-badge">--</span>
+        </div>
+
+        <h1 id="newsTitle" class="detail-title"></h1>
+
+        <div id="newsMediaWrap" class="detail-media-box" style="display: none;"></div>
+
+        <div id="newsBody" class="detail-content"></div>
+
+        <div class="detail-footer-bar">
+          <div class="source-meta">
+            <span>發布單位：智光商工 115校慶籌備委員會 / 資料處理科</span>
+          </div>
+          <button onclick="window.close()" class="back-home-btn" style="cursor: pointer; border: none;">
+            關閉本頁
+          </button>
+        </div>
+      </article>
+    </div>
+  </div>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyAYunSi8yFHoXxBQD1cabe-uKIA6DUKP_Q",
+      authDomain: "project-8372949785937083434.firebaseapp.com",
+      projectId: "project-8372949785937083434",
+      storageBucket: "project-8372949785937083434.firebasestorage.app",
+      messagingSenderId: "353265416024",
+      appId: "1:353265416024:web:1a333c4bd6d9ac8220572d"
+    };
+
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+    }
+
+    const db = firebase.firestore();
+
+    function extractYouTubeId(url) {
+      if (!url) return null;
+      const regExp = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/|youtube\.com\/shorts\/)([^"&?\/\s]{11})/;
+      const match = String(url).match(regExp);
+      return (match && match[1]) ? match[1] : null;
+    }
+
+    function escapeHtml(str) {
+      return String(str || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    // 內建預設公告防呆資料庫 (Fallback Mock Data)
+    const FALLBACK_NEWS_DATABASE = {
+      "default-1": {
+        title: "🎉 115校慶園遊會客製專案預購正式開跑！",
+        category: "重要公告",
+        date: "2026-10-01",
+        content: "為慶祝智光商工 115 週年校慶，資料處理科主辦限定客製化紀念商品預購活動！\n\n本屆特別引進專業熱轉印與高解析噴繪技術，支援陶瓷馬克杯、鶯歌吸水杯墊、金屬磨砂胸章、紀念卡貼套裝與特厚紀念海報等多種客製化規格。\n\n全校師生與校友可即時透過線上商城自訂圖片、填寫班級座號並送出印製訂單。所有預購商品將於校慶日前統一排產印製，校慶當日憑第一聯三聯單據至現場專屬攤位即可領取專屬紀念品！歡迎全校師生踴躍選購。",
+        imageUrl: "images/logo115.png"
+      },
+      "default-2": {
+        title: "💡 零基礎設計！使用免費 AI 咒語一鍵生成專屬紀念商品圖檔",
+        category: "優惠活動",
+        date: "2026-10-02",
+        content: "為解決同學想要客製商品卻不知如何繪圖的困擾，本商城全面導入「AI 1分鐘生圖指南」！\n\n提供 4 大熱門風格模板（日系動漫、像素復古、毛線編織、極簡幾何），只需一鍵複製提示詞 (Prompt) 貼入免費 AI 繪圖工具，就能生成專屬圖檔。\n\n系統內建 1080P 高畫質自動檢測，確保印製出來的校慶紀念商品不模糊、不掉色，人人都可以在 3 分鐘內完成獨一無二的校慶紀念品客製化設計！",
+        imageUrl: "images/logo115.png"
+      }
+    };
+
+    async function loadNewsDetail() {
+      const urlParams = new URLSearchParams(window.location.search);
+      let newsId = urlParams.get("id") || urlParams.get("default");
+
+      const loadingBox = document.getElementById("loadingBox");
+      const errorBox = document.getElementById("errorBox");
+      const newsContentBox = document.getElementById("newsContentBox");
+
+      // 若未提供任何 id，預設載入 default-1
+      if (!newsId) {
+        newsId = "default-1";
+      }
+
+      // 檢查是否對應預設 Mock 資料
+      const mockKey = newsId === "1" ? "default-1" : (newsId === "2" ? "default-2" : newsId);
+      if (FALLBACK_NEWS_DATABASE[mockKey]) {
+        renderNewsItem(FALLBACK_NEWS_DATABASE[mockKey]);
+        return;
+      }
+
+      try {
+        const docSnap = await db.collection("news").doc(newsId).get();
+        if (!docSnap.exists) {
+          // 若 Firestore 查無此 id，回退至預設公告防呆，嚴禁顯示空白或報錯
+          renderNewsItem(FALLBACK_NEWS_DATABASE["default-1"]);
+          return;
+        }
+
+        const news = docSnap.data();
+        renderNewsItem(news);
+
+      } catch (err) {
+        console.warn("載入雲端公告出錯，切換至內建公告防呆備援：", err);
+        renderNewsItem(FALLBACK_NEWS_DATABASE["default-1"]);
+      }
+    }
+
+    function renderNewsItem(news) {
+      const loadingBox = document.getElementById("loadingBox");
+      const errorBox = document.getElementById("errorBox");
+      const newsContentBox = document.getElementById("newsContentBox");
+
+      document.getElementById("newsCategoryBadge").textContent = (news.category || "最新消息").trim();
+      document.getElementById("newsDateBadge").textContent = (news.date || "2026-10-01").trim();
+      document.getElementById("newsTitle").textContent = news.title || "115校慶園遊會最新公告";
+      document.title = `${news.title || "公告詳情"} | 智光商工 115校慶園遊會`;
+
+      const mediaWrap = document.getElementById("newsMediaWrap");
+      const ytId = extractYouTubeId(news.youtubeUrl || news.youtubeLink || news.videoUrl);
+
+      if (ytId) {
+        mediaWrap.style.display = "block";
+        mediaWrap.innerHTML = `
+          <iframe src="https://www.youtube.com/embed/${ytId}?autoplay=1" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+        `;
+      } else if (news.videoUrl && !news.videoUrl.includes("youtube") && !news.videoUrl.includes("youtu.be")) {
+        mediaWrap.style.display = "block";
+        mediaWrap.innerHTML = `
+          <video src="${news.videoUrl}" controls autoplay muted playsinline></video>
+        `;
+      } else if (news.imageUrl) {
+        mediaWrap.style.display = "block";
+        mediaWrap.innerHTML = `
+          <img src="${news.imageUrl}" alt="${escapeHtml(news.title)}">
+        `;
+      } else {
+        mediaWrap.style.display = "none";
+      }
+
+      document.getElementById("newsBody").textContent = news.content || news.desc || "暫無公告詳細內容。";
+
+      loadingBox.style.display = "none";
+      errorBox.style.display = "none";
+      newsContentBox.style.display = "block";
+    }
+
+    window.addEventListener("DOMContentLoaded", loadNewsDetail);
+  </script>
+</body>
+</html>

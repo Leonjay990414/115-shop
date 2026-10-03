@@ -25,6 +25,7 @@
   <script src="../src/services/orderFsm.service.js"></script>
   <script src="../src/services/printTemplate.service.js"></script>
   <script src="../src/services/excelExport.service.js"></script>
+  <script src="../src/services/email.service.js"></script>
 </head>
 <body>
 
@@ -125,6 +126,9 @@
       <button id="tabNavMembers" class="admin-tab-btn">
         <span>👥</span> 會員名冊 (全校資料庫)
       </button>
+      <button id="tabNavNews" class="admin-tab-btn" style="color: #38bdf8;">
+        <span>📢</span> 最新消息發布管理
+      </button>
       <button id="tabNavOverdue" class="admin-tab-btn" style="color: #f87171;">
         <span>⚠️</span> 退件催單專區 (>4天)
         <span id="overdueBadgeCount" class="tab-badge" style="display:none;">0</span>
@@ -187,6 +191,9 @@
         </div>
 
         <div class="toolbar-right">
+          <button id="btnClearAllOrders" class="btn-tool" style="background: rgba(239, 68, 68, 0.2); border-color: rgba(239, 68, 68, 0.5); color: #f87171; font-weight: 700;">
+            🗑️ 清空所有測試訂單
+          </button>
           <button id="btnOpenPimModal" class="btn-tool" style="background: rgba(129, 140, 248, 0.2); border-color: rgba(129, 140, 248, 0.4);">
             📦 PIM 商品庫存管理
           </button>
@@ -237,8 +244,11 @@
         <div class="toolbar-left" style="flex: 1;">
           <input type="text" id="memberSearchInput" class="search-input" placeholder="🔍 搜尋學號、姓名、班級、帳號或電話...">
         </div>
-        <div class="toolbar-right">
+        <div class="toolbar-right" style="display: flex; gap: 0.75rem; align-items: center;">
           <span id="memberCountBadge" style="font-size: 0.85rem; color: #94a3b8; font-weight: 600;">共 0 筆會員</span>
+          <button id="btnCleanInvalidMembers" class="btn-tool" style="background: rgba(239, 68, 68, 0.2); border-color: rgba(239, 68, 68, 0.5); color: #f87171; font-weight: 700;">
+            🧹 清理無效/無正確信箱測試會員
+          </button>
         </div>
       </div>
       <div class="table-viewport-card">
@@ -259,6 +269,41 @@
             </thead>
             <tbody id="membersTableBody">
               <tr><td colspan="9" style="text-align: center; color: var(--text-muted); padding: 2rem;">讀取會員資料中...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- 分頁：最新消息管理專區 (News Manager) -->
+    <div id="viewNewsSection" style="display: none;">
+      <div class="toolbar-bar" style="margin-top: 0.5rem;">
+        <div class="toolbar-left">
+          <span style="font-size: 0.88rem; color: #38bdf8; font-weight: 700;">
+            📢 最新消息與活動公告發布管理 (即時同步至前台)
+          </span>
+        </div>
+        <div class="toolbar-right">
+          <button id="btnOpenAddNewsModal" class="btn-tool" style="background: var(--accent-gradient-btn); color: #fff; font-weight: 700;">
+            ➕ 發布新公告
+          </button>
+        </div>
+      </div>
+      <div class="table-viewport-card">
+        <div class="table-scroll-container">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th style="width: 80px;">圖片預覽</th>
+                <th>公告類別</th>
+                <th>公告標題</th>
+                <th>內容說明</th>
+                <th>發布日期</th>
+                <th style="width: 140px;">操作</th>
+              </tr>
+            </thead>
+            <tbody id="newsTableBody">
+              <tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 2rem;">讀取公告資料中...</td></tr>
             </tbody>
           </table>
         </div>
@@ -484,6 +529,92 @@
         <button id="btnCancelAddProduct" class="btn-tool" style="background: rgba(255,255,255,0.1);">取消</button>
         <button id="btnSubmitAddProduct" class="btn-tool" style="background: #10b981; border-color: #10b981; color: #fff; font-weight:700;">
           ✨ 建立並上架商品
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 最新消息發布/編輯彈窗 (News Modal) -->
+  <div id="newsModalOverlay" class="auth-overlay" style="display: none;">
+    <div class="auth-card" style="max-width: 560px;">
+      <div class="auth-header">
+        <h2 id="newsModalTitle" style="color: #38bdf8;">📢 發布最新公告</h2>
+        <p>即時發布至前台最新消息專區，支援圖片與內容編輯</p>
+      </div>
+      <input type="hidden" id="newsDocId">
+      <div class="auth-input-group">
+        <label class="auth-label">公告標題 <span style="color:#f87171;">*</span></label>
+        <input type="text" id="newsTitleInput" class="auth-input" placeholder="例如：115校慶限定預購開跑！">
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+        <div class="auth-input-group">
+          <label class="auth-label">消息分類</label>
+          <select id="newsCategorySelect" class="auth-select">
+            <option value="最新消息">最新消息</option>
+            <option value="優惠活動">優惠活動</option>
+            <option value="校慶快報">校慶快報</option>
+            <option value="重要公告">重要公告</option>
+          </select>
+        </div>
+        <div class="auth-input-group">
+          <label class="auth-label">發布日期</label>
+          <input type="date" id="newsDateInput" class="auth-input">
+        </div>
+      </div>
+      <div class="auth-input-group">
+        <label class="auth-label">文字內容說明 <span style="color:#f87171;">*</span></label>
+        <textarea id="newsContentInput" class="auth-input" rows="3" placeholder="請填寫詳細公告內容說明..." style="resize: vertical; min-height: 70px;"></textarea>
+      </div>
+
+      <!-- 多媒體支援：圖片、本地影片、YouTube 影片 -->
+      <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 10px; padding: 0.85rem; margin-bottom: 0.9rem;">
+        <strong style="font-size: 0.82rem; color: #38bdf8; display: block; margin-bottom: 0.6rem;">🎬 多媒體影音與宣傳圖檔 (可選)</strong>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+          <div class="auth-input-group" style="margin-bottom: 0.5rem;">
+            <label class="auth-label">本地宣傳圖片 (<input type="file" accept="image/*">)</label>
+            <input type="file" id="newsImageFileInput" class="auth-input" accept="image/*" style="padding: 0.35rem 0.6rem; font-size: 0.8rem;">
+            <div id="newsImgPreviewBox" style="display:none; margin-top:0.4rem; align-items:center; gap:0.5rem;">
+              <img id="newsImgPreview" src="" alt="預覽" style="width:48px; height:48px; border-radius:6px; object-fit:cover; border:1px solid rgba(255,255,255,0.2);">
+              <button type="button" id="btnRemoveNewsImg" style="background:transparent; border:none; color:#f87171; font-size:0.75rem; cursor:pointer;">✕ 移除圖片</button>
+            </div>
+          </div>
+
+          <div class="auth-input-group" style="margin-bottom: 0.5rem;">
+            <label class="auth-label">本地宣傳影片 (<input type="file" accept="video/*">)</label>
+            <input type="file" id="newsVideoFileInput" class="auth-input" accept="video/*" style="padding: 0.35rem 0.6rem; font-size: 0.8rem;">
+            <div id="newsVideoPreviewBox" style="display:none; margin-top:0.4rem; align-items:center; gap:0.5rem;">
+              <span style="font-size:0.75rem; color:#38bdf8;">🎥 已載入本地影片</span>
+              <button type="button" id="btnRemoveNewsVideo" style="background:transparent; border:none; color:#f87171; font-size:0.75rem; cursor:pointer;">✕ 移除影片</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="auth-input-group" style="margin-bottom: 0.2rem; margin-top: 0.4rem;">
+          <label class="auth-label">YouTube 影片連結 (支援一般網址與 Shorts，自動提取 Video ID 與封面)</label>
+          <input type="url" id="newsYoutubeInput" class="auth-input" placeholder="例如：https://www.youtube.com/watch?v=xxxx 或 https://youtu.be/xxxx">
+          <div id="newsYtPreviewBox" style="display:none; margin-top:0.4rem; align-items:center; gap:0.6rem;">
+            <img id="newsYtPreviewImg" src="" alt="YouTube封面" style="width:72px; height:40px; border-radius:4px; object-fit:cover;">
+            <span style="font-size:0.75rem; color:#10b981;">✔ YouTube 封面已自動解析</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 全體會員廣播勾選 -->
+      <div style="background: rgba(99, 102, 241, 0.12); border: 1px solid rgba(99, 102, 241, 0.3); border-radius: 8px; padding: 0.65rem 0.85rem; margin-bottom: 1rem; display: flex; align-items: center; justify-content: space-between;">
+        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; font-size: 0.84rem; color: #e0e7ff; font-weight: 600;">
+          <input type="checkbox" id="newsBroadcastEmailCheck" checked style="width: 17px; height: 17px; accent-color: #6366f1; cursor: pointer;">
+          <span>📢 同步發送 Email 通知給全體註冊會員 (GAS 廣播通知)</span>
+        </label>
+      </div>
+
+      <div style="display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 0.75rem; flex-wrap: wrap;">
+        <button id="btnCancelNewsModal" class="btn-tool" style="background: rgba(255,255,255,0.1);">取消</button>
+        <button id="btnSubmitNewsModal" class="btn-tool" style="background: #38bdf8; border-color: #38bdf8; color: #0f172a; font-weight:800;">
+          💾 儲存並發布公告
+        </button>
+        <button id="btnSubmitAndBroadcastModal" class="btn-tool" style="background: var(--accent-gradient-btn); border-color: #6366f1; color: #fff; font-weight:800;">
+          📢 發布並同步發送 Email 給所有會員
         </button>
       </div>
     </div>

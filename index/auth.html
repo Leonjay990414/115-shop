@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>👤 會員專區 (師生登入與註冊) | 智光商工 115校慶園遊會</title>
+  
+  <!-- Google Fonts: Noto Sans TC & Zen Maru Gothic -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700;900&family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
+  
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+  <script src="../src/services/studentAuth.service.js"></script>
+
+  <!-- 115 校慶 App 與網頁圖示 -->
+  <link rel="icon" type="image/png" href="images/logo115.png">
+  <link rel="apple-touch-icon" href="images/logo115.png">
+
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    body {
+      background: var(--pastel-candy-gradient);
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem 1rem 3rem;
+      box-sizing: border-box;
+    }
+    .auth-page-container {
+      width: 100%;
+      max-width: 520px;
+      margin: auto;
+    }
+    .auth-card-main {
+      background: #ffffff;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 24px;
+      padding: 2.25rem 2rem;
+      box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.05), 0 8px 15px -6px rgba(0, 0, 0, 0.03);
+    }
+    .auth-nav-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+    .btn-back-home {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: rgba(255, 255, 255, 0.9);
+      border: 1px solid #cbd5e1;
+      padding: 0.45rem 1rem;
+      border-radius: var(--radius-capsule);
+      color: #334155;
+      font-size: 0.88rem;
+      font-weight: 700;
+      text-decoration: none;
+      transition: var(--transition-smooth);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    }
+    .btn-back-home:hover {
+      background: #eff6ff;
+      color: #2563eb;
+      border-color: #93c5fd;
+      transform: translateY(-1px);
+    }
+    .auth-title {
+      font-family: 'Zen Maru Gothic', 'Noto Sans TC', sans-serif;
+      font-size: 1.45rem;
+      font-weight: 900;
+      color: #1e293b;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .tab-pills-bar {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1.25rem;
+      background: #f1f5f9;
+      padding: 0.35rem;
+      border-radius: 12px;
+    }
+    .tab-pills-bar button {
+      flex: 1;
+      padding: 0.6rem;
+      border-radius: 8px;
+      border: none;
+      font-weight: 700;
+      font-size: 0.9rem;
+      cursor: pointer;
+      background: transparent;
+      color: #64748b;
+      transition: all 0.2s ease;
+    }
+    .tab-pills-bar button.active {
+      background: #ffffff;
+      color: var(--accent-primary);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+    }
+    .status-toast {
+      padding: 0.75rem 1rem;
+      border-radius: 10px;
+      margin-bottom: 1rem;
+      font-size: 0.85rem;
+      display: none;
+    }
+    .status-toast.success {
+      background: #ecfdf5;
+      border: 1px solid #a7f3d0;
+      color: #065f46;
+      display: block;
+    }
+    .status-toast.error {
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      color: #991b1b;
+      display: block;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 全域 Toast 容器 -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <div class="auth-page-container">
+    <div class="auth-nav-bar">
+      <a href="index.html" class="btn-back-home">
+        <span>🏠</span> 返回商城首頁
+      </a>
+      <span style="font-size: 0.82rem; color: #64748b; font-weight: 600;">115 校慶專屬驗證</span>
+    </div>
+
+    <div class="auth-card-main">
+      <div style="text-align: center; margin-bottom: 1.25rem;">
+        <h1 class="auth-title" style="justify-content: center;">
+          <span>👤</span> 師生會員專區
+        </h1>
+        <p style="font-size: 0.82rem; color: #64748b; margin-top: 0.35rem;">
+          智光商工師生專屬帳號體系・登入後自動同步至主商城
+        </p>
+      </div>
+
+      <div id="statusToast" class="status-toast"></div>
+
+      <!-- 分頁切換：登入 / 註冊 -->
+      <div class="tab-pills-bar">
+        <button id="tabAuthLogin" class="active">登入帳號</button>
+        <button id="tabAuthRegister">新用戶註冊</button>
+      </div>
+
+      <!-- 登入表單 -->
+      <div id="studentLoginBox">
+        <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem; line-height: 1.5;">
+          登入請使用您註冊時設定的【自訂帳號】與【自訂密碼】。登入後將為您自動同步至主商城頁面。
+        </p>
+        <div class="form-group">
+          <label class="form-label">自訂使用者帳號 <span style="color: var(--danger);">*</span></label>
+          <input type="text" id="loginStudentId" class="form-input" placeholder="輸入自訂帳號 (5~10碼英數字)" autocomplete="username">
+        </div>
+        <div class="form-group">
+          <label class="form-label">自訂登入密碼 <span style="color: var(--danger);">*</span></label>
+          <input type="password" id="loginStudentPwd" class="form-input" placeholder="輸入自訂密碼" autocomplete="current-password">
+        </div>
+        <button id="btnStudentLoginSubmit" class="checkout-btn" style="margin-top: 0.75rem; width: 100%;">
+          🚀 登入會員帳號
+        </button>
+      </div>
+
+      <!-- 註冊表單 (兩階段：1. Email 驗證碼 2. 自訂帳密與個資) -->
+      <div id="studentRegisterBox" style="display: none;">
+        <!-- 第一階段：電子信箱驗證 -->
+        <div id="regStage1EmailBox">
+          <div style="background: rgba(99, 102, 241, 0.08); border: 1px solid rgba(99, 102, 241, 0.2); border-radius: 12px; padding: 0.85rem; margin-bottom: 1rem;">
+            <strong style="font-size: 0.85rem; color: var(--accent-primary); display: block; margin-bottom: 0.25rem;">
+              📧 第一階段：電子信箱身分驗證
+            </strong>
+            <p style="font-size: 0.78rem; color: var(--text-muted); margin: 0; line-height: 1.45;">
+              為確保工單與即時動態信件送達，請輸入您的有效信箱 (支援 Gmail、新北教育帳號 @apps.ntpc.edu.tw 等) 並完成 6 位數驗證碼核驗。
+            </p>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">電子信箱 <span style="color: var(--danger);">*</span></label>
+            <div style="display: flex; gap: 0.5rem;">
+              <input type="email" id="regEmailInput" class="form-input" placeholder="例如：user@gmail.com 或 @apps.ntpc.edu.tw" style="flex: 1;" autocomplete="email">
+              <button type="button" id="btnSendVerifyCode" class="btn-tool" style="background: var(--accent-primary); color: #fff; border: none; border-radius: 10px; padding: 0.55rem 0.9rem; font-size: 0.8rem; font-weight: 700; white-space: nowrap; cursor: pointer;">
+                發送驗證碼
+              </button>
+            </div>
+          </div>
+
+          <div class="form-group" id="regCodeInputGroup" style="margin-top: 0.75rem;">
+            <label class="form-label">輸入 6 位數 Email 驗證碼 <span style="color: var(--danger);">*</span></label>
+            <div style="display: flex; gap: 0.5rem;">
+              <input type="text" id="regVerifyCodeInput" class="form-input" maxlength="6" placeholder="請輸入 6 碼數字" style="flex: 1; font-family: monospace; font-size: 1.1rem; letter-spacing: 2px;">
+              <button type="button" id="btnVerifyCodeSubmit" class="btn-tool" style="background: #10b981; color: #fff; border: none; border-radius: 10px; padding: 0.55rem 1.1rem; font-size: 0.82rem; font-weight: 700; white-space: nowrap; cursor: pointer;">
+                ✅ 驗證
+              </button>
+            </div>
+            <span id="verifyCodeTimerHint" style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.3rem; display: block;"></span>
+          </div>
+        </div>
+
+        <!-- 第二階段：自訂帳號密碼與防呆資料填寫 (通過驗證後解鎖) -->
+        <div id="regStage2FieldsBox" style="display: none; border-top: 1px dashed #cbd5e1; padding-top: 1rem; margin-top: 0.75rem;">
+          <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 10px; padding: 0.6rem 0.85rem; margin-bottom: 0.85rem; display: flex; align-items: center; justify-content: space-between;">
+            <span style="font-size: 0.8rem; color: #047857; font-weight: 700;">🟢 信箱驗證通過：<code id="verifiedEmailDisplay"></code></span>
+            <span style="font-size: 0.72rem; color: #059669; font-weight: 600;">第二階段：資料填寫</span>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">身分選擇</label>
+            <div style="display: flex; gap: 1rem; margin-top: 0.25rem;">
+              <label style="font-size: 0.9rem; display: flex; align-items: center; gap: 0.3rem; cursor: pointer;">
+                <input type="radio" name="regUserType" value="STUDENT" checked> 學生
+              </label>
+              <label style="font-size: 0.9rem; display: flex; align-items: center; gap: 0.3rem; cursor: pointer;">
+                <input type="radio" name="regUserType" value="FACULTY"> 教職員
+              </label>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+            <div class="form-group">
+              <label class="form-label">自訂帳號 (5~10碼英數) <span style="color: var(--danger);">* 全校唯一</span></label>
+              <input type="text" id="regUsername" class="form-input" placeholder="5~10碼，須含英數" maxlength="10">
+              <span id="regUsernameCheckHint" style="font-size: 0.72rem; display: block; margin-top: 2px;"></span>
+            </div>
+            <div class="form-group">
+              <label class="form-label">設定密碼 (6~8碼) <span style="color: var(--danger);">*</span></label>
+              <input type="password" id="regPassword" class="form-input" placeholder="須含大寫、小寫與數字" maxlength="8">
+              <span id="regPasswordHint" style="font-size: 0.72rem; color: var(--text-muted); display: block; margin-top: 2px;">含大小寫字母與數字</span>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+            <div class="form-group">
+              <label class="form-label">真實姓名 (2~4位中文) <span style="color: var(--danger);">*</span></label>
+              <input type="text" id="regName" class="form-input" maxlength="4" placeholder="限 2~4 個繁體中文">
+              <span id="regNameCheckHint" style="font-size: 0.72rem; display: block; margin-top: 3px; min-height: 1.1em;"></span>
+            </div>
+            <div class="form-group">
+              <label class="form-label">性別</label>
+              <select id="regGender" class="form-select">
+                <option value="男">男</option>
+                <option value="女">女</option>
+                <option value="保密">保密</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">10 碼連絡手機號碼 <span style="color: var(--danger);">*</span></label>
+            <input type="tel" id="regPhone" class="form-input" maxlength="10" placeholder="0912345678">
+          </div>
+
+          <!-- 學生專屬欄位 (班級以 34 個標準選項下拉) -->
+          <div id="regStudentFields">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+              <div class="form-group">
+                <label class="form-label">學號 (精準6位數字) <span style="color: var(--danger);">*</span></label>
+                <input type="text" id="regStudentId" class="form-input" maxlength="6" placeholder="412008">
+              </div>
+              <div class="form-group">
+                <label class="form-label">座號 (1~40) <span style="color: var(--danger);">*</span></label>
+                <input type="number" id="regSeatNumber" class="form-input" min="1" max="40" placeholder="8">
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">就讀班級 (34班標準選單) <span style="color: var(--danger);">*</span></label>
+              <select id="regClassSelect" class="form-select" required></select>
+            </div>
+          </div>
+
+          <!-- 教職員專屬欄位 (階層式雙下拉選單：類別 -> 處室/科別/職稱) -->
+          <div id="regFacultyFields" style="display: none;">
+            <div class="form-group" style="margin-bottom: 0.75rem;">
+              <label class="form-label">教職員編號 <span style="color: var(--danger);">*</span></label>
+              <input type="text" id="regFacultyId" class="form-input" placeholder="例如：T88801">
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+              <div class="form-group">
+                <label class="form-label">第一層：單位 / 身分類別 <span style="color: var(--danger);">*</span></label>
+                <select id="regFacultyCategory" class="form-select">
+                  <option value="">-- 請選擇類別 --</option>
+                  <option value="行政單位">🏛️ 行政單位</option>
+                  <option value="學術單位">📚 學術單位</option>
+                  <option value="教師">🧑‍🏫 教師</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">第二層：具體處室 / 職稱 <span style="color: var(--danger);">*</span></label>
+                <select id="regDepartment" class="form-select" disabled>
+                  <option value="">-- 請先選取類別 --</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <button id="btnStudentRegisterSubmit" class="checkout-btn" style="margin-top: 0.75rem; width: 100%; background: var(--accent-gradient);">
+            ✨ 完成資料填寫並送出註冊
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Firebase 設定 -->
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyAYunSi8yFHoXxBQD1cabe-uKIA6DUKP_Q",
+      authDomain: "project-8372949785937083434.firebaseapp.com",
+      projectId: "project-8372949785937083434",
+      storageBucket: "project-8372949785937083434.firebasestorage.app",
+      messagingSenderId: "353265416024",
+      appId: "1:353265416024:web:1a333c4bd6d9ac8220572d"
+    };
+
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+    }
+  </script>
+
+  <!-- 引入獨立會員邏輯 -->
+  <script src="js/auth.js"></script>
+
+</body>
+</html>

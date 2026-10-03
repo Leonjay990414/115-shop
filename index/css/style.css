@@ -12,36 +12,77 @@
    ========================================================================== */
 
 :root {
-  --font-sans: 'Noto Sans TC', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang TC", "Microsoft JhengHei", sans-serif;
-  --font-display: 'Zen Maru Gothic', 'Noto Sans TC', sans-serif;
-  --bg-gradient: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
-  --glass-bg: rgba(255, 255, 255, 0.78);
-  --glass-bg-subtle: rgba(255, 255, 255, 0.55);
-  --glass-card: rgba(255, 255, 255, 0.85);
-  --glass-border: 1px solid rgba(255, 255, 255, 0.9);
-  --glass-border-subtle: 1px solid rgba(255, 255, 255, 0.6);
-  --glass-shadow: 0 8px 24px rgba(15, 23, 42, 0.04), 0 1px 3px rgba(15, 23, 42, 0.02);
-  --glass-shadow-floating: 0 16px 36px rgba(99, 102, 241, 0.12), 0 4px 12px rgba(0, 0, 0, 0.04);
-  --accent-primary: #4f46e5;
-  --accent-secondary: #06b6d4;
-  --accent-gradient: linear-gradient(135deg, #6366f1 0%, #ec4899 50%, #f43f5e 100%);
-  --pastel-candy-gradient: linear-gradient(145deg, #fbfbfe 0%, #f4f6fb 40%, #fcf7f8 75%, #f6f5fc 100%);
-  --shimmer-gradient: linear-gradient(90deg, #fb923c, #f472b6, #38bdf8, #fb923c);
-  --accent-gradient-btn: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
-  --text-main: #334155; /* 全站內文與數字清晰易讀之深灰藍，辨識度 100% */
+  /* UI/UX Pro Max 現代繁中字體棧：Apple PingFang TC 優先 + Google Noto Sans TC + 圓潤無襯線體 */
+  --font-sans: -apple-system, BlinkMacSystemFont, "PingFang TC", "Noto Sans TC", "Heiti TC", "Microsoft JhengHei", sans-serif;
+  --font-display: "PingFang TC", "Zen Maru Gothic", "Noto Sans TC", sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+
+  /* 8px 空間節奏網格系統 (Spatial Rhythm) */
+  --space-1: 8px;
+  --space-2: 16px;
+  --space-3: 24px;
+  --space-4: 32px;
+  --space-5: 40px;
+  --space-6: 48px;
+
+  /* 專屬淺色粉彩高質感配色庫 (Pastel Luxury Color Pairing) */
+  /* 主色調：柔和粉彩 (Pastel Pink #ff7597 / 晨曦奶油金 #fff9f0 / 晴空柔藍 #edf5ff) */
+  --pastel-pink: #ff7597;
+  --pastel-pink-subtle: rgba(255, 117, 151, 0.12);
+  --pastel-cream: #fff9f0;
+  --pastel-sky: #edf5ff;
+  --pastel-sky-hover: #e0eeff;
+
+  /* 背景：乾淨明亮純白搭配微暖霧灰，極致可愛、高質感、淺色調 */
+  --bg-gradient: linear-gradient(135deg, #ffffff 0%, #fff9f0 50%, #edf5ff 100%);
+  --pastel-candy-gradient: linear-gradient(160deg, #ffffff 0%, #fffbfc 35%, #fff9f0 70%, #edf5ff 100%);
+  --glass-bg: rgba(255, 255, 255, 0.92);
+  --glass-bg-subtle: rgba(255, 255, 255, 0.75);
+  --glass-card: #ffffff;
+  --glass-border: 1px solid rgba(255, 225, 235, 0.8);
+  --glass-border-subtle: 1px solid rgba(237, 245, 255, 0.9);
+  
+  /* UI/UX Pro Max 柔和漫反射擴散陰影 (Soft Diffusion Shadows) */
+  --glass-shadow: 0 4px 20px -2px rgba(255, 117, 151, 0.06), 0 2px 8px -1px rgba(15, 23, 42, 0.03);
+  --glass-shadow-hover: 0 16px 36px -4px rgba(255, 117, 151, 0.12), 0 4px 14px -2px rgba(15, 23, 42, 0.04);
+  --glass-shadow-floating: 0 20px 44px -6px rgba(255, 117, 151, 0.15), 0 6px 16px -2px rgba(15, 23, 42, 0.05);
+  
+  /* 色彩校準：柔和粉彩與低飽和度高質感紫粉/藍紫 */
+  --accent-primary: #ff7597;
+  --accent-primary-hover: #f05e83;
+  --accent-primary-subtle: rgba(255, 117, 151, 0.12);
+  --accent-secondary: #5b56f6;
+  --accent-gradient-btn: linear-gradient(135deg, #ff7597 0%, #ff8da7 50%, #6366f1 100%);
+  --accent-gradient: linear-gradient(135deg, #ff7597 0%, #818cf8 100%);
+  --shimmer-gradient: linear-gradient(90deg, #ff7597, #f59e0b, #38bdf8, #ff7597);
+
+  /* 文字層級色彩 */
+  --text-main: #334155;
   --text-heading: #0f172a;
   --text-muted: #64748b;
   --text-light: #94a3b8;
+
+  /* 狀態反饋 (馬卡龍柔和色彩) */
   --success: #10b981;
+  --success-bg: #e6fcf5;
   --warning: #f59e0b;
+  --warning-bg: #fff9db;
   --danger: #ef4444;
+  --danger-bg: #fff0f6;
+
+  /* 圓角規範 (UI/UX Pro Max 14px-18px 柔潤圓角) */
   --radius-capsule: 9999px;
-  --radius-card: 20px;
-  --radius-input: 14px;
+  --radius-card: 14px;
+  --radius-modal: 18px;
+  --radius-input: 12px;
+  --radius-sm: 8px;
+
   --blur-strong: blur(24px);
   --blur-medium: blur(16px);
-  --transition-spring: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-  --transition-smooth: all 0.25s ease;
+
+  /* 動畫旋鈕設定 MOTION_INTENSITY: 4 (俐落乾脆，回饋清晰) */
+  --transition-spring: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-smooth: all 0.2s ease;
 }
 
 /* 全域重設與原生慣性滾動 (Momentum Scrolling & GPU Acceleration) */
@@ -93,17 +134,17 @@ button, select, input, a, .category-pill, .product-card, .btn-tool, .nav-link, .
 }
 
 .blob-1 {
-  width: 450px;
-  height: 450px;
-  background: radial-gradient(circle, rgba(99, 102, 241, 0.35), rgba(168, 85, 247, 0.2));
+  width: 480px;
+  height: 480px;
+  background: radial-gradient(circle, rgba(255, 117, 151, 0.22), rgba(255, 249, 240, 0.35));
   top: -80px;
   right: -100px;
 }
 
 .blob-2 {
-  width: 500px;
-  height: 500px;
-  background: radial-gradient(circle, rgba(236, 72, 153, 0.28), rgba(251, 146, 60, 0.2));
+  width: 520px;
+  height: 520px;
+  background: radial-gradient(circle, rgba(237, 245, 255, 0.45), rgba(255, 117, 151, 0.15));
   bottom: 100px;
   left: -150px;
   animation-duration: 22s;
@@ -182,40 +223,42 @@ button, select, input, a, .category-pill, .product-card, .btn-tool, .nav-link, .
   font-family: var(--font-display);
   font-weight: 700;
   letter-spacing: -0.01em;
-  background: linear-gradient(135deg, #1e293b, #4f46e5);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  white-space: nowrap;
+  color: var(--text-heading);
+  white-space: nowrap !important;
 }
 
 .brand-subtitle {
   font-size: 0.72rem;
   color: var(--text-muted);
   font-weight: 500;
-  white-space: nowrap;
+  white-space: nowrap !important;
 }
 
-/* 電腦端橫向導覽 */
+/* 電腦端橫向導覽 (8px Rhythm) */
 .desktop-nav {
   display: flex;
   align-items: center;
-  gap: 1.5rem;
+  gap: var(--space-2); /* 16px */
 }
 
 .nav-link {
   text-decoration: none;
-  font-size: 0.92rem;
+  font-size: 0.9rem;
   font-weight: 600;
   color: var(--text-muted);
   transition: var(--transition-smooth);
-  padding: 0.4rem 0.85rem;
+  padding: 6px 14px;
   border-radius: var(--radius-capsule);
+  white-space: nowrap !important;
 }
 
 .nav-link:hover, .nav-link.active {
   color: var(--accent-primary);
-  background: rgba(99, 102, 241, 0.08);
+  background: var(--accent-primary-subtle);
+}
+
+.nav-link:active {
+  transform: scale(0.98);
 }
 
 /* 購物車觸發按鈕 (頂部) */
@@ -277,11 +320,11 @@ button, select, input, a, .category-pill, .product-card, .btn-tool, .nav-link, .
 }
 
 /* ==========================================================================
-   Hero 橫幅專區 (Liquid Glass Banner)
+   Hero 橫幅專區 (Liquid Glass Banner - DESIGN_VARIANCE: 5)
    ========================================================================== */
 .hero-banner {
-  margin: 1.5rem 0 2rem;
-  padding: 2.5rem 2rem;
+  margin: var(--space-3) 0 var(--space-4); /* 24px 0 32px */
+  padding: var(--space-4) var(--space-3); /* 32px 24px */
   border-radius: var(--radius-card);
   backdrop-filter: var(--blur-strong);
   -webkit-backdrop-filter: var(--blur-strong);
@@ -292,7 +335,7 @@ button, select, input, a, .category-pill, .product-card, .btn-tool, .nav-link, .
   flex-direction: column;
   align-items: center;
   text-align: center;
-  gap: 1rem;
+  gap: var(--space-2); /* 16px 空間節奏 */
   position: relative;
   overflow: hidden;
 }
@@ -300,74 +343,65 @@ button, select, input, a, .category-pill, .product-card, .btn-tool, .nav-link, .
 .hero-pill-badge {
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
-  padding: 0.35rem 0.95rem;
+  gap: 6px;
+  padding: 4px 12px;
   border-radius: var(--radius-capsule);
-  background: rgba(99, 102, 241, 0.1);
+  background: var(--accent-primary-subtle);
   color: var(--accent-primary);
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   font-weight: 700;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
-  border: 1px solid rgba(99, 102, 241, 0.2);
+  border: 1px solid rgba(85, 81, 255, 0.2);
+  white-space: nowrap !important;
 }
 
 .hero-title {
   font-family: var(--font-display);
-  font-size: 2.25rem;
+  font-size: clamp(1.85rem, 4vw, 2.45rem);
   font-weight: 800;
   letter-spacing: -0.02em;
-  line-height: 1.25;
+  line-height: 1.28;
   color: var(--text-heading);
   max-width: 800px;
 }
 
 .hero-title span {
-  background: linear-gradient(120deg, #fb923c 0%, #f472b6 45%, #38bdf8 80%, #fb923c 100%);
-  background-size: 250% auto;
+  background: linear-gradient(135deg, #4f46e5 0%, #0ea5e9 100%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
-  animation: slowShimmerWave 8s ease-in-out infinite;
-}
-
-@keyframes slowShimmerWave {
-  0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
-  }
 }
 
 .hero-subtitle {
-  font-size: 1rem;
+  font-size: 0.96rem;
+  font-weight: 500;
   color: var(--text-muted);
-  max-width: 600px;
+  line-height: 1.6;
+  max-width: 620px;
+  margin: 0;
 }
 
 .hero-features-bar {
   display: flex;
-  gap: 1.5rem;
+  gap: var(--space-2); /* 16px */
   flex-wrap: wrap;
   justify-content: center;
-  margin-top: 0.5rem;
+  margin-top: var(--space-1); /* 8px */
 }
 
 .hero-feature-item {
   display: flex;
   align-items: center;
-  gap: 0.4rem;
-  font-size: 0.85rem;
-  color: var(--text-muted);
+  gap: 6px;
+  font-size: 0.84rem;
+  color: var(--text-main);
   font-weight: 600;
-  padding: 0.35rem 0.85rem;
-  background: rgba(255, 255, 255, 0.6);
+  padding: 6px 14px;
+  background: #f8fafc;
   border-radius: var(--radius-capsule);
-  border: var(--glass-border-subtle);
+  border: 1px solid #e2e8f0;
+  white-space: nowrap !important;
 }
 
 /* ==========================================================================
@@ -422,93 +456,123 @@ button, select, input, a, .category-pill, .product-card, .btn-tool, .nav-link, .
 }
 
 /* ==========================================================================
-   商品卡片網格 (2 欄整齊網格與單行截斷)
+   商品卡片網格 (2 欄整齊網格與 8px 空間節奏)
    ========================================================================== */
 .products-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 3rem;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--space-3); /* 24px 空間節奏 */
+  margin-bottom: var(--space-5); /* 40px */
 }
 
 .product-card {
-  background: var(--glass-card);
-  backdrop-filter: var(--blur-strong);
-  -webkit-backdrop-filter: var(--blur-strong);
-  border-radius: var(--radius-card);
-  border: var(--glass-border);
-  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.04), 0 1px 3px rgba(15, 23, 42, 0.02);
-  padding: 1.25rem;
+  background: #ffffff;
+  border-radius: var(--radius-card); /* 14px 規格 */
+  border: 1px solid rgba(255, 225, 235, 0.85);
+  box-shadow: var(--glass-shadow);
+  padding: var(--space-3); /* 24px 精準內距，充足呼吸感 (VISUAL_DENSITY: 6) */
   display: flex;
   flex-direction: column;
-  transition: transform 0.28s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.28s cubic-bezier(0.25, 1, 0.5, 1);
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.22s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.22s ease;
   position: relative;
   overflow: hidden;
+  cursor: pointer;
+  will-change: transform, opacity;
+  transform: translateZ(0);
 }
 
 .product-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 14px 32px rgba(15, 23, 42, 0.08), 0 4px 10px rgba(99, 102, 241, 0.05);
-  border-color: rgba(99, 102, 241, 0.22);
+  transform: translateY(-3px);
+  box-shadow: var(--glass-shadow-hover);
+  border-color: rgba(255, 117, 151, 0.35);
+}
+
+.product-card:active {
+  transform: translateY(-1px) scale(0.995); /* 輕觸實體物理反饋 */
 }
 
 .product-badge-lead {
   position: absolute;
-  top: 1rem;
-  right: 1rem;
-  background: rgba(15, 23, 42, 0.7);
+  top: var(--space-2);
+  right: var(--space-2);
+  background: rgba(15, 23, 42, 0.75);
   color: #fff;
   backdrop-filter: var(--blur-medium);
-  font-size: 0.7rem;
+  font-size: 0.72rem;
   font-weight: 600;
-  padding: 0.25rem 0.65rem;
+  padding: 4px 10px;
   border-radius: var(--radius-capsule);
+  white-space: nowrap !important;
   z-index: 2;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
 }
 
 /* 商品預覽圖示框 */
 .product-image-box {
   width: 100%;
   aspect-ratio: 1 / 1;
-  border-radius: 16px;
-  background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
+  border-radius: 14px; /* UI/UX Pro Max 14px 圓角規格 */
+  background: linear-gradient(135deg, #ffffff 0%, #fff9f0 50%, #edf5ff 100%);
   display: flex;
   align-items: center;
   justify-content: center;
   position: relative;
   overflow: hidden;
-  margin-bottom: 1rem;
-  border: var(--glass-border-subtle);
+  margin-bottom: var(--space-2); /* 16px */
+  border: 1px solid rgba(255, 235, 240, 0.9);
 }
 
 .product-image-box svg, .product-image-box img {
-  max-width: 75%;
-  max-height: 75%;
+  max-width: 72%;
+  max-height: 72%;
   object-fit: contain;
-  transition: var(--transition-spring);
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .product-card:hover .product-image-box svg,
 .product-card:hover .product-image-box img {
-  transform: scale(1.08);
+  transform: scale(1.05);
 }
 
-/* 關鍵規範：商品標題與備註強制單行截斷，永不折至第二行 */
+/* 視覺層級：一級商品標題 (Weight 700 + 清楚深色) */
 .product-title {
-  font-size: 1.05rem;
+  font-size: 1.1rem;
   font-weight: 700;
-  color: #0f172a;
-  margin-bottom: 0.35rem;
+  letter-spacing: -0.01em;
+  color: var(--text-heading);
+  margin-bottom: var(--space-1); /* 8px */
   white-space: nowrap !important;
   overflow: hidden !important;
   text-overflow: ellipsis !important;
   display: block;
 }
 
+/* 材質規格標籤：低調高雅膠囊，防止 AI 刺眼螢光 */
+.product-material-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  background: #f1f5f9;
+  color: #475569;
+  font-size: 0.74rem;
+  font-weight: 600;
+  border-radius: var(--radius-capsule);
+  border: 1px solid #e2e8f0;
+  margin-bottom: var(--space-1); /* 8px */
+  white-space: nowrap !important;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 商品次要描述：字重 500、低飽和色 */
 .product-desc {
-  font-size: 0.8rem;
+  font-size: 0.82rem;
+  font-weight: 500;
   color: var(--text-muted);
-  margin-bottom: 0.75rem;
+  line-height: 1.45;
+  margin-bottom: var(--space-2); /* 16px */
   white-space: nowrap !important;
   overflow: hidden !important;
   text-overflow: ellipsis !important;
@@ -517,100 +581,118 @@ button, select, input, a, .category-pill, .product-card, .btn-tool, .nav-link, .
 
 .product-meta-row {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
   margin-top: auto;
-  padding-top: 0.75rem;
-  border-top: 1px solid rgba(226, 232, 240, 0.8);
+  padding-top: var(--space-2); /* 16px */
+  border-top: 1px solid rgba(241, 245, 249, 0.9);
 }
 
+/* 價格區塊：層次鮮明 (字級梯度 1.45rem + 800 字重) */
 .price-box {
   display: flex;
   align-items: baseline;
-  gap: 0.2rem;
+  gap: 3px;
+  white-space: nowrap !important;
 }
 
 .price-currency {
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   color: var(--accent-primary);
   font-weight: 700;
 }
 
 .price-amount {
-  font-size: 1.4rem;
+  font-size: 1.45rem;
   font-weight: 800;
-  color: #0f172a;
+  color: var(--text-heading);
+  letter-spacing: -0.02em;
+  font-family: var(--font-display);
+  font-variant-numeric: tabular-nums;
 }
 
-/* 客製設定與加入購物車按鈕 */
+/* 客製選購按鈕：符合 Impeccable 48px 觸控與 Taste 乾脆回饋 (MOTION_INTENSITY: 4) */
 .product-action-btn {
   background: var(--accent-gradient-btn);
-  color: #fff;
+  color: #ffffff;
   border: none;
-  padding: 0.55rem 1.15rem;
+  min-height: 48px; /* Impeccable 嚴格 48px 觸控熱區標準 */
+  min-width: 120px;
+  padding: 0 var(--space-2); /* 16px */
   border-radius: var(--radius-capsule);
-  font-size: 0.85rem;
-  font-weight: 600;
+  font-size: 0.9rem;
+  font-weight: 700;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25);
-  transition: var(--transition-spring);
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
+  transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.18s cubic-bezier(0.16, 1, 0.3, 1);
   display: inline-flex;
   align-items: center;
-  gap: 0.35rem;
+  justify-content: center;
+  gap: 6px;
+  white-space: nowrap !important;
 }
 
-.product-action-btn:hover {
-  transform: scale(1.03);
-  box-shadow: 0 6px 16px rgba(79, 70, 229, 0.35);
+.product-action-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(79, 70, 229, 0.28);
 }
 
-.product-action-btn:active {
-  transform: scale(0.96);
+.product-action-btn:active:not(:disabled) {
+  transform: scale(0.97); /* 輕微下壓反饋 */
+  box-shadow: 0 2px 6px rgba(79, 70, 229, 0.18);
+}
+
+.product-action-btn:disabled {
+  background: #e2e8f0 !important;
+  color: #94a3b8 !important;
+  cursor: not-allowed !important;
+  box-shadow: none !important;
+  transform: none !important;
 }
 
 /* ==========================================================================
    分類篩選下拉選單控制列 (Category Dropdown Select Bar - 原生優化/零卡頓)
-   - 徹底移除左右滑動，改用標準圓角下拉選單，單手即可順暢切換
+   - 徹底移除左右滑動，改用標準圓角下拉選單，單手即可順暢切換 (VISUAL_DENSITY: 6, 48px Touch Standard)
    ========================================================================== */
 .categories-control-bar {
-  margin: 1rem 0 1.75rem;
+  margin: var(--space-2) 0 var(--space-3); /* 16px 0 24px */
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  background: var(--glass-card);
-  border: var(--glass-border);
-  padding: 0.65rem 1rem;
-  border-radius: 14px;
-  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.04);
+  gap: var(--space-2); /* 16px */
+  background: #ffffff;
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  padding: var(--space-1) var(--space-2); /* 8px 16px */
+  border-radius: var(--radius-card);
+  box-shadow: var(--glass-shadow);
 }
 
 .category-select-label {
   font-size: 0.9rem;
   font-weight: 700;
   color: var(--text-heading);
-  white-space: nowrap;
+  white-space: nowrap !important;
   display: flex;
   align-items: center;
-  gap: 0.35rem;
+  gap: 6px;
 }
 
 .category-dropdown-select {
   flex: 1;
   width: 100%;
-  height: 46px;
-  padding: 0.5rem 1rem;
+  height: 48px; /* 嚴格 48px 行動觸控標準 */
+  padding: 0 var(--space-2);
   font-size: 0.95rem;
   font-weight: 600;
   color: var(--text-heading);
-  background: #fff;
-  border: 1.5px solid rgba(99, 102, 241, 0.25);
-  border-radius: 12px;
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-radius: var(--radius-input);
   outline: none;
   cursor: pointer;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease;
   -webkit-appearance: none;
   appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%236366f1' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%235551ff' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 1rem center;
   background-size: 14px;
@@ -618,55 +700,68 @@ button, select, input, a, .category-pill, .product-card, .btn-tool, .nav-link, .
 
 .category-dropdown-select:focus {
   border-color: var(--accent-primary);
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+  background: #ffffff;
+  box-shadow: 0 0 0 3px var(--accent-primary-subtle);
 }
 
 /* ==========================================================================
    側邊懸浮購物車抽屜 (Cart Drawer)
    ========================================================================== */
 .drawer-backdrop {
-  position: fixed;
-  inset: 0;
-  background: rgba(15, 23, 42, 0.35);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  z-index: 1000;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.3s ease;
+  position: fixed !important;
+  inset: 0 !important;
+  background: rgba(15, 23, 42, 0.6) !important;
+  backdrop-filter: blur(4px) !important;
+  -webkit-backdrop-filter: blur(4px) !important;
+  z-index: 10000 !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  visibility: hidden !important;
+  display: none !important;
+  transition: opacity 0.25s ease, visibility 0.25s ease;
+}
+
+body:not(.cart-open) .drawer-backdrop {
+  display: none !important;
+  pointer-events: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
 }
 
 .drawer-backdrop.active {
-  opacity: 1;
-  pointer-events: auto;
+  display: block !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  visibility: visible !important;
 }
 
 .cart-drawer {
-  position: fixed;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  width: 100%;
-  max-width: 440px;
-  background: rgba(255, 255, 255, 0.92);
-  backdrop-filter: var(--blur-strong);
-  -webkit-backdrop-filter: var(--blur-strong);
-  border-left: var(--glass-border);
-  box-shadow: -10px 0 40px rgba(0, 0, 0, 0.12);
-  z-index: 1001;
-  transform: translateX(100%);
-  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
-  display: flex;
-  flex-direction: column;
+  position: fixed !important;
+  top: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100% !important;
+  max-width: 440px !important;
+  background: #ffffff !important; /* 純白實色底，徹底杜絕半透明白屏卡死 */
+  border-left: 1px solid #e2e8f0 !important;
+  box-shadow: -10px 0 45px rgba(0, 0, 0, 0.25) !important;
+  z-index: 10001 !important; /* 高於遮罩層 */
+  transform: translate3d(100%, 0, 0);
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex !important;
+  flex-direction: column !important;
+  pointer-events: auto !important;
+  will-change: transform;
 }
 
 .cart-drawer.active {
-  transform: translateX(0);
+  transform: translate3d(0, 0, 0) !important;
 }
 
 .drawer-header {
   padding: 1.25rem 1.5rem;
-  border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+  border-bottom: 1px solid #e2e8f0;
+  background: #ffffff;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -679,23 +774,24 @@ button, select, input, a, .category-pill, .product-card, .btn-tool, .nav-link, .
 }
 
 .close-drawer-btn {
-  background: rgba(241, 245, 249, 0.8);
+  background: #f1f5f9;
   border: none;
-  width: 34px;
-  height: 34px;
+  width: 36px;
+  height: 36px;
   border-radius: var(--radius-capsule);
   font-size: 1.1rem;
+  font-weight: 700;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--text-muted);
+  color: #475569;
   transition: var(--transition-spring);
 }
 
 .close-drawer-btn:hover {
-  background: #e2e8f0;
-  color: #0f172a;
+  background: #fee2e2;
+  color: #ef4444;
   transform: scale(1.05);
 }
 
@@ -706,19 +802,33 @@ button, select, input, a, .category-pill, .product-card, .btn-tool, .nav-link, .
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  background: #f8fafc; /* 內容區輕柔淺灰底，讓商品卡片與空狀態極具對比度 */
 }
 
 .empty-cart-state {
   margin: auto;
   text-align: center;
-  color: var(--text-muted);
-  padding: 2rem 1rem;
+  color: #475569;
+  padding: 2.5rem 1.5rem;
+  background: #ffffff;
+  border-radius: 20px;
+  border: 1px dashed #cbd5e1;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .empty-cart-icon {
-  font-size: 3rem;
+  font-size: 3.5rem;
   margin-bottom: 0.75rem;
-  opacity: 0.6;
+  opacity: 0.85;
+}
+
+.empty-cart-state p {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 0.35rem;
 }
 
 .cart-item-card {
@@ -776,35 +886,52 @@ button, select, input, a, .category-pill, .product-card, .btn-tool, .nav-link, .
   align-items: center;
   background: #f1f5f9;
   border-radius: var(--radius-capsule);
-  padding: 0.15rem;
+  padding: 2px;
+  border: 1px solid #e2e8f0;
 }
 
 .stepper-btn {
   background: #fff;
   border: none;
-  width: 24px;
-  height: 24px;
+  min-width: 48px; /* Impeccable 觸控熱區 >= 48px */
+  min-height: 48px;
+  width: 48px;
+  height: 48px;
   border-radius: var(--radius-capsule);
-  font-size: 0.85rem;
+  font-size: 1.1rem;
   font-weight: 700;
   cursor: pointer;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   color: #0f172a;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  transition: background-color 0.15s ease, transform 0.15s ease;
+  touch-action: manipulation;
+}
+
+.stepper-btn:hover {
+  background: #f8fafc;
+}
+
+.stepper-btn:active {
+  transform: scale(0.92);
 }
 
 .stepper-val {
-  padding: 0 0.5rem;
-  font-size: 0.85rem;
+  padding: 0 0.85rem;
+  font-size: 1rem;
   font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  min-width: 2rem;
+  text-align: center;
+  display: inline-block;
 }
 
 .drawer-footer {
   padding: 1.25rem 1.5rem;
-  border-top: 1px solid rgba(226, 232, 240, 0.8);
-  background: rgba(255, 255, 255, 0.9);
+  border-top: 1px solid #e2e8f0;
+  background: #ffffff;
 }
 
 .drawer-summary-row {
@@ -816,18 +943,23 @@ button, select, input, a, .category-pill, .product-card, .btn-tool, .nav-link, .
 
 .drawer-total-label {
   font-size: 0.95rem;
-  color: var(--text-muted);
+  color: #475569;
   font-weight: 600;
 }
 
 .drawer-total-price {
-  font-size: 1.4rem;
+  font-size: 1.45rem;
   font-weight: 800;
   color: var(--accent-primary);
+  font-variant-numeric: tabular-nums;
 }
 
 .checkout-btn {
   width: 100%;
+  min-height: 48px; /* Impeccable 48px 觸控熱區標準 */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   background: var(--accent-gradient-btn);
   color: #fff;
   border: none;
@@ -838,14 +970,23 @@ button, select, input, a, .category-pill, .product-card, .btn-tool, .nav-link, .
   cursor: pointer;
   box-shadow: 0 6px 18px rgba(79, 70, 229, 0.35);
   transition: var(--transition-spring);
+  white-space: nowrap !important;
 }
 
-.checkout-btn:hover {
+.checkout-btn:disabled {
+  background: #cbd5e1 !important;
+  color: #94a3b8 !important;
+  cursor: not-allowed !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+.checkout-btn:hover:not(:disabled) {
   transform: scale(1.02);
   box-shadow: 0 8px 22px rgba(79, 70, 229, 0.45);
 }
 
-.checkout-btn:active {
+.checkout-btn:active:not(:disabled) {
   transform: scale(0.97);
 }
 
@@ -933,44 +1074,63 @@ button, select, input, a, .category-pill, .product-card, .btn-tool, .nav-link, .
 /* ==========================================================================
    客製彈窗與結帳雙重確認視窗 (Modals)
    ========================================================================== */
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(15, 23, 42, 0.45);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  z-index: 1100;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.modal-overlay,
+.modal,
+.modal-backdrop,
+.overlay,
+#authModal,
+#studentAuthModalOverlay {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100vw !important;
+  height: 100dvh !important; /* 動態視口高度 */
+  display: none !important;
+  align-items: center !important; /* 垂直絕對居中 */
+  justify-content: center !important; /* 水平絕對居中 */
+  z-index: 99999 !important;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
   padding: 1rem;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.3s ease;
+  box-sizing: border-box;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  visibility: hidden !important;
 }
 
-.modal-overlay.active {
-  opacity: 1;
-  pointer-events: auto;
+.modal-overlay.active,
+.modal.active,
+.overlay.active {
+  display: flex !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  visibility: visible !important;
 }
 
 .modal-card {
-  background: rgba(255, 255, 255, 0.98);
-  border-radius: var(--radius-card);
-  border: 1px solid rgba(226, 232, 240, 0.9);
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-  width: 100%;
-  max-width: 540px;
-  max-height: 88dvh;
+  position: relative;
+  margin: auto;
+  max-width: 90vw;
+  max-height: 85dvh;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+  border-radius: var(--radius-modal, 18px); /* UI/UX Pro Max 柔潤 18px 圓角 */
+  background: rgba(255, 255, 255, 0.98);
+  border: 1px solid rgba(255, 225, 235, 0.85);
+  box-shadow: 0 25px 50px -12px rgba(255, 117, 151, 0.15), 0 10px 25px -5px rgba(15, 23, 42, 0.08);
+  width: 100%;
   padding: 1.75rem 1.5rem calc(1.5rem + env(safe-area-inset-bottom, 10px));
-  transform: scale(0.95);
+  transform: scale(0.96) translateZ(0);
   transition: transform 0.25s cubic-bezier(0.25, 1, 0.5, 1);
+  box-sizing: border-box;
+  will-change: transform, opacity;
 }
 
 .modal-overlay.active .modal-card {
-  transform: scale(1);
+  transform: scale(1) translateZ(0);
 }
 
 .modal-header {
@@ -1328,6 +1488,93 @@ button, select, input, a, .category-pill, .product-card, .btn-tool, .nav-link, .
 .val-fail { color: var(--danger); }
 .val-info { color: var(--accent-primary); }
 
+/* 直式五階段時光軸 (Vertical Dynamic Status Timeline) */
+.order-timeline-wrap {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: #f8fafc;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+}
+
+.order-timeline-title {
+  font-size: 0.86rem;
+  font-weight: 800;
+  color: #1e293b;
+  margin-bottom: 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.timeline-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  position: relative;
+  padding-left: 1.5rem;
+}
+
+.timeline-steps::before {
+  content: "";
+  position: absolute;
+  left: 7px;
+  top: 8px;
+  bottom: 8px;
+  width: 2px;
+  background: #cbd5e1;
+}
+
+.timeline-item {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.timeline-dot {
+  position: absolute;
+  left: -1.5rem;
+  top: 3px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #cbd5e1;
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 1px #94a3b8;
+  transition: all 0.2s ease;
+}
+
+.timeline-item.active .timeline-dot {
+  background: #3b82f6;
+  box-shadow: 0 0 0 2px #93c5fd;
+}
+
+.timeline-item.passed .timeline-dot {
+  background: #10b981;
+  box-shadow: 0 0 0 2px #a7f3d0;
+}
+
+.timeline-item.failed .timeline-dot {
+  background: #ef4444;
+  box-shadow: 0 0 0 2px #fecaca;
+}
+
+.timeline-item-title {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #334155;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.timeline-item-desc {
+  font-size: 0.75rem;
+  color: #64748b;
+  line-height: 1.4;
+}
+
 /* 庫存狀態與按鈕禁用樣式 */
 .btn-disabled-stock {
   background: #cbd5e1 !important;
@@ -1469,24 +1716,7 @@ button, select, input, a, .category-pill, .product-card, .btn-tool, .nav-link, .
   transition: transform 0.25s ease, opacity 0.25s ease;
 }
 
-.drawer-backdrop {
-  position: fixed;
-  inset: 0;
-  background: rgba(15, 23, 42, 0.55);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
-  z-index: 9998;
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
-  transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.3s ease;
-}
-
-.drawer-backdrop.active {
-  opacity: 1;
-  visibility: visible;
-  pointer-events: auto;
-}
+/* 手機側滑導覽抽屜 (Mobile Nav Drawer) */
 
 .mobile-nav-drawer {
   position: fixed;
@@ -2240,10 +2470,457 @@ button, select, input, a, .category-pill, .product-card, .btn-tool, .nav-link, .
 .btn-open-ai-guide,
 .btn-open-ai-guide-clone,
 .pdp-spec-badge,
-.chip-filter-btn {
+.chip-filter-btn,
+.track-step-val,
+.track-step-title,
+.hero-pill-badge,
+.ai-step-badge,
+.prompt-tag,
+.prompt-fit {
   white-space: nowrap !important;
   text-overflow: ellipsis;
 }
 
+/* ========================================================
+   行動端 48px 觸控友善標準規範 (Touch Ergonomics Standard)
+   ======================================================== */
+button,
+.btn-tool,
+.member-trigger-btn,
+.cart-trigger-btn,
+.checkout-btn,
+.product-action-btn,
+.category-dropdown-select,
+.filter-select,
+.form-input,
+.form-select,
+.hamburger-btn,
+.close-drawer-btn,
+.ai-guide-trigger-btn {
+  min-height: 48px !important;
+  box-sizing: border-box;
+}
 
+.hamburger-btn,
+.mobile-cart-btn,
+.close-drawer-btn {
+  min-width: 48px !important;
+  min-height: 48px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+select.category-dropdown-select,
+.category-dropdown-select,
+select.filter-select,
+.filter-select {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: normal !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  height: 48px !important;
+  vertical-align: middle;
+}
+
+/* ========================================================
+   最新消息模組專區 (Latest News Section - 8px Spatial Rhythm)
+   ======================================================== */
+.news-section {
+  background: #ffffff;
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  border-radius: var(--radius-card);
+  padding: var(--space-4) var(--space-3); /* 32px 24px */
+  margin-bottom: var(--space-5); /* 40px */
+  box-shadow: var(--glass-shadow);
+  position: relative;
+  overflow: hidden;
+  scroll-margin-top: 80px;
+}
+
+.news-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-3); /* 24px */
+  flex-wrap: wrap;
+  gap: var(--space-2); /* 16px */
+}
+
+.news-section-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1); /* 8px */
+}
+
+.news-section-title-wrap h2 {
+  font-size: 1.4rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: var(--text-heading);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.news-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: var(--space-3); /* 24px */
+}
+
+.news-card {
+  background: #ffffff;
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  border-radius: var(--radius-card);
+  padding: var(--space-3); /* 24px */
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.22s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.22s ease;
+  cursor: pointer;
+  box-shadow: var(--glass-shadow);
+}
+
+.news-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--glass-shadow-hover);
+  border-color: rgba(99, 102, 241, 0.3);
+}
+
+.news-card:active {
+  transform: translateY(-1px) scale(0.995);
+}
+
+.news-card-img-wrap {
+  width: 100%;
+  height: 180px;
+  border-radius: 14px;
+  overflow: hidden;
+  margin-bottom: var(--space-2); /* 16px */
+  background: #f1f5f9;
+}
+
+.news-card-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.28s ease;
+}
+
+.news-card:hover .news-card-img {
+  transform: scale(1.04);
+}
+
+.news-meta-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-1); /* 8px */
+}
+
+.news-tag {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: var(--radius-capsule);
+  font-size: 0.74rem;
+  font-weight: 700;
+  background: var(--accent-primary-subtle);
+  color: var(--accent-primary);
+  white-space: nowrap !important;
+}
+
+.news-date {
+  font-size: 0.76rem;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  white-space: nowrap !important;
+}
+
+.news-card-title {
+  font-size: 1.08rem;
+  font-weight: 700;
+  color: var(--text-heading);
+  margin: 0 0 var(--space-1) 0;
+  line-height: 1.42;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+.news-card-excerpt {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  line-height: 1.55;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.news-empty-state {
+  text-align: center;
+  padding: var(--space-5) var(--space-2);
+  color: var(--text-muted);
+  grid-column: 1 / -1;
+}
+
+.news-media-wrap {
+  width: 100%;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  margin-bottom: 0.85rem;
+  background: #0f172a;
+  position: relative;
+}
+
+.news-card-video {
+  width: 100%;
+  max-height: 240px;
+  object-fit: cover;
+  display: block;
+}
+
+.news-yt-cover-wrap {
+  position: relative;
+  width: 100%;
+  height: 190px;
+  cursor: pointer;
+}
+
+.news-yt-cover-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.3s ease;
+}
+
+.news-yt-cover-wrap:hover .news-yt-cover-img {
+  transform: scale(1.03);
+}
+
+.news-yt-play-btn {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: rgba(239, 68, 68, 0.9);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+  pointer-events: none;
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.news-yt-cover-wrap:hover .news-yt-play-btn {
+  transform: translate(-50%, -50%) scale(1.12);
+  background: #dc2626;
+}
+
+.news-tab-pill.active {
+  background: var(--accent-primary) !important;
+  color: #fff !important;
+  border-color: rgba(99,102,241,0.5) !important;
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.25);
+}
+
+/* ==========================================================================
+   Impeccable 59 條前端審查規範標準 (Normalize & Polish)
+   1. 觸控熱區與人體工學 (Touch Targets >= 48px)
+   2. 文字防折行破綻 (Text Overflow Defense: white-space: nowrap !important)
+   3. 數值與金額無抖動 (Tabular Figures: tabular-nums)
+   4. 幽靈層與遮罩防禦 (Backdrop Defense: pointer-events: none)
+   ========================================================================== */
+.res-status-tag,
+.category-pill,
+.badge,
+.tab-btn,
+.news-tag,
+.news-cat-pill,
+.stock-badge,
+.cart-badge,
+.notice-tag,
+.order-status-badge,
+.spec-tag,
+.nav-btn,
+.mobile-nav-link {
+  white-space: nowrap !important;
+}
+
+/* 價格、統計數值、訂購金額全站防抖動 */
+.price-amount,
+.drawer-total-price,
+.drawer-summary-row strong,
+.stepper-val,
+.cart-badge,
+.cart-badge-count,
+.mobile-cart-badge,
+.unit-price,
+.total-price,
+.order-summary-price,
+.hud-val {
+  font-variant-numeric: tabular-nums !important;
+}
+
+/* 確保所有未開啟的彈窗與遮罩絕對不攔截點擊 (Ghost Layer Defense) */
+.modal-overlay:not(.active),
+.drawer-backdrop:not(.active),
+.mobile-nav-drawer:not(.active),
+.cart-drawer:not(.active) {
+  pointer-events: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+}
+
+/* ==========================================================================
+   Emil Kowalski 微互動手感規範 (Micro-Interactions & Physics Elasticity)
+   ========================================================================== */
+button:not(:disabled):active,
+.btn-tool:not(:disabled):active,
+.checkout-btn:not(:disabled):active,
+.product-action-btn:not(:disabled):active,
+.cart-trigger-btn:active,
+.member-trigger-btn:active,
+.nav-btn:active,
+.stepper-btn:active,
+.quick-cust-btn:active,
+.btn-open-spec:active {
+  transform: scale(0.96) !important;
+  transition: transform 0.12s cubic-bezier(0.2, 0, 0, 1) !important;
+}
+
+/* 購物車徽章 +1 Bounce 物理 Q 彈動效 */
+@keyframes cartBadgeBounce {
+  0% { transform: scale(1); }
+  35% { transform: scale(1.48); }
+  65% { transform: scale(0.88); }
+  100% { transform: scale(1); }
+}
+
+.cart-badge-bounce {
+  animation: cartBadgeBounce 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+}
+
+/* Lenis 平滑滾動全域適應標準 */
+html.lenis, html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+.lenis.lenis-scrolling iframe {
+  pointer-events: none;
+}
+
+/* GSAP 飛入飛出微粒子幽靈圖標 */
+.flying-cart-ghost {
+  position: fixed;
+  z-index: 999999;
+  pointer-events: none;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(255, 117, 151, 0.4);
+  object-fit: cover;
+  transition: none;
+  will-change: transform, opacity;
+}
+
+/* ==========================================================================
+   商品規格與工藝材質詳細介紹彈窗 (Spec Modal Styling)
+   ========================================================================== */
+.spec-modal-card {
+  max-width: 680px !important;
+  border-radius: 24px !important;
+}
+
+.spec-modal-hero {
+  display: flex;
+  gap: 1.25rem;
+  align-items: center;
+  background: linear-gradient(135deg, #ffffff 0%, #fff9f0 50%, #edf5ff 100%);
+  padding: 1.25rem;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 182, 193, 0.4);
+  margin-bottom: 1.25rem;
+}
+
+.spec-modal-img-box {
+  width: 100px;
+  height: 100px;
+  min-width: 100px;
+  border-radius: 16px;
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.06);
+  border: 1px solid rgba(255, 225, 235, 0.85);
+  overflow: hidden;
+}
+
+.spec-modal-img-box svg,
+.spec-modal-img-box img {
+  width: 76%;
+  height: 76%;
+  object-fit: contain;
+}
+
+.spec-details-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  margin-bottom: 1.5rem;
+}
+
+.spec-detail-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  background: #f8fafc;
+  padding: 0.85rem 1rem;
+  border-radius: 12px;
+  border: 1px solid #f1f5f9;
+}
+
+.spec-detail-label {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #64748b;
+  min-width: 80px;
+  white-space: nowrap !important;
+}
+
+.spec-detail-val {
+  font-size: 0.88rem;
+  color: #1e293b;
+  line-height: 1.5;
+  font-weight: 500;
+}
+
+.spec-modal-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+}
 

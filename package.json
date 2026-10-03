@@ -1,0 +1,14 @@
+{
+  "name": "zg115-shop",
+  "version": "1.0.0",
+  "description": "智光商工115校慶商城",
+  "main": "index/index.html",
+  "scripts": {
+    "cap": "cap"
+  },
+  "dependencies": {
+    "@capacitor/android": "^7.6.9",
+    "@capacitor/cli": "^7.6.9",
+    "@capacitor/core": "^7.6.9"
+  }
+}

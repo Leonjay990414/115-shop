@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>🛍️ 校慶紀念品商城 | 智光商工 115校慶園遊會客製專案</title>
+  
+  <!-- Google Fonts: Noto Sans TC & Zen Maru Gothic (質感圓體與標準黑體) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700;900&family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
+  
+  <!-- 115 校慶 App 與網頁圖示 -->
+  <link rel="icon" type="image/png" href="images/logo115.png">
+  <link rel="apple-touch-icon" href="images/logo115.png">
+
+  <!-- 外部樣式表 -->
+  <link rel="stylesheet" href="css/style.css">
+
+  <!-- 引入 Lenis 平滑滾動與 GSAP CDN (徹底消除 Windows 滾輪卡頓，支援拋物線動效) -->
+  <script src="https://unpkg.com/lenis@1.1.18/dist/lenis.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+
+  <!-- 引入 Firebase 9 Compat SDK (App, Firestore, Auth) -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+
+  <!-- 引入共用底層服務層 (保持運作，唯一真理來源) -->
+  <script src="../src/config/system.config.js" type="module"></script>
+  <script src="../src/services/imageValidator.service.js"></script>
+  <script src="../src/services/studentAuth.service.js"></script>
+  <script src="../src/services/splitOrder.service.js"></script>
+  <script src="../src/services/email.service.js"></script>
+</head>
+<body>
+
+  <!-- 液態動態背景光斑 -->
+  <div class="ambient-blob blob-1"></div>
+  <div class="ambient-blob blob-2"></div>
+
+  <!-- 全域 Toast 容器 -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <!-- 頂部液態玻璃導覽列 (常駐購物車圖示與數字角標) -->
+  <header class="main-header">
+    <div class="nav-inner">
+      <a href="index.html" class="brand-wrapper">
+        <div class="brand-logo-badge">115</div>
+        <div class="brand-meta">
+          <span class="brand-title">智光商工校慶園遊會</span>
+          <span class="brand-subtitle">🛍️ 紀念品獨立旗艦商城</span>
+        </div>
+      </a>
+
+      <!-- 電腦端選單 -->
+      <nav class="desktop-nav">
+        <a href="index.html" class="nav-link">🏠 回園遊會首頁</a>
+        <a href="index.html#newsSection" class="nav-link" style="color: #6366f1; font-weight: 700;">📢 最新消息</a>
+        <a href="ai-guide.html" target="_blank" rel="noopener noreferrer" id="openAiGuideNavBtn" class="nav-link" style="color: #f43f5e; font-weight: 700;">🎨 AI 生圖教學</a>
+        <a href="notice.html" target="_blank" rel="noopener noreferrer" class="nav-link">📐 預購與取件規範</a>
+        <!-- 會員專區 (註冊/登入) 與訂單查詢入口 -->
+        <a href="auth.html" target="_blank" rel="noopener noreferrer" id="openMemberModalBtn" class="member-trigger-btn" style="text-decoration: none;">
+          <span>👤 會員專區 (註冊/登入)</span>
+        </a>
+        <button id="openTrackModalBtn" class="member-trigger-btn" style="background: rgba(56, 189, 248, 0.15); color: #0284c7;">
+          <span>🔍 訂單查詢</span>
+        </button>
+        <button id="openCartBtn" class="cart-trigger-btn">
+          <span>🛒 購物車</span>
+          <span id="cartBadgeCount" class="cart-badge-count">0</span>
+        </button>
+      </nav>
+
+      <!-- 手機端頂部右側動作區 (購物車常駐 + 漢堡按鈕) -->
+      <div class="mobile-header-actions">
+        <button id="mobileCartBtn" class="cart-trigger-btn mobile-cart-btn" aria-label="查看購物車">
+          <span>🛒</span>
+          <span id="mobileCartBadgeCount" class="cart-badge-count">0</span>
+        </button>
+        <!-- 手機端漢堡選單按鈕 (☰) -->
+        <button id="hamburgerBtn" class="hamburger-btn" aria-label="打開導覽選單">
+          <span class="hamburger-line"></span>
+          <span class="hamburger-line"></span>
+          <span class="hamburger-line"></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- 手機垂直下拉導覽抽屜 -->
+  <div id="mobileNavBackdrop" class="drawer-backdrop"></div>
+  <aside id="mobileNavDrawer" class="mobile-nav-drawer">
+    <div class="mobile-nav-header">
+      <strong style="font-size: 1.15rem; color: #0f172a; font-weight: 800;">商城導覽</strong>
+      <button id="closeMobileNavBtn" class="close-drawer-btn" aria-label="關閉選單">✕</button>
+    </div>
+    <nav class="mobile-nav-links">
+      <a href="index.html" class="mobile-nav-link" onclick="closeMobileNav()">🏠 返回園遊會首頁</a>
+      <a href="index.html#newsSection" class="mobile-nav-link" style="color: #6366f1; font-weight: 700;" onclick="closeMobileNav()">📢 最新消息</a>
+      <a href="#catalog" class="mobile-nav-link active" onclick="closeMobileNav()">🛍️ 校慶商城</a>
+      <a href="ai-guide.html" target="_blank" rel="noopener noreferrer" class="mobile-nav-link" onclick="closeMobileNav()">🎨 AI 生圖教學</a>
+      <a href="notice.html" target="_blank" rel="noopener noreferrer" class="mobile-nav-link" onclick="closeMobileNav()">📐 預購與取件規範</a>
+      <a href="auth.html" target="_blank" rel="noopener noreferrer" class="mobile-nav-link" onclick="closeMobileNav()">👤 會員專區 (註冊/登入)</a>
+      <a href="javascript:void(0)" class="mobile-nav-link" onclick="closeMobileNav(); openStudentOrdersModal();">🔍 訂單進度查詢</a>
+      <a href="javascript:void(0)" class="mobile-nav-link" onclick="closeMobileNav(); openCartDrawer();">🛒 查看購物車清單</a>
+      <a href="assets/downloads/zg115_shop.apk" download="zg115_shop.apk" class="mobile-nav-link" style="color: #10b981; font-weight: 700;">📲 下載 Android 原生 APK</a>
+    </nav>
+    <div style="margin-top: auto; font-size: 0.8rem; color: var(--text-muted); text-align: center; padding-top: 1rem; border-top: 1px dashed #e2e8f0;">
+      智光商工 115校慶園遊會客製專案
+    </div>
+  </aside>
+
+  <!-- 主要內容區 -->
+  <main class="app-container" id="catalog">
+    
+    <!-- Hero 橫幅專區 (校慶紀念旗艦專館) -->
+    <section class="hero-banner">
+      <div class="hero-pill-badge">✨ 115th Anniversary Official Store</div>
+      <h1 class="hero-title">校慶紀念品，<span>專屬客製旗艦館</span></h1>
+      <p class="hero-subtitle">
+        【校慶限定客製預購】點擊商品卡片即可查閱高解析材質與注意事項；點擊「客製選購」即可上傳專屬圖檔即時預覽並送出印製訂單！
+      </p>
+      <div class="hero-features-bar" id="features">
+        <div class="hero-feature-item"><span>🎨</span> 1080P 高清解析度檢測</div>
+        <div class="hero-feature-item"><span>🎪</span> 校慶現場專屬攤位領取</div>
+        <div class="hero-feature-item"><span>🏫</span> 憑第一聯蓋章驗證取貨</div>
+        <div class="hero-feature-item"><span>🔄</span> 跨分頁購物車即時同步</div>
+      </div>
+    </section>
+
+    <!-- 分類篩選控制區 (全面採用標準圓角下拉選單，告別水平滑動卡頓) -->
+    <div class="categories-control-bar">
+      <label for="categorySelect" class="category-select-label">
+        <span>🏷️</span> 商品類別篩選：
+      </label>
+      <select id="categorySelect" class="category-dropdown-select" aria-label="商品類別切換">
+        <option value="all">🌟 全部紀念品 (All Collection)</option>
+        <option value="tableware">☕ 杯器餐具 (Tableware & Mugs)</option>
+        <option value="accessories">✨ 經典配件 (Accessories & Charms)</option>
+        <option value="stationery">✏️ 文具周邊 (Stationery & Notes)</option>
+        <option value="prints">🖼️ 海報印刷 (Prints & Posters)</option>
+      </select>
+    </div>
+
+    <!-- 商品網格 (雙軌點擊：點圖框彈出規格、點按鈕客製訂購) -->
+    <section class="products-grid" id="productsGrid">
+      <!-- 由 js/app.js 動態渲染 -->
+    </section>
+
+    <!-- 取件須知專區 -->
+    <section class="hero-banner" id="notice" style="margin-bottom: 3rem;">
+      <div class="hero-pill-badge" style="background: rgba(239, 68, 68, 0.15); color: #e11d48; border-color: rgba(239, 68, 68, 0.3);">⚠️ 重要叮嚀</div>
+      <h2 style="font-size: 1.25rem; font-weight: 700; color: #0f172a; margin-bottom: 0.5rem;">📝 校慶預購與退換貨規範須知</h2>
+      <p style="font-size: 0.88rem; color: var(--text-muted); max-width: 720px; text-align: left; line-height: 1.7; margin-bottom: 1rem;">
+        1. <strong>發送三聯單並簽名後，即不接受退貨</strong>。<br>
+        2. <strong>若要退貨，必須在三聯單發送前，親自到資料處理科 6 樓科辦公室向主任說明</strong>。如果主任不在，請向現場老師說明由其轉達給其他老師；或下次再來，或向現場師生詢問主任去向後再行處理。<br>
+        3. <strong>領貨時一律憑第一聯【顧客付款與取貨憑證聯】領取</strong>。<br>
+        4. <strong>三聯單由派送組送達時，財務人員將隨行前往並當場完成款項收訖</strong>。
+      </p>
+      <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+        <a href="notice.html" target="_blank" rel="noopener noreferrer" class="member-trigger-btn" style="background: rgba(99, 102, 241, 0.1); color: var(--accent-primary); font-weight: 700; text-decoration: none; padding: 0.5rem 1.1rem; border-radius: 9999px;">
+          📄 開啟完整版【預購與取件退換貨規範手冊】
+        </a>
+        <a href="assets/downloads/zg115_shop.apk" download="zg115_shop.apk" class="member-trigger-btn" style="background: rgba(16, 185, 129, 0.15); color: #059669; font-weight: 700; text-decoration: none; padding: 0.5rem 1.1rem; border-radius: 9999px;">
+          📲 下載 Android 實機安裝檔 (zg115_shop.apk)
+        </a>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- 側邊懸浮購物車抽屜 (Drawer) -->
+  <div id="cartDrawerBackdrop" class="drawer-backdrop"></div>
+  <aside id="cartDrawer" class="cart-drawer">
+    <div class="drawer-header">
+      <strong class="drawer-title">購物車清單</strong>
+      <button id="closeCartBtn" class="close-drawer-btn">✕</button>
+    </div>
+    <div id="drawerBody" class="drawer-body">
+      <!-- 由 js/app.js 動態渲染 -->
+    </div>
+    <div class="drawer-footer">
+      <div class="drawer-summary-row">
+        <span class="drawer-total-label">總計金額</span>
+        <strong id="drawerTotalPrice" class="drawer-total-price">NT$ 0</strong>
+      </div>
+      <button id="drawerCheckoutBtn" class="checkout-btn">
+        🚀 前往填寫資料結帳
+      </button>
+    </div>
+  </aside>
+
+  <!-- 商品詳細規格介紹視窗 (Spec Detail Modal - 行為 A) -->
+  <div id="specModalOverlay" class="modal-overlay">
+    <div class="modal-card spec-modal-card">
+      <div class="modal-header">
+        <strong id="specModalTitle" class="modal-title">📦 商品規格與工藝材質</strong>
+        <button id="closeSpecModalBtn" class="close-drawer-btn">✕</button>
+      </div>
+
+      <div class="spec-modal-hero">
+        <div id="specModalImgBox" class="spec-modal-img-box">
+          <!-- 動態載入商品圖或 SVG -->
+        </div>
+        <div style="flex: 1; min-width: 0;">
+          <div id="specModalName" style="font-weight: 800; font-size: 1.15rem; color: #0f172a;">商品名稱</div>
+          <div style="display: flex; align-items: baseline; gap: 0.35rem; margin-top: 0.25rem;">
+            <span style="font-size: 0.82rem; color: #ff7597; font-weight: 700;">單價 NT$</span>
+            <span id="specModalPrice" style="font-size: 1.35rem; font-weight: 900; color: #ff7597; font-variant-numeric: tabular-nums;">0</span>
+          </div>
+          <div id="specModalDesc" style="font-size: 0.84rem; color: var(--text-muted); margin-top: 0.25rem; line-height: 1.45;"></div>
+        </div>
+      </div>
+
+      <div class="spec-details-list">
+        <div class="spec-detail-row">
+          <span class="spec-detail-label">💎 材質工藝</span>
+          <span id="specDetailMaterial" class="spec-detail-val">優選工藝材質</span>
+        </div>
+        <div class="spec-detail-row">
+          <span class="spec-detail-label">📏 尺寸規格</span>
+          <span id="specDetailDimensions" class="spec-detail-val">標準客製規格</span>
+        </div>
+        <div class="spec-detail-row">
+          <span class="spec-detail-label">🎪 取件時效</span>
+          <span class="spec-detail-val">校慶前批次印製，校慶當日憑第一聯取貨</span>
+        </div>
+        <div class="spec-detail-row">
+          <span class="spec-detail-label">⚠️ 注意事項</span>
+          <span class="spec-detail-val">三聯單簽名後不接受退貨；圖檔需符合 1080P 高清解析度。</span>
+        </div>
+      </div>
+
+      <div class="spec-modal-actions">
+        <button id="specGoToCustBtn" class="checkout-btn" style="flex: 1; background: var(--accent-gradient-btn);">
+          🎨 前往客製訂購
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PDP 商品詳情手風琴與客製選購彈窗 (行為 B) -->
+  <div id="customizeModalOverlay" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <strong id="custModalTitle" class="modal-title">商品詳情與客製選購</strong>
+        <button id="closeCustomizeBtn" class="close-drawer-btn">✕</button>
+      </div>
+
+      <!-- 商品主體展示與價格橫幅 (Product Preview & Price Tag) -->
+      <div id="custProductHero" class="modal-product-hero" style="display: flex; gap: 1rem; align-items: center; background: #fff9f0; padding: 0.85rem 1rem; border-radius: 14px; border: 1px solid rgba(255, 182, 193, 0.4); margin-bottom: 1.25rem;">
+        <div id="custProductImgBox" style="width: 72px; height: 72px; min-width: 72px; border-radius: 12px; background: #fff; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.05); overflow: hidden;">
+          <!-- 動態載入商品圖或 SVG -->
+        </div>
+        <div style="flex: 1; min-width: 0;">
+          <div id="custProductName" style="font-weight: 800; font-size: 1.05rem; color: #0f172a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">商品名稱</div>
+          <div style="display: flex; align-items: baseline; gap: 0.3rem; margin-top: 0.2rem;">
+            <span style="font-size: 0.8rem; color: #ff7597; font-weight: 700;">單價 NT$</span>
+            <span id="custProductPrice" style="font-size: 1.25rem; font-weight: 900; color: #ff7597; font-variant-numeric: tabular-nums;">0</span>
+          </div>
+          <div id="custProductDesc" style="font-size: 0.78rem; color: var(--text-muted); margin-top: 0.15rem; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;"></div>
+        </div>
+      </div>
+
+      <!-- PDP 手風琴詳情折疊區 -->
+      <div class="pdp-accordion-group">
+        <div class="pdp-accordion-item active">
+          <div class="pdp-accordion-header" onclick="this.parentElement.classList.toggle('active')">
+            <span>📦 商品規格、材質與工藝說明</span>
+            <span>▾</span>
+          </div>
+          <div id="pdpAccordionSpec" class="pdp-accordion-content">
+            <!-- 動態填入 -->
+          </div>
+        </div>
+        <div class="pdp-accordion-item active">
+          <div class="pdp-accordion-header" onclick="this.parentElement.classList.toggle('active')">
+            <span>🎪 校慶領取與注意事項說明</span>
+            <span>▾</span>
+          </div>
+          <div class="pdp-accordion-content">
+            本商品為校慶限定客製預購品，統一於校慶前排印製作完成，校慶當天憑第一聯單據至專屬攤位取貨。<br>
+            <span style="color:#e11d48; font-weight:700;">⚠️ 注意：</span>三聯單發送並簽名後即不接受退貨。若需退貨請於送單前親洽資料處理科辦公室。<br>
+            <a href="notice.html" target="_blank" rel="noopener noreferrer" style="color: var(--accent-primary); font-weight: 700; text-decoration: underline; margin-top: 0.4rem; display: inline-block;">
+              ↗ 查看完整校慶預購與取件退換貨規範手冊
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group" style="margin-top: 1.25rem;">
+        <!-- AI 客製圖檔生圖指南 入口膠囊按鈕 -->
+        <div style="margin-bottom: 0.75rem;">
+          <a href="ai-guide.html" target="_blank" rel="noopener noreferrer" class="ai-guide-trigger-btn" style="text-decoration: none; display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.85rem;">
+            🎨 沒有靈感？開啟【AI 1分鐘生圖教學】
+          </a>
+        </div>
+
+        <label class="form-label">
+          上傳客製圖檔 <span style="color: var(--danger);">* (客製化必填)</span>
+        </label>
+        <div id="custDropzone" class="upload-dropzone">
+          <span style="font-size: 2rem;">📤</span>
+          <p style="font-size: 0.88rem; font-weight: 600; color: #475569; margin: 0.4rem 0;">點擊或拖曳圖片至此處上傳</p>
+          <span id="custModalSpec" style="font-size: 0.75rem; color: var(--text-light);">系統將自動解算長寬並檢核 1080P 高畫質門檻</span>
+          <input type="file" id="custFileInput" accept="image/png,image/jpeg,image/webp" style="display: none;">
+        </div>
+
+        <div id="custPreviewBox" class="upload-preview-box">
+          <img id="custPreviewImg" style="width: 50px; height: 50px; border-radius: 8px; object-fit: cover;" alt="預覽">
+          <div style="flex:1;">
+            <div style="display:flex; align-items:center; gap:0.4rem;">
+              <span id="custResTag" class="res-status-tag">檢驗中</span>
+            </div>
+            <p id="custResNote" style="font-size: 0.75rem; margin-top: 0.2rem;"></p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 客製雷雕/印製文字輸入與即時模擬預覽 -->
+      <div class="form-group" style="margin-top: 0.5rem;">
+        <label class="form-label">
+          ✍️ 客製雷雕 / 印刷刻字內容 (選填，即時預覽)
+        </label>
+        <input type="text" id="custEngravingText" class="form-input" maxlength="20" placeholder="例如：115智光 ‧ 王小明 或 Happy 115th!">
+        <div id="custEngravingPreviewBox" style="margin-top: 0.4rem; padding: 0.6rem 0.85rem; background: #f8fafc; border-radius: 10px; border: 1px dashed #cbd5e1; font-size: 0.82rem; color: #475569; display: flex; align-items: center; justify-content: space-between;">
+          <span>刻字預覽效果：</span>
+          <strong id="custEngravingPreviewText" style="color: #e11d48; font-family: 'Zen Maru Gothic', cursive, sans-serif; letter-spacing: 1px;">（尚未輸入文字）</strong>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">訂購數量</label>
+        <input type="number" id="custQtyInput" class="form-input" min="1" max="20" value="1">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">顧客印製備註 (選填，如：請文字置中)</label>
+        <input type="text" id="custNotesInput" class="form-input" placeholder="可輸入裁切備註或特殊要求">
+      </div>
+
+      <!-- 底部即時小計與加車按鈕 -->
+      <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 0; margin-top: 0.5rem; border-top: 1px dashed #e2e8f0;">
+        <span style="font-size: 0.95rem; font-weight: 700; color: #475569;">小計金額</span>
+        <div style="display: flex; align-items: baseline; gap: 0.25rem;">
+          <span style="font-size: 0.85rem; color: #ff7597; font-weight: 700;">NT$</span>
+          <strong id="custSubtotalPrice" style="font-size: 1.35rem; color: #ff7597; font-variant-numeric: tabular-nums;">0</strong>
+        </div>
+      </div>
+
+      <button id="addToCartConfirmBtn" class="checkout-btn" style="margin-top: 0.35rem;">
+        ➕ 確認加入購物車
+      </button>
+    </div>
+  </div>
+
+  <!-- 訂購須知確認彈窗 (Notice Modal) -->
+  <div id="noticeModalOverlay" class="modal-overlay">
+    <div class="modal-card notice-modal-card">
+      <div class="modal-header">
+        <strong class="modal-title" style="color: var(--accent-primary);">📋 校慶客製化商品訂購須知確認</strong>
+        <button id="closeNoticeBtn" class="close-drawer-btn">✕</button>
+      </div>
+
+      <div class="notice-rules-box">
+        <div class="notice-rule-item">
+          <span>✍️</span>
+          <div><strong>條款 1【簽名即生效】</strong>：發送三聯單並簽名後，即不接受退貨。</div>
+        </div>
+        <div class="notice-rule-item">
+          <span>🏫</span>
+          <div><strong>條款 2【退貨申請程序】</strong>：若要退貨，必須在三聯單發送前，親自到資料處理科 6 樓科辦公室向主任說明。如果主任不在，請向現場老師說明由其轉達給其他老師；或下次再來，或向現場師生詢問主任去向後再行處理。</div>
+        </div>
+        <div class="notice-rule-item">
+          <span>🧾</span>
+          <div><strong>條款 3【憑單領貨原則】</strong>：領貨時一律憑第一聯【顧客付款與取貨憑證聯】領取。</div>
+        </div>
+        <div class="notice-rule-item">
+          <span>💰</span>
+          <div><strong>條款 4【派送隨行收訖】</strong>：三聯單由派送組送達時，財務人員將隨行前往並當場完成款項收訖。</div>
+        </div>
+      </div>
+
+      <button id="btnAgreeNotice" class="checkout-btn" style="background: var(--accent-gradient);">
+        🤝 我已清楚閱讀並全數同意以上條款
+      </button>
+    </div>
+  </div>
+
+  <!-- 訂單查詢與三軌進度專區 (獨立查詢或會員查看) -->
+  <div id="studentOrdersModalOverlay" class="modal-overlay">
+    <div class="modal-card member-card">
+      <div class="modal-header">
+        <div>
+          <strong class="modal-title">📋 校慶客製工單與會員中心</strong>
+          <p id="memberGreeting" style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.2rem;"></p>
+        </div>
+        <div style="display: flex; gap: 0.5rem; align-items: center;">
+          <button id="btnStudentLogout" style="display:none; background: none; border: 1px solid #cbd5e1; border-radius: 9999px; padding: 0.3rem 0.75rem; font-size: 0.75rem; cursor: pointer; color: var(--danger); font-weight: 700;">登出</button>
+          <button id="closeStudentOrdersBtn" class="close-drawer-btn">✕</button>
+        </div>
+      </div>
+
+      <!-- 會員專區只讀模式卡片 -->
+      <div id="memberProfileCard" class="member-readonly-profile" style="display: none; margin-bottom: 1.25rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem;">
+          <strong style="font-size: 0.85rem; color: #475569;">👤 會員基本資料 (已驗證・唯讀保全)</strong>
+          <span style="font-size: 0.72rem; padding: 0.15rem 0.55rem; background: rgba(16, 185, 129, 0.15); color: #059669; border-radius: 9999px; font-weight: 700;">🔒 欄位防竄改保護中</span>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0.6rem;">
+          <div>
+            <label class="readonly-label">學號 / 帳號</label>
+            <input type="text" id="profStudentId" class="readonly-input" readonly>
+          </div>
+          <div>
+            <label class="readonly-label">姓名</label>
+            <input type="text" id="profName" class="readonly-input" readonly>
+          </div>
+          <div>
+            <label class="readonly-label">班級 / 處室</label>
+            <input type="text" id="profClass" class="readonly-input" readonly>
+          </div>
+          <div>
+            <label class="readonly-label">座號</label>
+            <input type="text" id="profSeat" class="readonly-input" readonly>
+          </div>
+          <div>
+            <label class="readonly-label">聯絡電話</label>
+            <input type="text" id="profPhone" class="readonly-input" readonly>
+          </div>
+        </div>
+      </div>
+
+      <!-- 快速查詢條 -->
+      <div class="quick-search-bar" id="quickSearchTrackBar">
+        <input type="text" id="trackSearchStudentId" class="form-input" placeholder="輸入會員帳號或學號查詢訂單進度">
+        <button id="btnDoTrackSearch" class="btn-tool" style="background: var(--accent-primary); color: #fff; border:none; padding: 0.5rem 1rem;">
+          查詢
+        </button>
+      </div>
+
+      <div class="orders-track-container" id="studentOrdersListContainer">
+        <!-- 由 js/app.js 動態渲染 -->
+      </div>
+    </div>
+  </div>
+
+  <!-- 結帳雙重確認視窗 (Double Confirmation Modal) -->
+  <div id="checkoutModalOverlay" class="modal-overlay">
+    <div class="modal-card checkout-modal-card">
+      <div class="modal-header">
+        <strong class="modal-title">🚀 確認訂單與填寫取貨資訊</strong>
+        <button id="closeCheckoutBtn" class="close-drawer-btn">✕</button>
+      </div>
+
+      <div class="checkout-summary-box">
+        <strong style="font-size: 0.88rem; color: #475569; display: block; margin-bottom: 0.5rem;">購物車商品明細</strong>
+        <div id="checkoutItemsSummary">
+          <!-- 動態填入 -->
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: baseline; margin-top: 0.75rem; padding-top: 0.5rem; border-top: 1px dashed #cbd5e1;">
+          <span style="font-size: 0.9rem; font-weight: 700; color: #1e293b;">總計金額</span>
+          <strong id="checkoutGrandTotal" style="font-size: 1.25rem; color: var(--accent-primary); font-variant-numeric: tabular-nums;">NT$ 0</strong>
+        </div>
+      </div>
+
+      <!-- 顧客個資輸入表單 -->
+      <form id="checkoutForm" onsubmit="return false;" style="margin-top: 1rem;">
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label class="form-label">班級 / 處室 <span style="color: var(--danger);">*</span></label>
+            <select id="classCodeSelect" class="form-input" required>
+              <!-- 由 js 動態產生 -->
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">座號 (非學生請填 0) <span style="color: var(--danger);">*</span></label>
+            <input type="number" id="studentSeatInput" class="form-input" min="0" max="99" required placeholder="例：15">
+          </div>
+        </div>
+
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label class="form-label">學號 / 職員代號 <span style="color: var(--danger);">*</span></label>
+            <input type="text" id="studentIdInput" class="form-input" required placeholder="例：112001">
+          </div>
+          <div class="form-group">
+            <label class="form-label">姓名 <span style="color: var(--danger);">*</span></label>
+            <input type="text" id="studentNameInput" class="form-input" required placeholder="例：王小明">
+          </div>
+        </div>
+
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label class="form-label">手機電話 <span style="color: var(--danger);">*</span></label>
+            <input type="tel" id="studentPhoneInput" class="form-input" required placeholder="例：0912345678">
+          </div>
+          <div class="form-group">
+            <label class="form-label">電子信箱 (選填，寄送收據)</label>
+            <input type="email" id="studentEmailInput" class="form-input" placeholder="例：student@example.com">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">性別</label>
+          <select id="studentGenderSelect" class="form-input">
+            <option value="保密">保密 / 未提供</option>
+            <option value="男">男</option>
+            <option value="女">女</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">訂單整體備註 (選填)</label>
+          <input type="text" id="finalOrderNotes" class="form-input" placeholder="可填寫希望取貨時段或其他備註">
+        </div>
+
+        <div class="form-group" style="margin-top: 0.75rem;">
+          <label style="display: flex; align-items: flex-start; gap: 0.5rem; font-size: 0.82rem; color: #475569; cursor: pointer;">
+            <input type="checkbox" id="chkAgreeCheckoutTerms" required style="margin-top: 0.2rem;">
+            <span>我已詳閱並同意【三聯單簽名後不退貨】與【校慶現場憑第一聯取貨】之規範須知。</span>
+          </label>
+        </div>
+
+        <button type="button" id="confirmOrderSubmitBtn" class="checkout-btn" style="margin-top: 1rem;">
+          🚀 確認並提交訂單
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- 顧客客製化圖檔大圖檢視燈箱 (Lightbox) -->
+  <div id="imageLightboxOverlay" class="modal-overlay" style="z-index: 100000;">
+    <div class="lightbox-card" style="background: rgba(15, 23, 42, 0.95); border-radius: 20px; padding: 1.5rem; max-width: 90vw; max-height: 90vh; display: flex; flex-direction: column; align-items: center; position: relative;">
+      <button id="closeImageLightboxBtn" class="close-drawer-btn" style="position: absolute; top: 1rem; right: 1rem; color: #fff; background: rgba(255,255,255,0.2);">✕</button>
+      <img id="lightboxImg" src="" alt="大圖" style="max-width: 85vw; max-height: 75vh; object-fit: contain; border-radius: 12px; margin-top: 1rem;">
+      <p id="lightboxCaption" style="color: #cbd5e1; font-size: 0.85rem; margin-top: 0.75rem;"></p>
+    </div>
+  </div>
+
+  <!-- Firebase 初始化設定 -->
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyAYunSi8yFHoXxBQD1cabe-uKIA6DUKP_Q",
+      authDomain: "project-8372949785937083434.firebaseapp.com",
+      projectId: "project-8372949785937083434",
+      storageBucket: "project-8372949785937083434.firebasestorage.app",
+      messagingSenderId: "353265416024",
+      appId: "1:353265416024:web:1a333c4bd6d9ac8220572d"
+    };
+
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+    }
+  </script>
+
+  <!-- 引入前台應用邏輯 (共用核心 app.js，內建跨分頁雙向同步與 GSAP 拋物線飛入動效) -->
+  <script src="js/app.js"></script>
+
+</body>
+</html>

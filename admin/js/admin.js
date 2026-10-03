@@ -29,6 +29,8 @@
   let unsubscribeOrders = null;
   let unsubscribeMembers = null;
   let unsubscribeStaff = null;
+  let unsubscribeNews = null;
+  let newsList = [];
 
   // 燈箱縮放變數
   let currentLightboxZoom = 1;
@@ -57,14 +59,47 @@
   // DOM 元素 - 分頁切換
   const tabNavOrders = document.getElementById("tabNavOrders");
   const tabNavMembers = document.getElementById("tabNavMembers");
+  const tabNavNews = document.getElementById("tabNavNews");
   const tabNavOverdue = document.getElementById("tabNavOverdue");
   const tabNavStaffManager = document.getElementById("tabNavStaffManager");
   const overdueBadgeCount = document.getElementById("overdueBadgeCount");
 
   const viewOrdersSection = document.getElementById("viewOrdersSection");
   const viewMembersSection = document.getElementById("viewMembersSection");
+  const viewNewsSection = document.getElementById("viewNewsSection");
   const viewOverdueSection = document.getElementById("viewOverdueSection");
   const viewStaffManagerSection = document.getElementById("viewStaffManagerSection");
+
+  // 最新消息 DOM 引用
+  const newsTableBody = document.getElementById("newsTableBody");
+  const btnOpenAddNewsModal = document.getElementById("btnOpenAddNewsModal");
+  const newsModalOverlay = document.getElementById("newsModalOverlay");
+  const newsModalTitle = document.getElementById("newsModalTitle");
+  const newsDocId = document.getElementById("newsDocId");
+  const newsTitleInput = document.getElementById("newsTitleInput");
+  const newsCategorySelect = document.getElementById("newsCategorySelect");
+  const newsDateInput = document.getElementById("newsDateInput");
+  const newsContentInput = document.getElementById("newsContentInput");
+  const newsImageFileInput = document.getElementById("newsImageFileInput");
+  const newsImgPreviewBox = document.getElementById("newsImgPreviewBox");
+  const newsImgPreview = document.getElementById("newsImgPreview");
+  const btnRemoveNewsImg = document.getElementById("btnRemoveNewsImg");
+  const newsVideoFileInput = document.getElementById("newsVideoFileInput");
+  const newsVideoPreviewBox = document.getElementById("newsVideoPreviewBox");
+  const btnRemoveNewsVideo = document.getElementById("btnRemoveNewsVideo");
+  const newsYoutubeInput = document.getElementById("newsYoutubeInput");
+  const newsYtPreviewBox = document.getElementById("newsYtPreviewBox");
+  const newsYtPreviewImg = document.getElementById("newsYtPreviewImg");
+  const newsBroadcastEmailCheck = document.getElementById("newsBroadcastEmailCheck");
+  const btnCancelNewsModal = document.getElementById("btnCancelNewsModal");
+  const btnSubmitNewsModal = document.getElementById("btnSubmitNewsModal");
+  const btnSubmitAndBroadcastModal = document.getElementById("btnSubmitAndBroadcastModal");
+
+  // 工具列清空所有測試訂單按鈕
+  const btnClearAllOrders = document.getElementById("btnClearAllOrders");
+
+  // 會員清理按鈕
+  const btnCleanInvalidMembers = document.getElementById("btnCleanInvalidMembers");
 
   // HUD
   const hudCardQc = document.getElementById("hudCardQc");
@@ -154,6 +189,21 @@
     }
   }
 
+  function syncAdminScrollLock() {
+    const isAnyModalOpen = (authOverlay && authOverlay.style.display !== "none") ||
+      (qcRejectModalOverlay && qcRejectModalOverlay.style.display !== "none") ||
+      (pimAddProductModalOverlay && pimAddProductModalOverlay.style.display !== "none") ||
+      (newsModalOverlay && newsModalOverlay.style.display !== "none") ||
+      (imageLightboxModal && imageLightboxModal.style.display !== "none");
+    if (isAnyModalOpen) {
+      document.body.classList.add("no-scroll");
+    } else {
+      document.body.classList.remove("no-scroll", "modal-open");
+      document.body.style.overflow = "";
+      document.body.style.pointerEvents = "auto";
+    }
+  }
+
   function checkExistingSession() {
     const saved = sessionStorage.getItem("fair115_admin_session");
     if (saved) {
@@ -166,6 +216,7 @@
       }
     }
     authOverlay.style.display = "flex";
+    syncAdminScrollLock();
   }
 
   // ==========================================================================
@@ -201,6 +252,7 @@
     // 主分頁切換
     tabNavOrders.addEventListener("click", () => switchMainTab("orders"));
     tabNavMembers.addEventListener("click", () => switchMainTab("members"));
+    if (tabNavNews) tabNavNews.addEventListener("click", () => switchMainTab("news"));
     tabNavOverdue.addEventListener("click", () => switchMainTab("overdue"));
     tabNavStaffManager.addEventListener("click", () => switchMainTab("staffManager"));
 
@@ -423,6 +475,102 @@
         qcRejectReasonInput.value = e.target.value;
       }
     });
+
+    // 會員清理按鈕事件
+    if (btnCleanInvalidMembers) {
+      btnCleanInvalidMembers.addEventListener("click", handleCleanInvalidMembers);
+    }
+
+    // 工具列：一鍵清空所有測試訂單
+    if (btnClearAllOrders) {
+      btnClearAllOrders.addEventListener("click", handleClearAllOrders);
+    }
+
+    // 最新消息管理事件
+    if (btnOpenAddNewsModal) {
+      btnOpenAddNewsModal.addEventListener("click", openAddNewsModal);
+    }
+    if (btnCancelNewsModal) {
+      btnCancelNewsModal.addEventListener("click", closeNewsModal);
+    }
+    if (btnSubmitNewsModal) {
+      btnSubmitNewsModal.addEventListener("click", () => handleSubmitNews(false));
+    }
+    if (btnSubmitAndBroadcastModal) {
+      btnSubmitAndBroadcastModal.addEventListener("click", () => handleSubmitNews(true));
+    }
+    if (newsModalOverlay) {
+      newsModalOverlay.addEventListener("click", (e) => {
+        if (e.target === newsModalOverlay) closeNewsModal();
+      });
+    }
+
+    // 本地宣傳圖片
+    if (newsImageFileInput) {
+      newsImageFileInput.addEventListener("change", (e) => {
+        const file = e.target.files && e.target.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = (evt) => {
+            newsTempImageBase64 = evt.target.result;
+            if (newsImgPreview) newsImgPreview.src = newsTempImageBase64;
+            if (newsImgPreviewBox) newsImgPreviewBox.style.display = "flex";
+          };
+          reader.readAsDataURL(file);
+        }
+      });
+    }
+
+    if (btnRemoveNewsImg) {
+      btnRemoveNewsImg.addEventListener("click", () => {
+        newsTempImageBase64 = "";
+        if (newsImageFileInput) newsImageFileInput.value = "";
+        if (newsImgPreviewBox) newsImgPreviewBox.style.display = "none";
+        if (newsImgPreview) newsImgPreview.src = "";
+      });
+    }
+
+    // 本地宣傳影片
+    if (newsVideoFileInput) {
+      newsVideoFileInput.addEventListener("change", (e) => {
+        const file = e.target.files && e.target.files[0];
+        if (file) {
+          if (file.size > 20 * 1024 * 1024) {
+            alert("⚠️ 本地影片請勿超過 20MB，建議改用 YouTube 連結嵌入以確保載入速度！");
+            newsVideoFileInput.value = "";
+            return;
+          }
+          const reader = new FileReader();
+          reader.onload = (evt) => {
+            newsTempVideoBase64 = evt.target.result;
+            if (newsVideoPreviewBox) newsVideoPreviewBox.style.display = "flex";
+          };
+          reader.readAsDataURL(file);
+        }
+      });
+    }
+
+    if (btnRemoveNewsVideo) {
+      btnRemoveNewsVideo.addEventListener("click", () => {
+        newsTempVideoBase64 = "";
+        if (newsVideoFileInput) newsVideoFileInput.value = "";
+        if (newsVideoPreviewBox) newsVideoPreviewBox.style.display = "none";
+      });
+    }
+
+    // YouTube 網址即時解析 Video ID 與封面
+    if (newsYoutubeInput) {
+      newsYoutubeInput.addEventListener("input", (e) => {
+        const val = e.target.value.trim();
+        const vid = extractYoutubeVideoId(val);
+        if (vid) {
+          if (newsYtPreviewImg) newsYtPreviewImg.src = `https://img.youtube.com/vi/${vid}/hqdefault.jpg`;
+          if (newsYtPreviewBox) newsYtPreviewBox.style.display = "flex";
+        } else {
+          if (newsYtPreviewBox) newsYtPreviewBox.style.display = "none";
+        }
+      });
+    }
   }
 
   // ==========================================================================
@@ -432,22 +580,27 @@
     const tabs = [
       { key: "orders", btn: tabNavOrders, sec: viewOrdersSection },
       { key: "members", btn: tabNavMembers, sec: viewMembersSection },
+      { key: "news", btn: tabNavNews, sec: viewNewsSection },
       { key: "overdue", btn: tabNavOverdue, sec: viewOverdueSection },
       { key: "staffManager", btn: tabNavStaffManager, sec: viewStaffManagerSection }
     ];
 
     tabs.forEach(t => {
-      if (t.key === tabKey) {
-        t.btn.classList.add("active");
-        t.sec.style.display = "block";
-      } else {
-        t.btn.classList.remove("active");
-        t.sec.style.display = "none";
+      if (t.btn && t.sec) {
+        if (t.key === tabKey) {
+          t.btn.classList.add("active");
+          t.sec.style.display = "block";
+        } else {
+          t.btn.classList.remove("active");
+          t.sec.style.display = "none";
+        }
       }
     });
 
     if (tabKey === "members") {
       startMembersListener();
+    } else if (tabKey === "news") {
+      startNewsAdminListener();
     } else if (tabKey === "staffManager") {
       startStaffManagerListener();
     }
@@ -517,6 +670,7 @@
     sessionStaffName.textContent = user.name || user.staffId;
     sessionStaffRole.textContent = user.role;
     authOverlay.style.display = "none";
+    syncAdminScrollLock();
 
     // 依總召權限 (SUPER_ADMIN) 顯示幹部帳密與驗證碼設置分頁
     if (user.role === "SUPER_ADMIN") {
@@ -548,9 +702,72 @@
   }
 
   // ==========================================================================
-  // Firestore 毫秒級即時監聽 (0.3 秒無感重繪)
+  // Firestore 毫秒級即時監聽 + LocalStorage 雙向同步 (0.3 秒無感重繪)
   // ==========================================================================
+  function mergeLocalAndCloudOrders(cloudList = []) {
+    let localList = [];
+    try {
+      const localStr = localStorage.getItem("zg115_local_orders");
+      if (localStr) {
+        localList = JSON.parse(localStr);
+        if (!Array.isArray(localList)) localList = [];
+      }
+    } catch (e) {
+      localList = [];
+    }
+
+    const orderMap = new Map();
+    // 優先以雲端資料為主
+    cloudList.forEach(o => {
+      const key = o.orderId || o.id;
+      if (key) orderMap.set(key, o);
+    });
+
+    // 補入本地新單（若雲端尚未包含）
+    localList.forEach(lo => {
+      const key = lo.orderId || lo.id;
+      if (key && !orderMap.has(key)) {
+        orderMap.set(key, lo);
+      }
+    });
+
+    return Array.from(orderMap.values()).sort((a, b) => {
+      const tA = new Date(a.createdAtClient || a.createdAt || 0).getTime();
+      const tB = new Date(b.createdAtClient || b.createdAt || 0).getTime();
+      return tB - tA;
+    });
+  }
+
   function startRealtimeOrdersListener() {
+    // 預設先讀取本機已存在的訂單資料快速顯示
+    ordersList = mergeLocalAndCloudOrders([]);
+    updateHUDCounts();
+    renderOrdersTable();
+    renderOverdueTable();
+
+    // 監聽跨分頁廣播通道
+    if (typeof BroadcastChannel !== "undefined") {
+      const orderChannel = new BroadcastChannel("zg_orders_sync_channel");
+      orderChannel.onmessage = (evt) => {
+        if (evt.data && evt.data.type === "ORDER_CREATED") {
+          ordersList = mergeLocalAndCloudOrders(ordersList);
+          updateHUDCounts();
+          renderOrdersTable();
+          renderOverdueTable();
+        }
+      };
+    }
+
+    // 監聽 window storage 異動
+    window.addEventListener("storage", (e) => {
+      if (e.key === "zg115_local_orders") {
+        ordersList = mergeLocalAndCloudOrders(ordersList);
+        updateHUDCounts();
+        renderOrdersTable();
+        renderOverdueTable();
+      }
+    });
+
     const db = window.firebase ? window.firebase.firestore() : null;
     if (!db) return;
 
@@ -559,11 +776,11 @@
     unsubscribeOrders = db.collection("orders")
       .orderBy("createdAt", "desc")
       .onSnapshot((snapshot) => {
-        const list = [];
+        const cloudList = [];
         snapshot.forEach((doc) => {
-          list.push({ id: doc.id, ...doc.data() });
+          cloudList.push({ id: doc.id, ...doc.data() });
         });
-        ordersList = list;
+        ordersList = mergeLocalAndCloudOrders(cloudList);
         updateHUDCounts();
         renderOrdersTable();
         renderOverdueTable();
@@ -575,6 +792,11 @@
         }
       }, (error) => {
         console.error("[Realtime Error]", error);
+        // 若雲端監聽失敗仍維持本機列表
+        ordersList = mergeLocalAndCloudOrders([]);
+        updateHUDCounts();
+        renderOrdersTable();
+        renderOverdueTable();
       });
   }
 
@@ -670,7 +892,17 @@
     ordersTableBody.innerHTML = "";
 
     if (visibleOrders.length === 0) {
-      ordersTableBody.innerHTML = `<tr><td colspan="12" style="text-align:center; color: var(--text-muted); padding: 2rem;">查無符合之工單資料</td></tr>`;
+      ordersTableBody.innerHTML = `
+        <tr>
+          <td colspan="12" style="text-align:center; padding: 3rem 1.5rem; background: #ffffff;">
+            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.6rem;">
+              <span style="font-size: 2.2rem; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.06));">📦</span>
+              <strong style="font-size: 1.05rem; color: var(--text-heading); font-weight: 700;">目前尚無符合的工單記錄</strong>
+              <span style="font-size: 0.85rem; color: var(--text-muted);">顧客提交新訂單後將即時呈現在此工作台</span>
+            </div>
+          </td>
+        </tr>
+      `;
       return;
     }
 
@@ -907,6 +1139,22 @@
       }
 
       await db.collection("orders").doc(orderId).update(updatePayload);
+
+      // 觸發取貨憑證通知信 (當物流改為「派送中」或「已派送完成」時)
+      if (fieldName === "deliveryStatus" && (newVal === "派送中" || newVal === "已派送完成" || newVal === "已取件")) {
+        const targetOrder = ordersList.find(o => o.orderId === orderId || o.id === orderId);
+        if (targetOrder && targetOrder.email && window.EmailService) {
+          window.EmailService.sendPickupPassEmail({
+            orderId: targetOrder.orderId || orderId,
+            parentOrderId: targetOrder.parentOrderId || targetOrder.orderId || orderId,
+            studentName: targetOrder.studentName || targetOrder.name || "同學",
+            studentClass: targetOrder.studentClass || targetOrder.classCode || "全校班級",
+            productName: targetOrder.productName || "客製化紀念品",
+            quantity: targetOrder.quantity || 1,
+            email: targetOrder.email
+          }).catch(e => console.warn("[Email Pickup Pass Warning]", e));
+        }
+      }
     } catch (err) {
       alert(`更新狀態失敗：\n${err.message}`);
       renderOrdersTable();
@@ -920,6 +1168,19 @@
       const db = window.firebase ? window.firebase.firestore() : null;
       if (!db) return;
       window.OrderFsmService.approveQcOrder(db, orderId, currentStaffUser ? currentStaffUser.staffId : "admin_art_core")
+        .then(() => {
+          // 觸發 UI/UX Pro Max 審核通過通知信
+          const targetOrder = ordersList.find(o => o.orderId === orderId || o.id === orderId);
+          if (targetOrder && targetOrder.email && window.EmailService) {
+            window.EmailService.sendQcStatusUpdateEmail({
+              orderId: targetOrder.orderId || orderId,
+              studentName: targetOrder.studentName || targetOrder.name || "同學",
+              productName: targetOrder.productName || "客製化紀念品",
+              qcStatus: "審核通過",
+              email: targetOrder.email
+            }).catch(e => console.warn("[Email QC Approve Warning]", e));
+          }
+        })
         .catch(err => {
           alert(`圖審操作失敗：${err.message}`);
           renderOrdersTable();
@@ -935,10 +1196,12 @@
     qcRejectPresetSelect.value = "";
     qcRejectReasonInput.value = "";
     qcRejectModalOverlay.style.display = "flex";
+    syncAdminScrollLock();
   }
 
   function closeQcRejectModal() {
     qcRejectModalOverlay.style.display = "none";
+    syncAdminScrollLock();
     pendingRejectOrderId = null;
     renderOrdersTable();
   }
@@ -1071,6 +1334,385 @@
       `;
       membersTableBody.appendChild(tr);
     });
+  }
+
+  // ==========================================================================
+  // 會員清理：一鍵清理無效/無正確Email測試會員
+  // ==========================================================================
+  async function handleCleanInvalidMembers() {
+    const invalidList = membersList.filter(m => {
+      const email = String(m.email || "").trim().toLowerCase();
+      return !email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    });
+
+    if (invalidList.length === 0) {
+      alert("✅ 經比對全校資料庫，目前所有會員皆具備合規電子信箱，無無效會員資料！");
+      return;
+    }
+
+    const confirmMsg = `⚠️ 系統偵測到全校共有 ${invalidList.length} 筆「未填寫正確 Email」之歷史測試/無效會員。\n\n名單包含：\n` +
+      invalidList.slice(0, 5).map(m => `• ${m.username || m.studentId || "--"} (${m.name || "未留名"}) - ${m.email || "無信箱"}`).join("\n") +
+      (invalidList.length > 5 ? `\n...等共 ${invalidList.length} 筆` : "") +
+      `\n\n確定要永久刪除這些無效測試資料嗎？此操作不可逆！`;
+
+    if (!confirm(confirmMsg)) return;
+
+    try {
+      const db = window.firebase ? window.firebase.firestore() : null;
+      if (!db) throw new Error("資料庫尚未連線");
+
+      btnCleanInvalidMembers.disabled = true;
+      btnCleanInvalidMembers.textContent = "🧹 清理中...";
+
+      const batch = db.batch();
+      invalidList.forEach(m => {
+        const docId = m.id || m.username || m.studentId;
+        if (docId) {
+          batch.delete(db.collection("users").doc(docId));
+          batch.delete(db.collection("members").doc(docId));
+        }
+      });
+      await batch.commit();
+
+      alert(`🎉 成功清理 ${invalidList.length} 筆歷史無效測試會員！`);
+    } catch (err) {
+      alert(`清理失敗：${err.message}`);
+    } finally {
+      btnCleanInvalidMembers.disabled = false;
+      btnCleanInvalidMembers.textContent = "🧹 清理無效/無正確信箱測試會員";
+    }
+  }
+
+  // ==========================================================================
+  // 一鍵清空所有預設與測試訂單 (Batch Delete)
+  // ==========================================================================
+  async function handleClearAllOrders() {
+    const db = window.firebase ? window.firebase.firestore() : null;
+    if (!db) {
+      alert("❌ 資料庫尚未連線，無法執行清空！");
+      return;
+    }
+
+    const currentCount = ordersList.length;
+    const confirm1 = confirm(`⚠️【高風險操作確認】\n目前系統中共有 ${currentCount} 筆訂單。\n您確定要一鍵清空所有測試訂單嗎？\n此動作將永久刪除 Firestore orders 集合中的所有資料，無法復原！`);
+    if (!confirm1) return;
+
+    const confirm2 = prompt(`請輸入「確認清空」四個字以二次確認：`);
+    if (confirm2 !== "確認清空") {
+      alert("已取消清空操作。");
+      return;
+    }
+
+    if (btnClearAllOrders) {
+      btnClearAllOrders.disabled = true;
+      btnClearAllOrders.textContent = "⏳ 正在清空訂單中...";
+    }
+
+    try {
+      const snap = await db.collection("orders").get();
+      if (snap.empty) {
+        alert("資料庫中目前已無任何訂單！");
+        ordersList = [];
+        updateHUDCounts();
+        renderOrdersTable();
+        return;
+      }
+
+      // Firestore 每次批次最多 500 個操作，每 400 筆 chunk 一次
+      const docs = snap.docs;
+      const chunkSize = 400;
+      for (let i = 0; i < docs.length; i += chunkSize) {
+        const chunk = docs.slice(i, i + chunkSize);
+        const batch = db.batch();
+        chunk.forEach(doc => batch.delete(doc.ref));
+        await batch.commit();
+      }
+
+      // 記憶體清空與統計歸零刷新
+      ordersList = [];
+      selectedOrderIds.clear();
+      updateHUDCounts();
+      renderOrdersTable();
+      renderOverdueTable();
+
+      alert(`🗑️ 成功清空所有測試訂單！共刪除 ${docs.length} 筆訂單，訂單看板已恢復為 0 筆全新乾淨狀態。`);
+    } catch (err) {
+      console.error("[Clear All Orders Error]", err);
+      alert(`清空失敗：${err.message}`);
+    } finally {
+      if (btnClearAllOrders) {
+        btnClearAllOrders.disabled = false;
+        btnClearAllOrders.textContent = "🗑️ 清空所有測試訂單";
+      }
+    }
+  }
+
+  // ==========================================================================
+  // 最新消息管理模組 (News Manager CRUD) & 多媒體與全體會員廣播
+  // ==========================================================================
+  let newsTempImageBase64 = "";
+  let newsTempVideoBase64 = "";
+
+  function extractYoutubeVideoId(url) {
+    if (!url) return null;
+    const cleanUrl = String(url).trim();
+    const regExp = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/|youtube\.com\/shorts\/)([^"&?\/\s]{11})/;
+    const match = cleanUrl.match(regExp);
+    return match ? match[1] : null;
+  }
+
+  function startNewsAdminListener() {
+    const db = window.firebase ? window.firebase.firestore() : null;
+    if (!db) return;
+
+    if (unsubscribeNews) unsubscribeNews();
+
+    unsubscribeNews = db.collection("news")
+      .orderBy("date", "desc")
+      .onSnapshot((snapshot) => {
+        const list = [];
+        snapshot.forEach(doc => {
+          list.push({ id: doc.id, ...doc.data() });
+        });
+        newsList = list;
+        renderNewsTable();
+      }, (err) => {
+        console.warn("[News Admin Listener Error]", err);
+      });
+  }
+
+  function renderNewsTable() {
+    if (!newsTableBody) return;
+    newsTableBody.innerHTML = "";
+
+    if (newsList.length === 0) {
+      newsTableBody.innerHTML = `
+        <tr>
+          <td colspan="6" style="text-align: center; padding: 3rem 1.5rem; background: #ffffff;">
+            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.6rem;">
+              <span style="font-size: 2.2rem; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.06));">📢</span>
+              <strong style="font-size: 1.05rem; color: var(--text-heading); font-weight: 700;">目前尚無公告發布</strong>
+              <span style="font-size: 0.85rem; color: var(--text-muted);">點擊右上角「➕ 發布新公告」即可將校慶消息推播至前台</span>
+            </div>
+          </td>
+        </tr>
+      `;
+      return;
+    }
+
+    newsList.forEach(n => {
+      const tr = document.createElement("tr");
+
+      let mediaBadge = `<span style="font-size:0.75rem; color:var(--text-muted);">無影音</span>`;
+      if (n.imageUrl) {
+        mediaBadge = `<img src="${n.imageUrl}" alt="圖檔" style="width: 48px; height: 48px; border-radius: 6px; object-fit: cover; border: 1px solid rgba(255,255,255,0.2);">`;
+      } else if (n.youtubeId || n.youtubeUrl) {
+        const yId = n.youtubeId || extractYoutubeVideoId(n.youtubeUrl);
+        const yThumb = yId ? `https://img.youtube.com/vi/${yId}/hqdefault.jpg` : "";
+        mediaBadge = `<div style="position:relative; width:48px; height:48px; border-radius:6px; overflow:hidden; border:1px solid rgba(255,255,255,0.2);"><img src="${yThumb}" style="width:100%; height:100%; object-fit:cover;"><span style="position:absolute; bottom:2px; right:2px; font-size:9px; background:rgba(239,68,68,0.9); color:#fff; padding:1px 3px; border-radius:2px;">YT</span></div>`;
+      } else if (n.videoUrl) {
+        mediaBadge = `<span style="font-size:0.75rem; color:#38bdf8;">🎥 本地影片</span>`;
+      }
+
+      tr.innerHTML = `
+        <td style="text-align:center;">${mediaBadge}</td>
+        <td><span class="status-pill" style="background:rgba(56,189,248,0.2); color:#38bdf8;">${escapeHtml(n.category || "重要公告")}</span></td>
+        <td><strong style="color:#fff;">${escapeHtml(n.title || "--")}</strong></td>
+        <td style="font-size:0.82rem; color:#cbd5e1; max-width:320px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${escapeHtml(n.content || n.desc || "--")}</td>
+        <td style="font-family:monospace; font-size:0.8rem; color:#94a3b8;">${escapeHtml(n.date || "--")}</td>
+        <td>
+          <button class="btn-tool btn-edit-news" style="padding:0.25rem 0.6rem; font-size:0.75rem; background:rgba(56,189,248,0.2); color:#38bdf8; margin-right:4px;">✏️ 編輯</button>
+          <button class="btn-tool btn-del-news" style="padding:0.25rem 0.6rem; font-size:0.75rem; background:rgba(239,68,68,0.2); color:#f87171;">🗑️ 刪除</button>
+        </td>
+      `;
+
+      tr.querySelector(".btn-edit-news").addEventListener("click", () => openEditNewsModal(n));
+      tr.querySelector(".btn-del-news").addEventListener("click", () => handleDeleteNews(n.id, n.title));
+
+      newsTableBody.appendChild(tr);
+    });
+  }
+
+  function openAddNewsModal() {
+    newsDocId.value = "";
+    newsModalTitle.textContent = "📢 發布最新公告";
+    newsTitleInput.value = "";
+    newsCategorySelect.value = "最新消息";
+    newsDateInput.value = new Date().toISOString().slice(0, 10);
+    newsContentInput.value = "";
+    
+    newsTempImageBase64 = "";
+    if (newsImageFileInput) newsImageFileInput.value = "";
+    if (newsImgPreviewBox) newsImgPreviewBox.style.display = "none";
+    if (newsImgPreview) newsImgPreview.src = "";
+
+    newsTempVideoBase64 = "";
+    if (newsVideoFileInput) newsVideoFileInput.value = "";
+    if (newsVideoPreviewBox) newsVideoPreviewBox.style.display = "none";
+
+    if (newsYoutubeInput) newsYoutubeInput.value = "";
+    if (newsYtPreviewBox) newsYtPreviewBox.style.display = "none";
+    if (newsYtPreviewImg) newsYtPreviewImg.src = "";
+
+    if (newsBroadcastEmailCheck) newsBroadcastEmailCheck.checked = true;
+
+    newsModalOverlay.style.display = "flex";
+    syncAdminScrollLock();
+  }
+
+  function openEditNewsModal(n) {
+    newsDocId.value = n.id;
+    newsModalTitle.textContent = "✏️ 編輯公告內容";
+    newsTitleInput.value = n.title || "";
+    newsCategorySelect.value = n.category || "最新消息";
+    newsDateInput.value = n.date || new Date().toISOString().slice(0, 10);
+    newsContentInput.value = n.content || n.desc || "";
+
+    // 圖檔回填
+    newsTempImageBase64 = n.imageUrl || "";
+    if (newsImageFileInput) newsImageFileInput.value = "";
+    if (newsTempImageBase64) {
+      if (newsImgPreview) newsImgPreview.src = newsTempImageBase64;
+      if (newsImgPreviewBox) newsImgPreviewBox.style.display = "flex";
+    } else {
+      if (newsImgPreviewBox) newsImgPreviewBox.style.display = "none";
+    }
+
+    // 本地影片回填
+    newsTempVideoBase64 = n.videoUrl || "";
+    if (newsVideoFileInput) newsVideoFileInput.value = "";
+    if (newsTempVideoBase64) {
+      if (newsVideoPreviewBox) newsVideoPreviewBox.style.display = "flex";
+    } else {
+      if (newsVideoPreviewBox) newsVideoPreviewBox.style.display = "none";
+    }
+
+    // YouTube 網址回填
+    const ytUrl = n.youtubeUrl || (n.youtubeId ? `https://www.youtube.com/watch?v=${n.youtubeId}` : "");
+    if (newsYoutubeInput) newsYoutubeInput.value = ytUrl;
+    const yId = n.youtubeId || extractYoutubeVideoId(ytUrl);
+    if (yId) {
+      if (newsYtPreviewImg) newsYtPreviewImg.src = `https://img.youtube.com/vi/${yId}/hqdefault.jpg`;
+      if (newsYtPreviewBox) newsYtPreviewBox.style.display = "flex";
+    } else {
+      if (newsYtPreviewBox) newsYtPreviewBox.style.display = "none";
+    }
+
+    if (newsBroadcastEmailCheck) newsBroadcastEmailCheck.checked = false;
+
+    newsModalOverlay.style.display = "flex";
+    syncAdminScrollLock();
+  }
+
+  function closeNewsModal() {
+    newsModalOverlay.style.display = "none";
+    syncAdminScrollLock();
+  }
+
+  async function handleSubmitNews(forceBroadcast = false) {
+    const title = newsTitleInput.value.trim();
+    const category = newsCategorySelect.value;
+    const date = newsDateInput.value || new Date().toISOString().slice(0, 10);
+    const content = newsContentInput.value.trim();
+    const existingId = newsDocId.value;
+    const youtubeRaw = newsYoutubeInput ? newsYoutubeInput.value.trim() : "";
+    const youtubeId = extractYoutubeVideoId(youtubeRaw);
+    const shouldBroadcast = forceBroadcast || (newsBroadcastEmailCheck && newsBroadcastEmailCheck.checked);
+
+    if (!title) {
+      alert("請輸入公告標題！");
+      newsTitleInput.focus();
+      return;
+    }
+    if (!content) {
+      alert("請填寫內容說明！");
+      newsContentInput.focus();
+      return;
+    }
+
+    if (shouldBroadcast) {
+      const confirmBroadcast = confirm(`📢【全體會員廣播確認】\n公告標題：【${title}】\n發布後將同步發送通知信至所有已註冊會員信箱。\n確定要發布並廣播發信嗎？`);
+      if (!confirmBroadcast) return;
+    }
+
+    btnSubmitNewsModal.disabled = true;
+    if (btnSubmitAndBroadcastModal) btnSubmitAndBroadcastModal.disabled = true;
+    btnSubmitNewsModal.textContent = "儲存中...";
+
+    try {
+      const db = window.firebase ? window.firebase.firestore() : null;
+      if (!db) throw new Error("資料庫尚未就緒");
+
+      const payload = {
+        title: title,
+        category: category,
+        date: date,
+        content: content,
+        desc: content,
+        imageUrl: newsTempImageBase64 || "",
+        videoUrl: newsTempVideoBase64 || "",
+        youtubeUrl: youtubeRaw || "",
+        youtubeId: youtubeId || "",
+        updatedAt: new Date().toISOString()
+      };
+
+      if (existingId) {
+        await db.collection("news").doc(existingId).update(payload);
+      } else {
+        payload.createdAt = new Date().toISOString();
+        await db.collection("news").add(payload);
+      }
+
+      // 若勾選發信或點擊全體廣播按鈕，呼叫 GAS API (action: "broadcast_news")
+      if (shouldBroadcast) {
+        try {
+          const broadcastPayload = {
+            action: "broadcast_news",
+            title: title,
+            category: category,
+            content: content,
+            imageUrl: (newsTempImageBase64 && newsTempImageBase64.startsWith("http")) ? newsTempImageBase64 : "",
+            youtubeUrl: youtubeRaw || (youtubeId ? `https://www.youtube.com/watch?v=${youtubeId}` : "")
+          };
+
+          fetch(GAS_API_URL, {
+            method: "POST",
+            mode: "no-cors",
+            headers: { "Content-Type": "text/plain;charset=utf-8" },
+            body: JSON.stringify(broadcastPayload)
+          }).catch(e => console.warn("[Broadcast GAS Fetch Non-blocking]", e));
+
+          alert(`🎉 公告【${title}】發布成功！\n📢 已向 GAS 發出全體會員廣播發信指令。`);
+        } catch (gasErr) {
+          console.warn("[Broadcast Trigger Error]", gasErr);
+          alert(`公告發布成功，但廣播寄件觸發異常：${gasErr.message}`);
+        }
+      } else {
+        alert(existingId ? `✅ 公告【${title}】更新成功！前台已即時同步。` : `🎉 新公告【${title}】發布成功！前台已即時同步。`);
+      }
+
+      closeNewsModal();
+    } catch (err) {
+      alert(`儲存失敗：${err.message}`);
+    } finally {
+      btnSubmitNewsModal.disabled = false;
+      if (btnSubmitAndBroadcastModal) btnSubmitAndBroadcastModal.disabled = false;
+      btnSubmitNewsModal.textContent = "💾 儲存並發布公告";
+    }
+  }
+
+  async function handleDeleteNews(docId, title) {
+    if (!confirm(`確定要刪除公告【${title || docId}】嗎？此動作將立即同步移除前台展示。`)) return;
+
+    try {
+      const db = window.firebase ? window.firebase.firestore() : null;
+      if (!db) throw new Error("資料庫尚未就緒");
+
+      await db.collection("news").doc(docId).delete();
+      alert(`🗑️ 公告【${title}】已成功刪除！`);
+    } catch (err) {
+      alert(`刪除失敗：${err.message}`);
+    }
   }
 
   // ==========================================================================
@@ -1270,10 +1912,12 @@
     btnOpenRawImage.href = src;
 
     imageLightboxModal.style.display = "flex";
+    syncAdminScrollLock();
   }
 
   function closeImageLightbox() {
     imageLightboxModal.style.display = "none";
+    syncAdminScrollLock();
     lightboxTargetImg.src = "";
     currentLightboxZoom = 1;
   }
@@ -1294,10 +1938,12 @@
     newProdImage.value = "";
     newProdStockStatus.value = "IN_STOCK";
     pimAddProductModalOverlay.style.display = "flex";
+    syncAdminScrollLock();
   }
 
   function closePimAddProductModal() {
     pimAddProductModalOverlay.style.display = "none";
+    syncAdminScrollLock();
   }
 
   async function handleSubmitNewProduct() {

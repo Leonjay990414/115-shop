@@ -10,18 +10,28 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700;900&family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
   
+  <!-- 115 校慶 App 與網頁圖示 -->
+  <link rel="icon" type="image/png" href="images/logo115.png">
+  <link rel="apple-touch-icon" href="images/logo115.png">
+
   <!-- 外部樣式表 -->
   <link rel="stylesheet" href="css/style.css">
 
-  <!-- 引入 Firebase 9 Compat SDK -->
+  <!-- 引入 Lenis 平滑滾動與 GSAP CDN (徹底消除 Windows 滾輪卡頓，支援拋物線動效) -->
+  <script src="https://unpkg.com/lenis@1.1.18/dist/lenis.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+
+  <!-- 引入 Firebase 9 Compat SDK (App, Firestore, Auth) -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 
   <!-- 引入共用底層服務層 (保持運作，唯一真理來源) -->
   <script src="../src/config/system.config.js" type="module"></script>
   <script src="../src/services/imageValidator.service.js"></script>
   <script src="../src/services/studentAuth.service.js"></script>
   <script src="../src/services/splitOrder.service.js"></script>
+  <script src="../src/services/email.service.js"></script>
 </head>
 <body>
 
@@ -45,18 +55,14 @@
 
       <!-- 電腦端選單 -->
       <nav class="desktop-nav">
-        <a href="#catalog" class="nav-link active">商品型錄</a>
-        <a href="#ai-guide-section" class="nav-link">🎨 AI 生圖教學</a>
-        <a href="#features" class="nav-link">預購規範</a>
-        <a href="#notice" class="nav-link">取件須知</a>
-        <!-- AI 生圖專屬彈窗快速按鈕 -->
-        <button id="openAiGuideNavBtn" class="member-trigger-btn" style="background: rgba(244, 63, 94, 0.12); color: #f43f5e; font-weight: 700;">
-          <span>🎨 AI 生圖教學</span>
-        </button>
+        <a href="#newsSection" class="nav-link" style="color: #6366f1; font-weight: 700;">📢 最新消息</a>
+        <a href="shop.html" class="nav-link active" style="color: #ff7597; font-weight: 800;">🛍️ 校慶商城</a>
+        <a href="ai-guide.html" target="_blank" rel="noopener noreferrer" id="openAiGuideNavBtn" class="nav-link" style="color: #f43f5e; font-weight: 700;">🎨 AI 生圖教學</a>
+        <a href="notice.html" target="_blank" rel="noopener noreferrer" class="nav-link">📐 預購與取件規範</a>
         <!-- 會員專區 (註冊/登入) 與訂單查詢入口 -->
-        <button id="openMemberModalBtn" class="member-trigger-btn">
+        <a href="auth.html" target="_blank" rel="noopener noreferrer" id="openMemberModalBtn" class="member-trigger-btn" style="text-decoration: none;">
           <span>👤 會員專區 (註冊/登入)</span>
-        </button>
+        </a>
         <button id="openTrackModalBtn" class="member-trigger-btn" style="background: rgba(56, 189, 248, 0.15); color: #0284c7;">
           <span>🔍 訂單查詢</span>
         </button>
@@ -90,14 +96,14 @@
       <button id="closeMobileNavBtn" class="close-drawer-btn" aria-label="關閉選單">✕</button>
     </div>
     <nav class="mobile-nav-links">
-      <a href="#catalog" class="mobile-nav-link active" onclick="closeMobileNav()">🏷️ 商品型錄</a>
-      <a href="#ai-guide-section" class="mobile-nav-link" onclick="closeMobileNav()">🎨 AI 1分鐘生圖教學</a>
-      <a href="javascript:void(0)" class="mobile-nav-link" onclick="closeMobileNav(); openAiGuideModal();">💡 AI 咒語指南彈窗</a>
-      <a href="#features" class="mobile-nav-link" onclick="closeMobileNav()">📐 預購規範</a>
-      <a href="#notice" class="mobile-nav-link" onclick="closeMobileNav()">📦 取件須知</a>
-      <a href="javascript:void(0)" class="mobile-nav-link" onclick="closeMobileNav(); openStudentAuthModal();">👤 會員專區 (註冊/登入)</a>
+      <a href="#newsSection" class="mobile-nav-link" style="color: #6366f1; font-weight: 700;" onclick="closeMobileNav()">📢 最新消息</a>
+      <a href="shop.html" class="mobile-nav-link active" onclick="closeMobileNav()">🛍️ 校慶商城</a>
+      <a href="ai-guide.html" target="_blank" rel="noopener noreferrer" class="mobile-nav-link" onclick="closeMobileNav()">🎨 AI 生圖教學</a>
+      <a href="notice.html" target="_blank" rel="noopener noreferrer" class="mobile-nav-link" onclick="closeMobileNav()">📐 預購與取件規範</a>
+      <a href="auth.html" target="_blank" rel="noopener noreferrer" class="mobile-nav-link" onclick="closeMobileNav()">👤 會員專區 (註冊/登入)</a>
       <a href="javascript:void(0)" class="mobile-nav-link" onclick="closeMobileNav(); openStudentOrdersModal();">🔍 訂單進度查詢</a>
       <a href="javascript:void(0)" class="mobile-nav-link" onclick="closeMobileNav(); openCartDrawer();">🛒 查看購物車清單</a>
+      <a href="assets/downloads/zg115_shop.apk" download="zg115_shop.apk" class="mobile-nav-link" style="color: #10b981; font-weight: 700;">📲 下載 Android 原生 APK</a>
     </nav>
     <div style="margin-top: auto; font-size: 0.8rem; color: var(--text-muted); text-align: center; padding-top: 1rem; border-top: 1px dashed #e2e8f0;">
       智光商工 115校慶園遊會客製專案
@@ -119,189 +125,73 @@
         <div class="hero-feature-item"><span>🎪</span> 校慶現場專屬攤位領取</div>
         <div class="hero-feature-item"><span>🏫</span> 憑第一聯蓋章驗證取貨</div>
       </div>
-    </section>
-
-    <!-- 首頁常駐「AI 客製圖檔生圖專區」(#ai-guide-section) -->
-    <section class="ai-home-section" id="ai-guide-section">
-      <div class="ai-home-header">
-        <div class="hero-pill-badge" style="background: rgba(244, 63, 94, 0.12); color: #f43f5e; border-color: rgba(244, 63, 94, 0.25);">
-          🎨 115校慶專屬 AI 創意工作站
-        </div>
-        <h2 class="ai-home-title">1分鐘成為設計大師！<span>AI 免費生圖指南</span></h2>
-        <p class="ai-home-subtitle">
-          零繪畫基礎也能做！挑選下方免安裝免費 AI 工具，套用萬用黃金公式或一鍵複製 4 大熱門風格咒語，立刻生成專屬圖檔來客製！
-        </p>
-      </div>
-
-      <!-- 1. 推薦工具與 Google 搜尋引導 -->
-      <div class="ai-home-tools-grid">
-        <div class="ai-step-card">
-          <div class="ai-step-badge">工具推薦</div>
-          <h3 class="ai-step-title">三大免費免安裝 AI 生圖工具</h3>
-          <ul class="ai-tool-list">
-            <li>
-              <strong>🌟 Microsoft Copilot / Bing 影像建立工具：</strong>
-              全中文支援、免付費，產出標準正方形圖片，最契合校慶馬克杯、徽章與杯墊周邊。
-            </li>
-            <li>
-              <strong>💬 ChatGPT (GPT-4o 繪圖)：</strong>
-              直接中文對話生圖，修改表情、風格細節最聰明。
-            </li>
-            <li>
-              <strong>🎨 Canva 魔法媒體：</strong>
-              生圖後還能直接加字、排版、加外框，一站式搞定周邊設計。
-            </li>
-          </ul>
-        </div>
-
-        <div class="ai-search-guide-box">
-          <div class="ai-search-guide-header">
-            <span>🔍 找不到工具或靈感？直接 Google 搜尋這些關鍵字：</span>
-          </div>
-          <ul class="ai-search-guide-list">
-            <li>
-              <strong>找免費生圖工具：</strong>
-              搜尋「<code>Bing 影像建立工具</code>」或「<code>Copilot 繪圖</code>」，點第一個連結就能直接用！
-            </li>
-            <li>
-              <strong>找更多風格提示詞：</strong>
-              搜尋「<code>Midjourney 盲盒提示詞</code>」、「<code>DALL-E 3 日系插畫咒語</code>」或「<code>照片轉手繪 AI 指令</code>」。
-            </li>
-            <li>
-              <strong>找免費高畫質去背：</strong>
-              搜尋「<code>AI 免費去背</code>」，上傳圖片前一鍵移除背景雜訊，印製質感更加分！
-            </li>
-          </ul>
-        </div>
-      </div>
-
-      <!-- 2. 4 步黃金公式 -->
-      <div class="ai-step-card" style="margin-top: 1rem;">
-        <div class="ai-step-badge">萬用公式</div>
-        <h3 class="ai-step-title">4 步萬用黃金生圖公式</h3>
-        <div class="ai-formula-pill">
-          <span>【想要的主體】</span> + <span>【穿著或動作】</span> + <span>【畫面風格】</span> + <span>【背景與光線】</span>
-        </div>
-        <p style="font-size: 0.82rem; color: #64748b; margin-top: 0.6rem;">
-          💡 範例：【一隻可愛白貓】+【戴著耳機喝熱可可】+【3D盲盒公仔皮克斯風】+【純白背景柔和工作室打光】
-        </p>
-      </div>
-
-      <!-- 3. 四大熱門風格咒語模板卡片 (附帶一鍵複製按鈕) -->
-      <div style="margin-top: 1.25rem;">
-        <h3 style="font-size: 1.05rem; font-weight: 800; color: #1e293b; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.4rem;">
-          <span>✨</span> 四大熱門風格咒語卡片（點擊一鍵複製，秒貼秒生圖）
-        </h3>
-        <div class="ai-prompt-cards-grid">
-          <!-- 模板 1 -->
-          <div class="prompt-template-box">
-            <div class="prompt-template-header">
-              <span class="prompt-tag">模板 1</span>
-              <strong>3D 萌系盲盒公仔風</strong>
-              <span class="prompt-fit">適合：胸章、馬克杯</span>
-            </div>
-            <div class="prompt-text" id="homePromptTpl1">3D 盲盒公仔風格，一隻超級可愛的【白貓/柴犬】，戴著【復古耳機】，穿著【馬卡龍粉彩色連帽衫】，雙手捧著【熱可可】，精緻黏土光滑質感，柔和工作室打光，純淨淺色背景，8K 高解析度，皮克斯 3D 渲染，極致立體可愛。</div>
-            <button type="button" class="btn-copy-prompt" data-target="homePromptTpl1">
-              📋 一鍵複製咒語
-            </button>
-          </div>
-
-          <!-- 模板 2 -->
-          <div class="prompt-template-box">
-            <div class="prompt-template-header">
-              <span class="prompt-tag">模板 2</span>
-              <strong>日系暖心手繪線條風</strong>
-              <span class="prompt-fit">適合：帆布袋、隨身鏡</span>
-            </div>
-            <div class="prompt-text" id="homePromptTpl2">日系手繪插畫風格，俐落黑色線條，乾淨白底，一位【高校少女/少年】正在【背著書包笑著揮手】，點綴【柔和粉橘與天空藍水彩色塊】，簡約無印文青風，高解析度向量插畫。</div>
-            <button type="button" class="btn-copy-prompt" data-target="homePromptTpl2">
-              📋 一鍵複製咒語
-            </button>
-          </div>
-
-          <!-- 模板 3 -->
-          <div class="prompt-template-box">
-            <div class="prompt-template-header">
-              <span class="prompt-tag">模板 3</span>
-              <strong>照片轉手繪角色風</strong>
-              <span class="prompt-fit">適合：情侶、閨蜜、班級合照</span>
-            </div>
-            <div class="prompt-text" id="homePromptTpl3">請參考我上傳的照片，提取人物髮型、五官特徵與服裝搭配，轉化為【溫暖可愛的吉卜力動漫手繪風格】。保留原本溫和微笑神情，背景換成乾淨純色背景，色彩溫暖明亮。</div>
-            <button type="button" class="btn-copy-prompt" data-target="homePromptTpl3">
-              📋 一鍵複製咒語
-            </button>
-          </div>
-
-          <!-- 模板 4 -->
-          <div class="prompt-template-box">
-            <div class="prompt-template-header">
-              <span class="prompt-tag">模板 4</span>
-              <strong>Y2K 潮流貼紙徽章風</strong>
-              <span class="prompt-fit">適合：潮流掛飾、個性雷雕</span>
-            </div>
-            <div class="prompt-text" id="homePromptTpl4">Y2K 復古潮流貼紙設計，中央有一個【戴墨鏡的微笑雲朵】，帶有柔和粉彩霓虹漸層與金屬邊緣反光，周圍散落【可愛小星星與愛心】，粗白色外輪廓線，純白背景，向量圖案。</div>
-            <button type="button" class="btn-copy-prompt" data-target="homePromptTpl4">
-              📋 一鍵複製咒語
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- 4. 美術組防退件三要點 -->
-      <div class="ai-step-card" style="margin-top: 1rem; border-left: 4px solid #f43f5e; background: #fff5f5;">
-        <div class="ai-step-badge" style="background: #f43f5e; color: #fff;">印刷須知</div>
-        <h3 class="ai-step-title" style="color: #991b1b;">美術組防退件三要點（請特別留意）</h3>
-        <ul class="ai-notice-list">
-          <li>
-            <strong>📏 主角置中留出血邊：</strong>
-            圓形胸章與鏡子邊緣會被機器壓模吃掉約 0.5cm，頭像與五官文字請務必往中間靠，請勿貼邊。
-          </li>
-          <li>
-            <strong>📥 下載高畫質原圖上傳：</strong>
-            生圖完成後請點擊「下載」原檔，勿使用手機螢幕截圖（截圖會導致模糊馬賽克無緣通過 1080P 檢驗）。
-          </li>
-          <li>
-            <strong>⚪ 背景維持純白或單色：</strong>
-            乾淨的背景能讓印製品質最細緻飽滿！
-          </li>
-        </ul>
-      </div>
-
-      <!-- 5. 參考資料來源 -->
-      <div class="ai-ref-box" style="margin-top: 1rem;">
-        <span>📚 教學資料來源參考：</span>
-        <span>數位時代《ChatGPT 生圖 2.5 提示詞指南》｜經理人月刊《AI 繪圖提示詞教學》｜瘋先生《AI 提示詞技巧：真實照片轉手繪插畫》</span>
+      <div style="margin-top: 1.5rem;">
+        <a href="shop.html" class="checkout-btn" style="display: inline-flex; align-items: center; justify-content: center; gap: 0.6rem; width: auto; padding: 0.85rem 2.2rem; font-size: 1.05rem; font-weight: 800; text-decoration: none; box-shadow: 0 10px 25px -5px rgba(255, 117, 151, 0.5);">
+          🛍️ 前往校慶商城選購紀念品 ➔
+        </a>
       </div>
     </section>
 
-    <!-- 分類篩選控制區 (全面採用標準圓角下拉選單，告別水平滑動卡頓) -->
-    <div class="categories-control-bar">
-      <label for="categorySelect" class="category-select-label">
-        <span>🏷️</span> 商品類別篩選：
-      </label>
-      <select id="categorySelect" class="category-dropdown-select" aria-label="商品類別切換">
-        <option value="all">🌟 全部商品 (All Collection)</option>
-        <option value="tableware">☕ 杯器餐具 (Tableware & Mugs)</option>
-        <option value="accessories">✨ 經典配件 (Accessories & Charms)</option>
-        <option value="stationery">✏️ 文具周邊 (Stationery & Notes)</option>
-        <option value="prints">🖼️ 海報印刷 (Prints & Posters)</option>
-      </select>
-    </div>
+    <!-- 最新消息專區 (#newsSection) -->
+    <section id="newsSection" class="news-section">
+      <div class="news-section-header">
+        <div class="news-section-title-wrap">
+          <h2>📢 最新消息與活動公告</h2>
+        </div>
+        <span style="font-size: 0.85rem; color: var(--text-muted);">校慶園遊會即時通知</span>
+      </div>
 
-    <!-- 商品網格 (全區域點擊直達 PDP 詳情手風琴) -->
-    <section class="products-grid" id="productsGrid">
-      <!-- 由 js/app.js 動態渲染 -->
+      <!-- 最新消息分類標籤切換器 (Category Tabs) -->
+      <div class="news-category-tabs" id="newsCategoryTabs" style="display: flex; gap: 0.5rem; overflow-x: auto; padding-bottom: 0.85rem; margin-bottom: 1.25rem;">
+        <button class="news-tab-pill active" data-category="ALL" style="padding: 0.45rem 1.1rem; border-radius: 999px; border: 1px solid rgba(99,102,241,0.3); background: var(--accent-primary); color: #fff; font-size: 0.85rem; font-weight: 700; cursor: pointer; white-space: nowrap;">✨ 全部</button>
+        <button class="news-tab-pill" data-category="最新消息" style="padding: 0.45rem 1.1rem; border-radius: 999px; border: 1px solid #cbd5e1; background: #fff; color: #475569; font-size: 0.85rem; font-weight: 600; cursor: pointer; white-space: nowrap;">📢 最新消息</button>
+        <button class="news-tab-pill" data-category="優惠活動" style="padding: 0.45rem 1.1rem; border-radius: 999px; border: 1px solid #cbd5e1; background: #fff; color: #475569; font-size: 0.85rem; font-weight: 600; cursor: pointer; white-space: nowrap;">🎁 優惠活動</button>
+        <button class="news-tab-pill" data-category="校慶快報" style="padding: 0.45rem 1.1rem; border-radius: 999px; border: 1px solid #cbd5e1; background: #fff; color: #475569; font-size: 0.85rem; font-weight: 600; cursor: pointer; white-space: nowrap;">🎪 校慶快報</button>
+        <button class="news-tab-pill" data-category="重要公告" style="padding: 0.45rem 1.1rem; border-radius: 999px; border: 1px solid #cbd5e1; background: #fff; color: #475569; font-size: 0.85rem; font-weight: 600; cursor: pointer; white-space: nowrap;">⚠️ 重要公告</button>
+      </div>
+
+      <div id="newsGrid" class="news-grid">
+        <div class="news-empty-state">
+          <span>⏳ 正在連線讀取最新公告...</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 園遊會活動資訊與商城引導專區 -->
+    <section class="hero-banner" style="background: linear-gradient(135deg, rgba(255,245,247,0.95), rgba(240,249,255,0.95)); border: 1.5px solid rgba(255, 182, 193, 0.45); margin-bottom: 2rem; text-align: center;">
+      <div class="hero-pill-badge" style="background: rgba(255, 117, 151, 0.15); color: #ff7597; border-color: rgba(255, 117, 151, 0.3);">🎪 115週年校慶限定</div>
+      <h2 style="font-size: 1.6rem; font-weight: 800; color: #0f172a; margin-bottom: 0.75rem;">校慶專屬紀念品・限量客製商城開跑</h2>
+      <p style="font-size: 0.95rem; color: #475569; max-width: 680px; margin: 0 auto 1.5rem auto; line-height: 1.7;">
+        資料處理科專案團隊精心打造！文青帆布袋、雷雕保溫杯、金屬胸章、壓克力吊飾等全系列紀念品現正熱烈預購中。<br>
+        前往專屬商城即可即時自訂圖檔與線上預覽，校慶現場憑單取件！
+      </p>
+      <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+        <a href="shop.html" class="checkout-btn" style="display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; text-decoration: none; width: auto; padding: 0.85rem 2rem; font-weight: 800; font-size: 1.05rem;">
+          🛍️ 前往校慶商城選購 ✨
+        </a>
+        <a href="ai-guide.html" target="_blank" rel="noopener noreferrer" class="member-trigger-btn" style="background: rgba(255, 255, 255, 0.9); color: #f43f5e; font-weight: 700; text-decoration: none; padding: 0.85rem 1.6rem; border-radius: 9999px; border: 1px solid rgba(244, 63, 94, 0.25);">
+          🎨 查看 AI 生圖教學
+        </a>
+      </div>
     </section>
 
     <!-- 取件須知專區 -->
     <section class="hero-banner" id="notice" style="margin-bottom: 3rem;">
       <h2 style="font-size: 1.25rem; font-weight: 700; color: #0f172a; margin-bottom: 0.5rem;">📝 校慶預購與退換貨規範須知</h2>
-      <p style="font-size: 0.88rem; color: var(--text-muted); max-width: 720px; text-align: left; line-height: 1.7;">
+      <p style="font-size: 0.88rem; color: var(--text-muted); max-width: 720px; text-align: left; line-height: 1.7; margin-bottom: 1rem;">
         1. <strong>發送三聯單並簽名後，即不接受退貨</strong>。<br>
         2. <strong>若要退貨，必須在三聯單發送前，親自到資料處理科 6 樓科辦公室向主任說明</strong>。如果主任不在，請向現場老師說明由其轉達給其他老師；或下次再來，或向現場師生詢問主任去向後再行處理。<br>
         3. <strong>領貨時一律憑第一聯【顧客付款與取貨憑證聯】領取</strong>。<br>
         4. <strong>三聯單由派送組送達時，財務人員將隨行前往並當場完成款項收訖</strong>。
       </p>
+      <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+        <a href="notice.html" target="_blank" rel="noopener noreferrer" class="member-trigger-btn" style="background: rgba(99, 102, 241, 0.1); color: var(--accent-primary); font-weight: 700; text-decoration: none; padding: 0.5rem 1.1rem; border-radius: 9999px;">
+          📄 開啟完整版【預購與取件退換貨規範手冊】
+        </a>
+        <a href="assets/downloads/zg115_shop.apk" download="zg115_shop.apk" class="member-trigger-btn" style="background: rgba(16, 185, 129, 0.15); color: #059669; font-weight: 700; text-decoration: none; padding: 0.5rem 1.1rem; border-radius: 9999px;">
+          📲 下載 Android 實機安裝檔 (zg115_shop.apk)
+        </a>
+      </div>
     </section>
 
   </main>
@@ -327,6 +217,55 @@
     </div>
   </aside>
 
+  <!-- 商品詳細規格介紹視窗 (Spec Detail Modal - 行為 A) -->
+  <div id="specModalOverlay" class="modal-overlay">
+    <div class="modal-card spec-modal-card">
+      <div class="modal-header">
+        <strong id="specModalTitle" class="modal-title">📦 商品規格與工藝材質</strong>
+        <button id="closeSpecModalBtn" class="close-drawer-btn">✕</button>
+      </div>
+
+      <div class="spec-modal-hero">
+        <div id="specModalImgBox" class="spec-modal-img-box">
+          <!-- 動態載入商品圖或 SVG -->
+        </div>
+        <div style="flex: 1; min-width: 0;">
+          <div id="specModalName" style="font-weight: 800; font-size: 1.15rem; color: #0f172a;">商品名稱</div>
+          <div style="display: flex; align-items: baseline; gap: 0.35rem; margin-top: 0.25rem;">
+            <span style="font-size: 0.82rem; color: #ff7597; font-weight: 700;">單價 NT$</span>
+            <span id="specModalPrice" style="font-size: 1.35rem; font-weight: 900; color: #ff7597; font-variant-numeric: tabular-nums;">0</span>
+          </div>
+          <div id="specModalDesc" style="font-size: 0.84rem; color: var(--text-muted); margin-top: 0.25rem; line-height: 1.45;"></div>
+        </div>
+      </div>
+
+      <div class="spec-details-list">
+        <div class="spec-detail-row">
+          <span class="spec-detail-label">💎 材質工藝</span>
+          <span id="specDetailMaterial" class="spec-detail-val">優選工藝材質</span>
+        </div>
+        <div class="spec-detail-row">
+          <span class="spec-detail-label">📏 尺寸規格</span>
+          <span id="specDetailDimensions" class="spec-detail-val">標準客製規格</span>
+        </div>
+        <div class="spec-detail-row">
+          <span class="spec-detail-label">🎪 取件時效</span>
+          <span class="spec-detail-val">校慶前批次印製，校慶當日憑第一聯取貨</span>
+        </div>
+        <div class="spec-detail-row">
+          <span class="spec-detail-label">⚠️ 注意事項</span>
+          <span class="spec-detail-val">三聯單簽名後不接受退貨；圖檔需符合 1080P 高清解析度。</span>
+        </div>
+      </div>
+
+      <div class="spec-modal-actions">
+        <button id="specGoToCustBtn" class="checkout-btn" style="flex: 1; background: var(--accent-gradient-btn);">
+          🎨 前往客製訂購
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- PDP 商品詳情手風琴與客製選購彈窗 -->
   <div id="customizeModalOverlay" class="modal-overlay">
     <div class="modal-card">
@@ -335,39 +274,53 @@
         <button id="closeCustomizeBtn" class="close-drawer-btn">✕</button>
       </div>
 
+      <!-- 商品主體展示與價格橫幅 (Product Preview & Price Tag) -->
+      <div id="custProductHero" class="modal-product-hero" style="display: flex; gap: 1rem; align-items: center; background: #fff9f0; padding: 0.85rem 1rem; border-radius: 14px; border: 1px solid rgba(255, 182, 193, 0.4); margin-bottom: 1.25rem;">
+        <div id="custProductImgBox" style="width: 72px; height: 72px; min-width: 72px; border-radius: 12px; background: #fff; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.05); overflow: hidden;">
+          <!-- 動態載入商品圖或 SVG -->
+        </div>
+        <div style="flex: 1; min-width: 0;">
+          <div id="custProductName" style="font-weight: 800; font-size: 1.05rem; color: #0f172a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">商品名稱</div>
+          <div style="display: flex; align-items: baseline; gap: 0.3rem; margin-top: 0.2rem;">
+            <span style="font-size: 0.8rem; color: #ff7597; font-weight: 700;">單價 NT$</span>
+            <span id="custProductPrice" style="font-size: 1.25rem; font-weight: 900; color: #ff7597; font-variant-numeric: tabular-nums;">0</span>
+          </div>
+          <div id="custProductDesc" style="font-size: 0.78rem; color: var(--text-muted); margin-top: 0.15rem; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;"></div>
+        </div>
+      </div>
+
       <!-- PDP 手風琴詳情折疊區 -->
       <div class="pdp-accordion-group">
         <div class="pdp-accordion-item active">
           <div class="pdp-accordion-header" onclick="this.parentElement.classList.toggle('active')">
-            <span>📦 商品規格與工藝說明</span>
+            <span>📦 商品規格、材質與工藝說明</span>
             <span>▾</span>
           </div>
           <div id="pdpAccordionSpec" class="pdp-accordion-content">
             <!-- 動態填入 -->
           </div>
-          <div style="padding: 0 1.25rem 1rem 1.25rem;">
-            <button type="button" class="ai-guide-trigger-btn btn-open-ai-guide-clone" style="font-size:0.8rem; padding: 0.5rem 0.8rem;">
-              💡 沒靈感？看 AI 一分鐘免費生圖教學
-            </button>
-          </div>
         </div>
-        <div class="pdp-accordion-item">
+        <div class="pdp-accordion-item active">
           <div class="pdp-accordion-header" onclick="this.parentElement.classList.toggle('active')">
-            <span>🎪 取貨日程與時程規範</span>
+            <span>🎪 校慶領取與注意事項說明</span>
             <span>▾</span>
           </div>
           <div class="pdp-accordion-content">
-            本商品為校慶限定客製預購品，統一於校慶前排印製作完成，校慶當天憑第一聯單據至專屬攤位取貨。
+            本商品為校慶限定客製預購品，統一於校慶前排印製作完成，校慶當天憑第一聯單據至專屬攤位取貨。<br>
+            <span style="color:#e11d48; font-weight:700;">⚠️ 注意：</span>三聯單發送並簽名後即不接受退貨。若需退貨請於送單前親洽資料處理科辦公室。<br>
+            <a href="notice.html" target="_blank" rel="noopener noreferrer" style="color: var(--accent-primary); font-weight: 700; text-decoration: underline; margin-top: 0.4rem; display: inline-block;">
+              ↗ 查看完整校慶預購與取件退換貨規範手冊 (新分頁)
+            </a>
           </div>
         </div>
       </div>
 
       <div class="form-group" style="margin-top: 1.25rem;">
-        <!-- AI 客製圖檔生圖指南 入口膠囊按鈕 -->
+        <!-- AI 客製圖檔生圖指南 入口膠囊按鈕 (以新分頁獨立開啟) -->
         <div style="margin-bottom: 0.75rem;">
-          <button type="button" id="btnOpenAiGuide" class="ai-guide-trigger-btn">
-            💡 沒有靈感？點我看【AI 1分鐘免費生圖教學】
-          </button>
+          <a href="ai-guide.html" target="_blank" rel="noopener noreferrer" class="ai-guide-trigger-btn" style="text-decoration: none; display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.85rem;">
+            🎨 沒有靈感？開啟【AI 1分鐘生圖教學】(新分頁)
+          </a>
         </div>
 
         <label class="form-label">
@@ -401,7 +354,16 @@
         <input type="text" id="custNotesInput" class="form-input" placeholder="可輸入裁切備註或特殊要求">
       </div>
 
-      <button id="addToCartConfirmBtn" class="checkout-btn" style="margin-top: 0.5rem;">
+      <!-- 底部即時小計與加車按鈕 -->
+      <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 0; margin-top: 0.5rem; border-top: 1px dashed #e2e8f0;">
+        <span style="font-size: 0.95rem; font-weight: 700; color: #475569;">小計金額</span>
+        <div style="display: flex; align-items: baseline; gap: 0.25rem;">
+          <span style="font-size: 0.85rem; color: #ff7597; font-weight: 700;">NT$</span>
+          <strong id="custSubtotalPrice" style="font-size: 1.35rem; color: #ff7597; font-variant-numeric: tabular-nums;">0</strong>
+        </div>
+      </div>
+
+      <button id="addToCartConfirmBtn" class="checkout-btn" style="margin-top: 0.35rem;">
         ➕ 確認加入購物車
       </button>
     </div>
@@ -440,166 +402,7 @@
     </div>
   </div>
 
-  <!-- 師生通用會員專區 (註冊/登入) 彈窗 (Session-Only Auth) -->
-  <div id="studentAuthModalOverlay" class="modal-overlay">
-    <div class="modal-card" style="max-width: 500px;">
-      <div class="modal-header">
-        <strong id="studentAuthModalTitle" class="modal-title">👤 會員專區 (師生登入與註冊)</strong>
-        <button id="closeStudentAuthBtn" class="close-drawer-btn">✕</button>
-      </div>
 
-      <!-- 分頁切換：登入 / 註冊 -->
-      <div style="display: flex; gap: 0.5rem; margin-bottom: 1.25rem;">
-        <button id="tabAuthLogin" class="category-pill active" style="flex:1;">登入帳號</button>
-        <button id="tabAuthRegister" class="category-pill" style="flex:1;">新用戶註冊</button>
-      </div>
-
-      <!-- 登入表單 -->
-      <div id="studentLoginBox">
-        <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem;">
-          前台登入一律使用【自訂帳號】與【自訂密碼】。登入狀態保存在當前分頁 (sessionStorage)。
-        </p>
-        <div class="form-group">
-          <label class="form-label">自訂使用者帳號 <span style="color: var(--danger);">*</span></label>
-          <input type="text" id="loginStudentId" class="form-input" placeholder="輸入自訂帳號 (英數字組合)">
-        </div>
-        <div class="form-group">
-          <label class="form-label">自訂登入密碼 <span style="color: var(--danger);">*</span></label>
-          <input type="password" id="loginStudentPwd" class="form-input" placeholder="輸入自訂密碼">
-        </div>
-        <button id="btnStudentLoginSubmit" class="checkout-btn" style="margin-top: 0.5rem;">
-          🚀 登入會員帳號
-        </button>
-      </div>
-
-      <!-- 註冊表單 (兩階段：1. Email 驗證碼 2. 自訂帳密與個資) -->
-      <div id="studentRegisterBox" style="display: none;">
-        
-        <!-- 第一階段：電子信箱驗證 -->
-        <div id="regStage1EmailBox">
-          <div style="background: rgba(99, 102, 241, 0.08); border: 1px solid rgba(99, 102, 241, 0.2); border-radius: 12px; padding: 0.85rem; margin-bottom: 1rem;">
-            <strong style="font-size: 0.85rem; color: var(--accent-primary); display: block; margin-bottom: 0.25rem;">
-              📧 第一階段：電子信箱身分驗證
-            </strong>
-            <p style="font-size: 0.78rem; color: var(--text-muted); margin: 0;">
-              為確保訂單通知信件送達，請先輸入您的電子信箱 (支援 Gmail、新北教育帳號 @apps.ntpc.edu.tw 等) 並完成 6 位數驗證碼核驗。
-            </p>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">電子信箱 (支援所有信箱) <span style="color: var(--danger);">*</span></label>
-            <div style="display: flex; gap: 0.5rem;">
-              <input type="email" id="regEmailInput" class="form-input" placeholder="例如：user@gmail.com 或 @apps.ntpc.edu.tw" style="flex: 1;">
-              <button type="button" id="btnSendVerifyCode" class="btn-tool" style="background: var(--accent-primary); color: #fff; border: none; border-radius: 10px; padding: 0.55rem 0.9rem; font-size: 0.8rem; font-weight: 700; white-space: nowrap; cursor: pointer;">
-                發送驗證碼
-              </button>
-            </div>
-          </div>
-
-          <div class="form-group" id="regCodeInputGroup" style="margin-top: 0.75rem;">
-            <label class="form-label">輸入 6 位數 Email 驗證碼 <span style="color: var(--danger);">*</span></label>
-            <div style="display: flex; gap: 0.5rem;">
-              <input type="text" id="regVerifyCodeInput" class="form-input" maxlength="6" placeholder="請輸入 6 碼數字" style="flex: 1; font-family: monospace; font-size: 1.1rem; letter-spacing: 2px;">
-              <button type="button" id="btnVerifyCodeSubmit" class="btn-tool" style="background: #10b981; color: #fff; border: none; border-radius: 10px; padding: 0.55rem 1.1rem; font-size: 0.82rem; font-weight: 700; white-space: nowrap; cursor: pointer;">
-                ✅ 驗證
-              </button>
-            </div>
-            <span id="verifyCodeTimerHint" style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.3rem; display: block;"></span>
-          </div>
-        </div>
-
-        <!-- 第二階段：自訂帳號密碼與防呆資料填寫 (通過驗證後解鎖) -->
-        <div id="regStage2FieldsBox" style="display: none; border-top: 1px dashed #cbd5e1; padding-top: 1rem; margin-top: 0.75rem;">
-          <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 10px; padding: 0.6rem 0.85rem; margin-bottom: 0.85rem; display: flex; align-items: center; justify-content: space-between;">
-            <span style="font-size: 0.8rem; color: #047857; font-weight: 700;">🟢 信箱驗證通過：<code id="verifiedEmailDisplay"></code></span>
-            <span style="font-size: 0.72rem; color: #059669; font-weight: 600;">第二階段：資料填寫</span>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">身分選擇</label>
-            <div style="display: flex; gap: 1rem; margin-top: 0.25rem;">
-              <label style="font-size: 0.9rem; display: flex; align-items: center; gap: 0.3rem;">
-                <input type="radio" name="regUserType" value="STUDENT" checked> 學生
-              </label>
-              <label style="font-size: 0.9rem; display: flex; align-items: center; gap: 0.3rem;">
-                <input type="radio" name="regUserType" value="FACULTY"> 教職員
-              </label>
-            </div>
-          </div>
-
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
-            <div class="form-group">
-              <label class="form-label">自訂帳號 (英數字組合) <span style="color: var(--danger);">* 全校唯一</span></label>
-              <input type="text" id="regUsername" class="form-input" placeholder="例如：leo115" maxlength="20">
-              <span id="regUsernameCheckHint" style="font-size: 0.72rem; display: block; margin-top: 2px;"></span>
-            </div>
-            <div class="form-group">
-              <label class="form-label">設定登入密碼 <span style="color: var(--danger);">*</span></label>
-              <input type="password" id="regPassword" class="form-input" placeholder="至少4碼密碼">
-            </div>
-          </div>
-
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
-            <div class="form-group">
-              <label class="form-label">真實姓名 (限繁體中文) <span style="color: var(--danger);">*</span></label>
-              <input type="text" id="regName" class="form-input" maxlength="10" placeholder="僅限 2~10 位中文姓名">
-              <span id="regNameCheckHint" style="font-size: 0.72rem; display: block; margin-top: 3px; min-height: 1.1em;"></span>
-            </div>
-            <div class="form-group">
-              <label class="form-label">性別</label>
-              <select id="regGender" class="form-select">
-                <option value="男">男</option>
-                <option value="女">女</option>
-                <option value="保密">保密</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">10 碼連絡電話 <span style="color: var(--danger);">*</span></label>
-            <input type="tel" id="regPhone" class="form-input" maxlength="10" placeholder="例如：0912345678">
-          </div>
-
-          <!-- 學生專屬欄位 (班級以 34 個標準選項下拉) -->
-          <div id="regStudentFields">
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
-              <div class="form-group">
-                <label class="form-label">學號 (精準6位數字) <span style="color: var(--danger);">*</span></label>
-                <input type="text" id="regStudentId" class="form-input" maxlength="6" placeholder="例如：412008">
-              </div>
-              <div class="form-group">
-                <label class="form-label">座號 (1~40) <span style="color: var(--danger);">*</span></label>
-                <input type="number" id="regSeatNumber" class="form-input" min="1" max="40" placeholder="例如：8">
-              </div>
-            </div>
-            <div class="form-group">
-              <label class="form-label">就讀班級 (34班標準選單) <span style="color: var(--danger);">*</span></label>
-              <select id="regClassSelect" class="form-select" required></select>
-            </div>
-          </div>
-
-          <!-- 教職員專屬欄位 -->
-          <div id="regFacultyFields" style="display: none;">
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
-              <div class="form-group">
-                <label class="form-label">教職員編號 <span style="color: var(--danger);">*</span></label>
-                <input type="text" id="regFacultyId" class="form-input" placeholder="例如：T88801">
-              </div>
-              <div class="form-group">
-                <label class="form-label">服務處室 / 科別 <span style="color: var(--danger);">*</span></label>
-                <input type="text" id="regDepartment" class="form-input" placeholder="例如：資料處理科 / 學務處">
-              </div>
-            </div>
-          </div>
-
-          <button id="btnStudentRegisterSubmit" class="checkout-btn" style="margin-top: 0.5rem; background: var(--accent-gradient);">
-            ✨ 完成資料填寫並送出註冊
-          </button>
-        </div>
-      </div>
-
-    </div>
-  </div>
 
   <!-- 訂單查詢與三軌進度專區 (獨立查詢或會員查看) -->
   <div id="studentOrdersModalOverlay" class="modal-overlay">
@@ -696,22 +499,22 @@
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
         <div class="form-group">
           <label class="form-label">學號 / 教職員代碼 <span style="color: var(--danger);">*</span></label>
-          <input type="text" id="studentIdInput" class="form-input" maxlength="8" placeholder="例如：412008">
+          <input type="text" id="studentIdInput" class="form-input" maxlength="8" placeholder="412008 或 T88801">
         </div>
         <div class="form-group">
-          <label class="form-label">真實姓名 (1~5字) <span style="color: var(--danger);">*</span></label>
-          <input type="text" id="studentNameInput" class="form-input" maxlength="5" placeholder="例如：王小明">
+          <label class="form-label">真實姓名 (2~4字) <span style="color: var(--danger);">*</span></label>
+          <input type="text" id="studentNameInput" class="form-input" maxlength="5" placeholder="王小明">
         </div>
       </div>
 
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
         <div class="form-group">
           <label class="form-label">連絡電話 (10碼手機) <span style="color: var(--danger);">*</span></label>
-          <input type="tel" id="studentPhoneInput" class="form-input" maxlength="10" placeholder="例如：0912345678">
+          <input type="tel" id="studentPhoneInput" class="form-input" maxlength="10" placeholder="0912345678">
         </div>
         <div class="form-group">
           <label class="form-label">通知電子信箱 <span style="color: var(--danger);">*</span></label>
-          <input type="email" id="studentEmailInput" class="form-input" placeholder="例如：user@gmail.com 或 @apps.ntpc.edu.tw">
+          <input type="email" id="studentEmailInput" class="form-input" placeholder="user@gmail.com 或 @apps.ntpc.edu.tw">
         </div>
       </div>
 
@@ -762,8 +565,8 @@
       </div>
       <div class="footer-links">
         <a href="#catalog" class="footer-link">商品型錄</a>
-        <a href="#features" class="footer-link">預購規範</a>
-        <a href="#notice" class="footer-link">取件須知</a>
+        <a href="auth.html" target="_blank" rel="noopener noreferrer" class="footer-link">👤 會員專區 / 註冊登入</a>
+        <a href="notice.html" target="_blank" rel="noopener noreferrer" class="footer-link">預購與取件規範</a>
         <!-- 低調優雅的幹部管理後台入口 -->
         <a href="../admin/index.html" target="_blank" class="admin-portal-link" title="工作人員與幹部調度管理工作站">
           <span>🔐</span> 幹部管理後台入口

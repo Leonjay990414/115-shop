@@ -404,28 +404,43 @@
     updateCartUI(false);
   }
 
-  // Lenis 絲滑平滑滾動初始化 (消除 Windows 滾輪卡頓)
+  // Lenis 絲滑平滑滾動初始化 (消除 Windows 滾輪卡頓，支援全域視窗與彈窗聯動)
   function initLenisSmoothScroll() {
+    if (window.lenis) return; // 已由頁面 HTML 結尾全域腳本初始化
     if (typeof window.Lenis !== "undefined") {
       try {
         const lenis = new window.Lenis({
-          duration: 1.15,
+          autoRaf: true,
+          anchors: true,
+          duration: 1.2,
           easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-          direction: "vertical",
-          gestureDirection: "vertical",
-          smooth: true,
-          smoothTouch: false,
-          touchMultiplier: 1.5
+          smoothWheel: true,
+          wheelMultiplier: 1,
+          touchMultiplier: 1.1,
+          prevent: (node) => node.closest('.modal-overlay, .modal-card, .cart-drawer, [data-lenis-prevent]') !== null
         });
-        function raf(time) {
-          lenis.raf(time);
-          requestAnimationFrame(raf);
-        }
-        requestAnimationFrame(raf);
+        window.lenis = lenis;
         window.__zgLenis = lenis;
       } catch (e) {
         console.warn("[Lenis init skipped]", e);
       }
+    }
+  }
+
+  // 全域彈窗滾動聯動輔助器 (彈窗開啟停止 Lenis 引擎，彈窗關閉恢復)
+  function onModalOpened() {
+    document.body.classList.add("no-scroll");
+    document.body.style.overflow = "hidden";
+    if (window.lenis && typeof window.lenis.stop === "function") {
+      window.lenis.stop();
+    }
+  }
+
+  function onModalClosed() {
+    document.body.classList.remove("no-scroll");
+    document.body.style.overflow = "";
+    if (window.lenis && typeof window.lenis.start === "function") {
+      window.lenis.start();
     }
   }
 
@@ -804,9 +819,20 @@
     addToCartConfirmBtn.addEventListener("click", handleAddToCartAttempt);
 
     btnAgreeNotice.addEventListener("click", handleNoticeAgreed);
-    closeNoticeBtn.addEventListener("click", () => {
-      noticeModalOverlay.classList.remove("active");
-    });
+    if (closeNoticeBtn) {
+      closeNoticeBtn.addEventListener("click", () => {
+        noticeModalOverlay.classList.remove("active");
+        onModalClosed();
+      });
+    }
+    if (noticeModalOverlay) {
+      noticeModalOverlay.addEventListener("click", (e) => {
+        if (e.target === noticeModalOverlay) {
+          noticeModalOverlay.classList.remove("active");
+          onModalClosed();
+        }
+      });
+    }
 
     // 第一階段：Email 驗證發信與驗證按鈕
     let verifyCooldownTimer = null;
@@ -1201,12 +1227,12 @@
   // ==========================================================================
   function openStudentAuthModal() {
     studentAuthModalOverlay.classList.add("active");
-    document.body.classList.add("no-scroll");
+    onModalOpened();
   }
 
   function closeStudentAuthModal() {
     studentAuthModalOverlay.classList.remove("active");
-    document.body.classList.remove("no-scroll");
+    onModalClosed();
   }
 
   async function handleUserLogin() {
@@ -1357,6 +1383,7 @@
       }
 
       studentOrdersModalOverlay.classList.add("active");
+      onModalOpened();
       startMyOrdersRealtimeListener(currentUser.username || currentUser.studentId);
     } else {
       btnStudentLogout.style.display = "none";
@@ -1368,7 +1395,7 @@
       }
 
       studentOrdersModalOverlay.classList.add("active");
-      document.body.classList.add("no-scroll");
+      onModalOpened();
       if (targetId) {
         trackSearchStudentId.value = targetId;
         startMyOrdersRealtimeListener(targetId);
@@ -1380,7 +1407,7 @@
 
   function closeStudentOrdersModal() {
     studentOrdersModalOverlay.classList.remove("active");
-    document.body.classList.remove("no-scroll");
+    onModalClosed();
     if (unsubscribeOrders) {
       unsubscribeOrders();
       unsubscribeOrders = null;
@@ -1622,13 +1649,13 @@
     }
 
     specModalOverlay.classList.add("active");
-    document.body.classList.add("no-scroll");
+    onModalOpened();
   }
 
   function closeSpecModal() {
     if (specModalOverlay) {
       specModalOverlay.classList.remove("active");
-      document.body.classList.remove("no-scroll");
+      onModalClosed();
     }
   }
 
@@ -1744,25 +1771,25 @@
     };
 
     customizeModalOverlay.classList.add("active");
-    document.body.classList.add("no-scroll");
+    onModalOpened();
   }
 
   function closeCustomizeModal() {
     customizeModalOverlay.classList.remove("active");
-    document.body.classList.remove("no-scroll");
+    onModalClosed();
   }
 
   // AI 客製圖檔生圖指南
   function openAiGuideModal() {
     if (!aiGuideModalOverlay) return;
     aiGuideModalOverlay.classList.add("active");
-    document.body.classList.add("no-scroll");
+    onModalOpened();
   }
 
   function closeAiGuideModal() {
     if (!aiGuideModalOverlay) return;
     aiGuideModalOverlay.classList.remove("active");
-    document.body.classList.remove("no-scroll");
+    onModalClosed();
   }
 
   function fallbackCopyText(text) {
@@ -1846,18 +1873,18 @@
   }
 
   // ==========================================================================
-  // 購物車抽屜
+  // 購物車中央卡片
   // ==========================================================================
   function openCartDrawer() {
     cartDrawerBackdrop.classList.add("active");
     cartDrawer.classList.add("active");
-    document.body.classList.add("no-scroll");
+    onModalOpened();
   }
 
   function closeCartDrawer() {
     cartDrawerBackdrop.classList.remove("active");
     cartDrawer.classList.remove("active");
-    document.body.classList.remove("no-scroll");
+    onModalClosed();
   }
 
   function toggleMobileNav() {
@@ -1867,14 +1894,14 @@
     } else {
       mobileNavDrawer.classList.add("active");
       mobileNavBackdrop.classList.add("active");
-      document.body.classList.add("no-scroll");
+      onModalOpened();
     }
   }
 
   function closeMobileNav() {
     mobileNavDrawer.classList.remove("active");
     mobileNavBackdrop.classList.remove("active");
-    document.body.classList.remove("no-scroll");
+    onModalClosed();
   }
 
   // 顧客圖檔大圖燈箱
@@ -1883,14 +1910,14 @@
     lightboxImg.src = imgUrl;
     if (lightboxCaption) lightboxCaption.textContent = captionText;
     imageLightboxOverlay.classList.add("active");
-    document.body.classList.add("no-scroll");
+    onModalOpened();
   }
 
   function closeImageLightbox() {
     if (!imageLightboxOverlay) return;
     imageLightboxOverlay.classList.remove("active");
     if (lightboxImg) lightboxImg.src = "";
-    document.body.classList.remove("no-scroll");
+    onModalClosed();
   }
 
   function updateCartUI(shouldSave = true) {
@@ -2000,12 +2027,12 @@
     }
 
     checkoutModalOverlay.classList.add("active");
-    document.body.classList.add("no-scroll");
+    onModalOpened();
   }
 
   function closeCheckoutModal() {
     checkoutModalOverlay.classList.remove("active");
-    document.body.classList.remove("no-scroll");
+    onModalClosed();
   }
 
   // ==========================================================================

@@ -17,8 +17,9 @@
   <!-- 外部樣式表 -->
   <link rel="stylesheet" href="css/style.css">
 
-  <!-- 引入 Lenis 平滑滾動與 GSAP CDN (徹底消除 Windows 滾輪卡頓，支援拋物線動效) -->
-  <script src="https://unpkg.com/lenis@1.1.18/dist/lenis.min.js"></script>
+  <!-- 引入 Lenis v1.3.26 平滑滾動與 GSAP CDN (徹底消除 Windows 滾輪卡頓，支援拋物線動效) -->
+  <link rel="stylesheet" href="https://unpkg.com/lenis@1.3.26/dist/lenis.css">
+  <script src="https://unpkg.com/lenis@1.3.26/dist/lenis.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 
   <!-- 引入 Firebase 9 Compat SDK (App, Firestore, Auth) -->
@@ -176,12 +177,12 @@
 
   <!-- 側邊懸浮購物車抽屜 (Drawer) -->
   <div id="cartDrawerBackdrop" class="drawer-backdrop"></div>
-  <aside id="cartDrawer" class="cart-drawer">
+  <aside id="cartDrawer" class="cart-drawer" data-lenis-prevent>
     <div class="drawer-header">
       <strong class="drawer-title">購物車清單</strong>
       <button id="closeCartBtn" class="close-drawer-btn">✕</button>
     </div>
-    <div id="drawerBody" class="drawer-body">
+    <div id="drawerBody" class="drawer-body" data-lenis-prevent>
       <!-- 由 js/app.js 動態渲染 -->
     </div>
     <div class="drawer-footer">
@@ -197,7 +198,7 @@
 
   <!-- 商品詳細規格介紹視窗 (Spec Detail Modal - 行為 A) -->
   <div id="specModalOverlay" class="modal-overlay">
-    <div class="modal-card spec-modal-card">
+    <div class="modal-card spec-modal-card" data-lenis-prevent>
       <div class="modal-header">
         <strong id="specModalTitle" class="modal-title">📦 商品規格與工藝材質</strong>
         <button id="closeSpecModalBtn" class="close-drawer-btn">✕</button>
@@ -246,7 +247,7 @@
 
   <!-- PDP 商品詳情手風琴與客製選購彈窗 (行為 B) -->
   <div id="customizeModalOverlay" class="modal-overlay">
-    <div class="modal-card">
+    <div class="modal-card" data-lenis-prevent>
       <div class="modal-header">
         <strong id="custModalTitle" class="modal-title">商品詳情與客製選購</strong>
         <button id="closeCustomizeBtn" class="close-drawer-btn">✕</button>
@@ -361,7 +362,7 @@
 
   <!-- 訂購須知確認彈窗 (Notice Modal) -->
   <div id="noticeModalOverlay" class="modal-overlay">
-    <div class="modal-card notice-modal-card">
+    <div class="modal-card notice-modal-card" data-lenis-prevent>
       <div class="modal-header">
         <strong class="modal-title" style="color: var(--accent-primary);">📋 校慶客製化商品訂購須知確認</strong>
         <button id="closeNoticeBtn" class="close-drawer-btn">✕</button>
@@ -394,7 +395,7 @@
 
   <!-- 訂單查詢與三軌進度專區 (獨立查詢或會員查看) -->
   <div id="studentOrdersModalOverlay" class="modal-overlay">
-    <div class="modal-card member-card">
+    <div class="modal-card member-card" data-lenis-prevent>
       <div class="modal-header">
         <div>
           <strong class="modal-title">📋 校慶客製工單與會員中心</strong>
@@ -444,7 +445,7 @@
         </button>
       </div>
 
-      <div class="orders-track-container" id="studentOrdersListContainer">
+      <div class="orders-track-container" id="studentOrdersListContainer" data-lenis-prevent>
         <!-- 由 js/app.js 動態渲染 -->
       </div>
     </div>
@@ -452,7 +453,7 @@
 
   <!-- 結帳雙重確認視窗 (Double Confirmation Modal) -->
   <div id="checkoutModalOverlay" class="modal-overlay">
-    <div class="modal-card checkout-modal-card">
+    <div class="modal-card checkout-modal-card" data-lenis-prevent>
       <div class="modal-header">
         <strong class="modal-title">🚀 確認訂單與填寫取貨資訊</strong>
         <button id="closeCheckoutBtn" class="close-drawer-btn">✕</button>
@@ -536,7 +537,7 @@
 
   <!-- 顧客客製化圖檔大圖檢視燈箱 (Lightbox) -->
   <div id="imageLightboxOverlay" class="modal-overlay" style="z-index: 100000;">
-    <div class="lightbox-card" style="background: rgba(15, 23, 42, 0.95); border-radius: 20px; padding: 1.5rem; max-width: 90vw; max-height: 90vh; display: flex; flex-direction: column; align-items: center; position: relative;">
+    <div class="lightbox-card" data-lenis-prevent style="background: rgba(15, 23, 42, 0.95); border-radius: 20px; padding: 1.5rem; max-width: 90vw; max-height: 90vh; display: flex; flex-direction: column; align-items: center; position: relative;">
       <button id="closeImageLightboxBtn" class="close-drawer-btn" style="position: absolute; top: 1rem; right: 1rem; color: #fff; background: rgba(255,255,255,0.2);">✕</button>
       <img id="lightboxImg" src="" alt="大圖" style="max-width: 85vw; max-height: 75vh; object-fit: contain; border-radius: 12px; margin-top: 1rem;" loading="lazy" decoding="async">
       <p id="lightboxCaption" style="color: #cbd5e1; font-size: 0.85rem; margin-top: 0.75rem;"></p>
@@ -561,6 +562,20 @@
 
   <!-- 引入前台應用邏輯 (共用核心 app.js，內建跨分頁雙向同步與 GSAP 拋物線飛入動效) -->
   <script src="js/app.js"></script>
+
+  <!-- Lenis v1.3.26 全域平滑滾動實例初始化 (autoRaf 規範與彈窗聯動) -->
+  <script>
+    window.lenis = new Lenis({
+      autoRaf: true,
+      anchors: true,
+      duration: 1.2,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      smoothWheel: true,
+      wheelMultiplier: 1,
+      touchMultiplier: 1.1,
+      prevent: (node) => node.closest('.modal-overlay, .modal-card, .cart-drawer, [data-lenis-prevent]') !== null
+    });
+  </script>
 
 </body>
 </html>

@@ -145,7 +145,11 @@
 
     <!-- 商品網格 (雙軌點擊：點圖框彈出規格、點按鈕客製訂購) -->
     <section class="products-grid" id="productsGrid">
-      <!-- 由 js/app.js 動態渲染 -->
+      <div class="loading-skeleton-container" style="grid-column: 1 / -1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 3rem 1rem; text-align: center; margin: auto;">
+        <div class="skeleton-shimmer" style="width: 64px; height: 64px; border-radius: 16px; margin-bottom: 1rem; border: 1px solid rgba(255, 117, 151, 0.2);"></div>
+        <strong style="color: var(--text-main); font-size: 1rem; margin-bottom: 0.35rem;">載入校慶精選紀念品中...</strong>
+        <span style="color: var(--text-muted); font-size: 0.82rem;">請稍候，正為您呈現精選工藝商品</span>
+      </div>
     </section>
 
     <!-- 取件須知專區 -->
@@ -308,7 +312,7 @@
         </div>
 
         <div id="custPreviewBox" class="upload-preview-box">
-          <img id="custPreviewImg" style="width: 50px; height: 50px; border-radius: 8px; object-fit: cover;" alt="預覽">
+          <img id="custPreviewImg" style="width: 50px; height: 50px; border-radius: 8px; object-fit: cover;" alt="預覽" loading="lazy" decoding="async">
           <div style="flex:1;">
             <div style="display:flex; align-items:center; gap:0.4rem;">
               <span id="custResTag" class="res-status-tag">檢驗中</span>
@@ -534,7 +538,7 @@
   <div id="imageLightboxOverlay" class="modal-overlay" style="z-index: 100000;">
     <div class="lightbox-card" style="background: rgba(15, 23, 42, 0.95); border-radius: 20px; padding: 1.5rem; max-width: 90vw; max-height: 90vh; display: flex; flex-direction: column; align-items: center; position: relative;">
       <button id="closeImageLightboxBtn" class="close-drawer-btn" style="position: absolute; top: 1rem; right: 1rem; color: #fff; background: rgba(255,255,255,0.2);">✕</button>
-      <img id="lightboxImg" src="" alt="大圖" style="max-width: 85vw; max-height: 75vh; object-fit: contain; border-radius: 12px; margin-top: 1rem;">
+      <img id="lightboxImg" src="" alt="大圖" style="max-width: 85vw; max-height: 75vh; object-fit: contain; border-radius: 12px; margin-top: 1rem;" loading="lazy" decoding="async">
       <p id="lightboxCaption" style="color: #cbd5e1; font-size: 0.85rem; margin-top: 0.75rem;"></p>
     </div>
   </div>

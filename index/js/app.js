@@ -722,7 +722,7 @@
 
       let imgContent = p.iconSvg;
       if (p.imageUrl) {
-        imgContent = `<img src="${p.imageUrl}" alt="${p.name}" style="width:100%; height:100%; object-fit:contain;">`;
+        imgContent = `<img src="${p.imageUrl}" alt="${p.name}" style="width:100%; height:100%; object-fit:contain;" loading="lazy" decoding="async">`;
       }
 
       const materialBadge = p.material ? `<span class="product-material-pill" title="材質規格：${p.material}">💎 ${p.material}</span>` : "";
@@ -1201,10 +1201,12 @@
   // ==========================================================================
   function openStudentAuthModal() {
     studentAuthModalOverlay.classList.add("active");
+    document.body.classList.add("no-scroll");
   }
 
   function closeStudentAuthModal() {
     studentAuthModalOverlay.classList.remove("active");
+    document.body.classList.remove("no-scroll");
   }
 
   async function handleUserLogin() {
@@ -1366,6 +1368,7 @@
       }
 
       studentOrdersModalOverlay.classList.add("active");
+      document.body.classList.add("no-scroll");
       if (targetId) {
         trackSearchStudentId.value = targetId;
         startMyOrdersRealtimeListener(targetId);
@@ -1377,6 +1380,7 @@
 
   function closeStudentOrdersModal() {
     studentOrdersModalOverlay.classList.remove("active");
+    document.body.classList.remove("no-scroll");
     if (unsubscribeOrders) {
       unsubscribeOrders();
       unsubscribeOrders = null;
@@ -1446,7 +1450,7 @@
         // 顧客上傳客製化圖片預覽
         const custImgHtml = o.imageUrl 
           ? `<div class="order-track-thumb-box" data-img="${o.imageUrl}" data-order="${o.orderId}" title="點擊放大檢視原圖">
-               <img src="${o.imageUrl}" class="order-track-thumb-img" alt="客製圖檔" />
+               <img src="${o.imageUrl}" class="order-track-thumb-img" alt="客製圖檔" loading="lazy" decoding="async" />
              </div>`
           : `<div class="order-track-thumb-box" style="background:#f1f5f9; display:flex; align-items:center; justify-content:center; color:#94a3b8; font-size:0.75rem;">無圖檔</div>`;
 
@@ -1618,11 +1622,13 @@
     }
 
     specModalOverlay.classList.add("active");
+    document.body.classList.add("no-scroll");
   }
 
   function closeSpecModal() {
     if (specModalOverlay) {
       specModalOverlay.classList.remove("active");
+      document.body.classList.remove("no-scroll");
     }
   }
 
@@ -1738,21 +1744,25 @@
     };
 
     customizeModalOverlay.classList.add("active");
+    document.body.classList.add("no-scroll");
   }
 
   function closeCustomizeModal() {
     customizeModalOverlay.classList.remove("active");
+    document.body.classList.remove("no-scroll");
   }
 
   // AI 客製圖檔生圖指南
   function openAiGuideModal() {
     if (!aiGuideModalOverlay) return;
     aiGuideModalOverlay.classList.add("active");
+    document.body.classList.add("no-scroll");
   }
 
   function closeAiGuideModal() {
     if (!aiGuideModalOverlay) return;
     aiGuideModalOverlay.classList.remove("active");
+    document.body.classList.remove("no-scroll");
   }
 
   function fallbackCopyText(text) {
@@ -1819,6 +1829,7 @@
     };
 
     noticeModalOverlay.classList.add("active");
+    document.body.classList.add("no-scroll");
   }
 
   function handleNoticeAgreed() {
@@ -1840,11 +1851,13 @@
   function openCartDrawer() {
     cartDrawerBackdrop.classList.add("active");
     cartDrawer.classList.add("active");
+    document.body.classList.add("no-scroll");
   }
 
   function closeCartDrawer() {
     cartDrawerBackdrop.classList.remove("active");
     cartDrawer.classList.remove("active");
+    document.body.classList.remove("no-scroll");
   }
 
   function toggleMobileNav() {
@@ -1911,7 +1924,7 @@
         const thumbSrc = item.imageUrl || "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' fill='%23e2e8f0'/%3E%3C/svg%3E";
 
         itemEl.innerHTML = `
-          <img src="${thumbSrc}" class="cart-item-thumb" alt="${item.productName}">
+          <img src="${thumbSrc}" class="cart-item-thumb" alt="${item.productName}" loading="lazy" decoding="async">
           <div class="cart-item-info">
             <strong class="cart-item-name" title="${item.productName}">${item.productName}</strong>
             <span class="cart-item-meta">單價：NT$ ${item.unitPrice} | 畫質：${item.imageRes}</span>
@@ -1987,10 +2000,12 @@
     }
 
     checkoutModalOverlay.classList.add("active");
+    document.body.classList.add("no-scroll");
   }
 
   function closeCheckoutModal() {
     checkoutModalOverlay.classList.remove("active");
+    document.body.classList.remove("no-scroll");
   }
 
   // ==========================================================================

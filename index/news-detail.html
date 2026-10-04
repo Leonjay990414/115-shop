@@ -330,7 +330,7 @@
       } else if (news.imageUrl) {
         mediaWrap.style.display = "block";
         mediaWrap.innerHTML = `
-          <img src="${news.imageUrl}" alt="${escapeHtml(news.title)}">
+          <img src="${news.imageUrl}" alt="${escapeHtml(news.title)}" loading="lazy" decoding="async">
         `;
       } else {
         mediaWrap.style.display = "none";

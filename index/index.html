@@ -334,7 +334,7 @@
         </div>
 
         <div id="custPreviewBox" class="upload-preview-box">
-          <img id="custPreviewImg" style="width: 50px; height: 50px; border-radius: 8px; object-fit: cover;" alt="預覽">
+          <img id="custPreviewImg" style="width: 50px; height: 50px; border-radius: 8px; object-fit: cover;" alt="預覽" loading="lazy" decoding="async">
           <div style="flex:1;">
             <div style="display:flex; align-items:center; gap:0.4rem;">
               <span id="custResTag" class="res-status-tag">檢驗中</span>
@@ -582,7 +582,7 @@
   <div id="imageLightboxOverlay" class="modal-overlay" style="z-index: 1200; background: rgba(0, 0, 0, 0.85);">
     <div style="position: relative; max-width: 90vw; max-height: 90dvh; display: flex; flex-direction: column; align-items: center;">
       <button id="closeImageLightboxBtn" class="close-drawer-btn" style="position: absolute; top: -45px; right: 0; background: rgba(255, 255, 255, 0.2); color: #fff;" aria-label="關閉大圖">✕</button>
-      <img id="lightboxImg" src="" alt="客製圖檔大圖" style="max-width: 100%; max-height: 80dvh; object-fit: contain; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.5);">
+      <img id="lightboxImg" src="" alt="客製圖檔大圖" style="max-width: 100%; max-height: 80dvh; object-fit: contain; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.5);" loading="lazy" decoding="async">
       <p id="lightboxCaption" style="color: #fff; margin-top: 0.75rem; font-size: 0.85rem; text-align: center;"></p>
     </div>
   </div>
